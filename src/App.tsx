@@ -38,6 +38,7 @@ interface Asset {
   sha?: string;
   downloadUrl?: string;
   size?: number;
+  rawDate?: number;
 }
 
 function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => void, onGuestAccess: () => void }) {
@@ -239,6 +240,7 @@ export default function App() {
               
               return { 
                 ...asset,
+                rawDate: date.getTime(),
                 timestamp: date.toLocaleString('ko-KR', { 
                   month: 'numeric', 
                   day: 'numeric', 
@@ -251,9 +253,10 @@ export default function App() {
         } catch (e) {
           console.error('Failed to fetch commit date', e);
         }
-        return { ...asset, timestamp: 'Recently' };
+        return { ...asset, rawDate: Date.now(), timestamp: 'Recently' };
       }));
       
+      updatedAssets.sort((a, b) => (b.rawDate || 0) - (a.rawDate || 0));
       setAssets(updatedAssets);
     } catch (err: any) {
       setError(`Failed to fetch files: ${err.message}`);
@@ -447,31 +450,51 @@ export default function App() {
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-white text-slate-900 tracking-tight">
       {/* Top Navbar */}
-      <nav className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-[#244d47] text-white z-50 shrink-0">
+      <nav className="h-12 px-6 flex items-center justify-between border-b border-black/5 bg-[#244d47] text-white z-50 shrink-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 border border-white/20">
-              <Layers className="w-5 h-5 text-emerald-300" />
+            <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 border border-white/20">
+              <Layers className="w-4 h-4 text-emerald-300" />
             </div>
-            <span className="font-bold tracking-tight text-white text-lg">HMCM Mock-up</span>
+            <span className="font-bold tracking-tight text-white text-base">HMCM Mock-up</span>
           </div>
           
-          <div className="h-6 w-px bg-white/20" />
+          <div className="h-4 w-px bg-white/20" />
           
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/70">
+            <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
+            <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-100/70">
               {isAdmin ? (githubToken ? 'ADMIN ACCESS' : 'ADMIN (TOKEN MISSING)') : 'GUEST MODE'}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Mode Tabs in Navbar */}
+        <div className="flex items-center bg-white/10 rounded-full p-0.5">
+          <button 
+            onClick={() => setViewMode('UPLOAD')}
+            className={`px-6 py-1.5 rounded-full text-[9px] font-bold tracking-widest transition-all ${
+              viewMode === 'UPLOAD' ? 'bg-white text-[#244d47]' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            BROADCAST
+          </button>
+          <button 
+            onClick={() => setViewMode('PREVIEW')}
+            className={`px-6 py-1.5 rounded-full text-[9px] font-bold tracking-widest transition-all ${
+              viewMode === 'PREVIEW' ? 'bg-white text-[#244d47]' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            PREVIEW
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
           <button 
             onClick={fetchFiles}
-            className={`p-2 hover:bg-white/10 rounded-full transition-colors ${isLoading ? 'animate-spin' : ''}`}
+            className={`p-1.5 hover:bg-white/10 rounded-full transition-colors ${isLoading ? 'animate-spin' : ''}`}
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4" />
           </button>
           <button 
             onClick={() => {
@@ -479,9 +502,9 @@ export default function App() {
               setIsAdmin(false);
               setGithubToken(null);
             }}
-            className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded font-bold text-[11px] uppercase tracking-widest transition-all"
+            className="flex items-center gap-2 px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded font-bold text-[10px] uppercase tracking-widest transition-all"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             Sign Out
           </button>
         </div>
@@ -489,10 +512,10 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-80 flex flex-col border-r border-black/5 bg-[#f8faf9] transition-all shrink-0">
-          <div className="p-6 border-b border-black/5">
+        <aside className="w-72 flex flex-col border-r border-slate-200 bg-[#f8faf9] transition-all shrink-0">
+          <div className="py-3 px-4 border-b-2 border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
-              <p className="font-bold text-[11px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
+              <p className="font-bold text-[10px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
             </div>
           </div>
 
@@ -511,14 +534,14 @@ export default function App() {
                 <div key={asset.id} className="relative group">
                   <button
                     onClick={() => onAssetSelect(asset.id)}
-                    className={`w-full text-left p-6 border-b border-black/5 transition-all relative ${
+                    className={`w-full text-left py-3 px-4 border-b border-slate-100 transition-all relative ${
                       selectedAsset === asset.id 
                       ? 'bg-[#244d47]/5 border-l-4 border-l-[#244d47]' 
                       : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <div className="space-y-1.5 pr-8">
-                      <h4 className={`text-[13px] font-bold truncate transition-colors ${
+                    <div className="space-y-1 pr-6">
+                      <h4 className={`text-[12px] font-bold truncate transition-colors ${
                         selectedAsset === asset.id ? 'text-[#244d47]' : 'text-slate-700 group-hover:text-[#244d47]'
                       }`}>
                         {asset.filename}
@@ -555,26 +578,6 @@ export default function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 relative flex flex-col bg-[#f0f4f3] overflow-hidden">
-          {/* Mode Tabs */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white shadow-xl rounded-full p-1 z-40 border border-black/5">
-            <button 
-              onClick={() => setViewMode('UPLOAD')}
-              className={`px-8 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${
-                viewMode === 'UPLOAD' ? 'bg-[#244d47] text-white' : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              BROADCAST
-            </button>
-            <button 
-              onClick={() => setViewMode('PREVIEW')}
-              className={`px-8 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${
-                viewMode === 'PREVIEW' ? 'bg-[#244d47] text-white' : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              PREVIEW
-            </button>
-          </div>
-
           <AnimatePresence mode="wait">
             {viewMode === 'UPLOAD' ? (
               <motion.div 
@@ -582,7 +585,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex-1 flex flex-col items-center justify-center p-12 overflow-y-auto"
+                className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto"
               >
                 {!isAdmin ? (
                   <div className="max-w-md text-center space-y-6 bg-white p-10 rounded-[40px] shadow-2xl border border-black/5">
@@ -676,11 +679,11 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex-1 flex flex-col p-8 pt-20"
+                className="flex-1 flex flex-col p-6"
               >
                 {previewContent ? (
-                  <div className="flex-1 w-full bg-white rounded-[40px] overflow-hidden shadow-2xl border border-black/5 flex flex-col">
-                    <div className="h-14 px-8 flex items-center justify-between border-b border-black/5 bg-[#f8faf9]">
+                  <div className="flex-1 w-full bg-white rounded-[32px] overflow-hidden shadow-xl border border-black/5 flex flex-col">
+                    <div className="h-12 px-6 flex items-center justify-between border-b border-black/5 bg-[#f8faf9]">
                       <div className="flex items-center gap-3">
                         <div className="flex gap-1.5">
                           <div className="w-3 h-3 rounded-full bg-slate-200" />
@@ -731,15 +734,15 @@ export default function App() {
       </div>
 
       {/* Footer / Status Bar */}
-      <footer className="h-10 px-8 flex items-center justify-between border-t border-black/5 bg-white text-slate-400 shrink-0">
-        <div className="flex items-center gap-3">
-          <Terminal className="w-3.5 h-3.5 text-emerald-600/40" />
-          <span className="font-bold text-[9px] uppercase tracking-[0.2em]">HMCM PLATFORM v2.1.0</span>
+      <footer className="h-8 px-6 flex items-center justify-between border-t border-slate-200 bg-white text-slate-400 shrink-0">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-3 h-3 text-emerald-600/40" />
+          <span className="font-bold text-[9px] uppercase tracking-[0.2em]">HM CM Planning Team</span>
         </div>
 
-        <div className="flex items-center gap-3 text-emerald-600">
+        <div className="flex items-center gap-2 text-emerald-600">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold text-[9px] tracking-widest uppercase flex items-center gap-1.5">
+          <span className="font-bold text-[9px] tracking-widest uppercase flex items-center gap-1">
             <ShieldCheck className="w-3 h-3" />
             System Secure
           </span>
