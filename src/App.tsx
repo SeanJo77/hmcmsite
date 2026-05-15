@@ -535,12 +535,12 @@ export default function App() {
             <div className="flex items-center justify-between mb-3">
               <p className="font-bold text-[10px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
             </div>
-            <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex gap-1 pb-1">
               {['All', '강지영', '황선필', '강상구', '박상원'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold ${
+                  className={`px-1 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold flex-1 ${
                     activeTab === tab 
                     ? 'bg-[#244d47] text-white shadow-sm' 
                     : 'bg-black/5 text-slate-500 hover:bg-black/10'
