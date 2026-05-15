@@ -181,6 +181,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [githubToken, setGithubToken] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('All');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const [previewContent, setPreviewContent] = useState<string | null>(null);
@@ -531,8 +532,23 @@ export default function App() {
         {/* Sidebar */}
         <aside className="w-72 flex flex-col border-r border-slate-200 bg-[#f8faf9] transition-all shrink-0">
           <div className="py-3 px-4 border-b-2 border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-3">
               <p className="font-bold text-[10px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
+            </div>
+            <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+              {['All', '강지영', '황선필', '강상구', '박상원'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold ${
+                    activeTab === tab 
+                    ? 'bg-[#244d47] text-white shadow-sm' 
+                    : 'bg-black/5 text-slate-500 hover:bg-black/10'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -547,7 +563,9 @@ export default function App() {
                 <p className="text-[11px] text-slate-400">No templates detected in target directory.</p>
               </div>
             ) : (
-              assets.map((asset) => (
+              assets
+                .filter(asset => activeTab === 'All' || asset.author?.includes(activeTab) || asset.filename.includes(activeTab))
+                .map((asset) => (
                 <div key={asset.id} className="relative group">
                   <button
                     onClick={() => onAssetSelect(asset.id)}
