@@ -145,8 +145,11 @@ function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => voi
               )}
             </button>
 
-            <div className="text-center">
-               <p className="text-[10px] text-slate-400 font-medium">Initial credentials: ID: admin / PW: hmcm2024</p>
+            <div className="text-center space-y-2">
+               <p className="text-[10px] text-slate-400 font-medium tracking-tight">Initial credentials: ID: admin / PW: hmcm2024</p>
+               <p className="text-[9px] text-slate-300 font-medium leading-relaxed italic">
+                 Note: Credentials management code is located in <code className="bg-slate-100 px-1 rounded">App.tsx</code> (LoginPage component).
+               </p>
             </div>
 
             <button 
