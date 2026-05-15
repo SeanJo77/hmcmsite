@@ -30,11 +30,11 @@ const GITHUB_OWNER = 'seanjo77';
 const GITHUB_REPO = 'hmcmsite';
 
 const USERS = [
-  { id: 'sean', pw: 'sean', name: '조선두' },
-  { id: 'b21368', pw: 'b21368', name: '황선필' },
-  { id: 'b25026', pw: 'b25026', name: '박상원' },
-  { id: 'b21320', pw: 'b21320', name: '강지영' },
-  { id: 'b22004', pw: 'b22004', name: '강상구' },
+  { id: 'admin', pw: 'hmcm2024', name: '관리자' },
+  { id: 'HSP', pw: 'hsp1', name: '황선필' },
+  { id: 'SJP', pw: 'sjp1', name: '박상원' },
+  { id: 'JYK', pw: 'jyk1', name: '강지영' },
+  { id: 'SGK', pw: 'sgk1', name: '강상구' },
 ];
 
 interface Asset {
@@ -478,8 +478,8 @@ export default function App() {
           <div className="h-4 w-px bg-white/20" />
           
           <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
-            <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-100/70">
+            <div className={`w-2 h-2 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
+            <span className="font-bold text-xs uppercase tracking-widest text-emerald-100/90">
               {isAdmin ? (githubToken ? `${userName} (ADMIN)` : `${userName} (TOKEN MISSING)`) : 'GUEST MODE'}
             </span>
           </div>
@@ -558,18 +558,18 @@ export default function App() {
                     }`}
                   >
                     <div className="space-y-1 pr-6">
-                      <h4 className={`text-[12px] font-bold truncate transition-colors ${
+                      <h4 className={`text-[13px] font-bold truncate transition-colors ${
                         selectedAsset === asset.id ? 'text-[#244d47]' : 'text-slate-700 group-hover:text-[#244d47]'
                       }`}>
                         {asset.filename}
                       </h4>
-                      <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px]">
+                      <div className="flex items-center gap-4 text-slate-400 font-bold text-xs">
                         <div className="flex items-center gap-1 uppercase tracking-tighter">
-                          <User className="w-3 h-3" />
+                          <User className="w-3.5 h-3.5" />
                           {asset.author}
                         </div>
                         <div className="flex items-center gap-1 uppercase tracking-tighter">
-                          <Clock className="w-3 h-3 text-emerald-600/60" />
+                          <Clock className="w-3.5 h-3.5 text-emerald-600/60" />
                           {asset.timestamp}
                         </div>
                       </div>
@@ -585,7 +585,7 @@ export default function App() {
                         e.stopPropagation();
                         handleDelete(asset);
                       }}
-                      className="absolute right-12 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10"
+                      className="absolute right-10 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 group-hover:opacity-100 z-10 bg-white/50 backdrop-blur-sm"
                       title="Delete Template"
                     >
                       <Trash2 className="w-4 h-4" />
