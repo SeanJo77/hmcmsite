@@ -4,24 +4,23 @@ A professional administrative portal for syncing HTML templates.
 
 ## 🚀 Deployment to GitHub Pages
 
-To deploy this application to GitHub Pages from AI Studio, follow these steps:
+To deploy this application to GitHub Pages, follow these steps:
 
 1. **Export to GitHub**:
    - In AI Studio, click the **Settings** (gear icon).
    - Select **Export to GitHub**.
-   - Create a new repository or select an existing one.
+   - **IMPORTANT**: Ensure `package-lock.json` is included in your repository. GitHub Actions requires it for caching.
 
-2. **Wait for CI/CD**:
-   - Vite projects usually require a build step to produce static files.
-   - The export includes a standard `package.json`.
-
-3. **Configure GitHub Pages**:
+2. **Configure GitHub Pages**:
    - Go to your repository on GitHub.com.
    - Go to **Settings** > **Pages**.
    - In the **Build and deployment** section, under **Source**, select **GitHub Actions**.
-   - Search for the "Static HTML" or "Vite" template, or use the following workflow file.
 
-### Sample GitHub Action (`.github/workflows/deploy.yml`)
+3. **Deploy Workflow**:
+   - Create a file at `.github/workflows/deploy.yml` with the content below.
+   - Note: We use **Node 24** to avoid deprecation warnings.
+
+### GitHub Action Workflow (`.github/workflows/deploy.yml`)
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -35,14 +34,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 24
       - name: Install dependencies
         run: npm install
       - name: Build
@@ -58,9 +58,19 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
+## 🔐 Environment Variables
+
+The application requires a GitHub Personal Access Token to broadcast files.
+
+1. **Local Development**: Create a `.env` file and add `VITE_GITHUB_TOKEN=your_token`.
+2. **GitHub Pages runtime**: The token must be accessible to the browser. 
+   - **Note**: Since this is a client-side app on GitHub Pages, the token in `import.meta.env` will be bundled into the JavaScript. 
+   - **Security Warning**: Only use a token with minimal permissions (fine-grained repo access to `hmcmsite` only) if you plan to share the URL publicly.
+
 ## Features
 
+- **GitHub API Integration**: Lists and commits files directly to your repository.
 - **Dark Mode UI**: Technical aesthetic with glass-morphism.
 - **Fast Sync**: Drag-and-drop file upload zone.
-- **Asset Monitoring**: Real-time asset list with status tracking.
-- **Responsive Design**: Works across different screen sizes.
+- **Secure Access**: Admin terminal login interface.
+

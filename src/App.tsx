@@ -3,12 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   Layers, 
   User, 
@@ -23,33 +18,23 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const GITHUB_OWNER = 'seanjo77';
+const GITHUB_REPO = 'hmcmsite';
+const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
 
 interface Asset {
   id: string;
   filename: string;
   author: string;
   timestamp: string;
-  isActive?: boolean;
+  path: string;
+  sha?: string;
 }
-
-const INITIAL_ASSETS: Asset[] = [
-  {
-    id: '1',
-    filename: 'AI공사도우미 예시.html',
-    author: 'admin',
-    timestamp: '2026. 5. 14. PM 11:30:28'
-  },
-  {
-    id: '2',
-    filename: 'cfs_보배포트.html',
-    author: 'admin',
-    timestamp: '2026. 5. 14. PM 11:25:21',
-    isActive: true
-  }
-];
 
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,16 +44,14 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       onLogin();
-    }, 1500);
+    }, 1000);
   };
 
   return (
     <div className="h-screen w-full flex items-center justify-center bg-[#0c1324] relative overflow-hidden">
-      {/* Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-cyan-500/10 blur-[120px] rounded-full" />
         <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 blur-[120px] rounded-full" />
@@ -120,7 +103,6 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
           <button 
             type="submit"
-            disabled={isLoading}
             className="w-full bg-cyan-400 hover:bg-cyan-300 disabled:bg-cyan-900 disabled:text-cyan-400/30 text-cyan-950 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 group overflow-hidden relative"
           >
             {isLoading ? (
@@ -136,8 +118,10 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         <div className="mt-10 flex items-center justify-between border-t border-white/5 pt-8">
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Network Stable</span>
+            <div className={`w-1.5 h-1.5 rounded-full ${GITHUB_TOKEN ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">
+              {GITHUB_TOKEN ? 'GitHub Link Stable' : 'API Token Missing'}
+            </span>
           </div>
           <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">V2.0.4.R3</span>
         </div>
@@ -149,12 +133,59 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('ALL');
-  const [assets, setAssets] = useState<Asset[]>(INITIAL_ASSETS);
-  const [selectedAsset, setSelectedAsset] = useState<string>('2');
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCommiting, setIsCommiting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchFiles = useCallback(async () => {
+    if (!GITHUB_TOKEN) {
+      setError('GitHub Token is missing. Please add VITE_GITHUB_TOKEN in Secrets.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      const mappedAssets: Asset[] = data
+        .filter((file: any) => file.type === 'file' && file.name.endsWith('.html'))
+        .map((file: any) => ({
+          id: file.sha,
+          filename: file.name,
+          author: GITHUB_OWNER,
+          timestamp: 'Sync Success',
+          path: file.path,
+          sha: file.sha
+        }));
+      
+      setAssets(mappedAssets);
+    } catch (err: any) {
+      setError(`Failed to fetch files: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchFiles();
+    }
+  }, [isLoggedIn, fetchFiles]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -181,19 +212,54 @@ export default function App() {
     }
   };
 
-  const handleUpload = () => {
-    if (!pendingFile) return;
+  const handleUpload = async () => {
+    if (!pendingFile || !GITHUB_TOKEN) return;
 
-    const newAsset: Asset = {
-      id: Date.now().toString(),
-      filename: pendingFile.name,
-      author: 'admin',
-      timestamp: new Date().toLocaleString(),
-    };
+    setIsCommiting(true);
+    setError(null);
+    
+    try {
+      // Check if file already exists to get SHA for overwrite
+      const existingFile = assets.find(a => a.filename === pendingFile.name);
+      
+      // 1. Read file as base64
+      const reader = new FileReader();
+      const fileContent = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // Get the base64 part
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(pendingFile);
+      });
 
-    setAssets(prev => [newAsset, ...prev]);
-    setSelectedAsset(newAsset.id);
-    setPendingFile(null);
+      // 2. Commit to GitHub
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${pendingFile.name}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Broadcast template: ${pendingFile.name}`,
+          content: fileContent,
+          sha: existingFile?.sha // Crucial for overwriting
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to commit file');
+      }
+
+      setPendingFile(null);
+      await fetchFiles(); // Refresh list
+    } catch (err: any) {
+      setError(`Commit failed: ${err.message}`);
+    } finally {
+      setIsCommiting(false);
+    }
   };
 
   const selectedAssetData = assets.find(a => a.id === selectedAsset);
@@ -203,7 +269,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#0c1324] text-slate-200">
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#0c1324] text-slate-200 uppercase tracking-tighter">
       {/* Top Navbar */}
       <nav className="h-16 px-8 flex items-center justify-between border-b border-white/10 bg-surface-dark/80 backdrop-blur-xl z-50 shrink-0">
         <div className="flex items-center gap-6">
@@ -224,8 +290,8 @@ export default function App() {
 
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => window.location.reload()}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-cyan-400"
+            onClick={fetchFiles}
+            className={`p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-cyan-400 ${isLoading ? 'animate-spin' : ''}`}
           >
             <RefreshCw className="w-5 h-5" />
           </button>
@@ -250,7 +316,6 @@ export default function App() {
               {['ALL', '김00', '강00', '황00', '조00'].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1.5 rounded-sm font-mono text-[11px] transition-all whitespace-nowrap ${
                     activeTab === tab 
                     ? 'bg-slate-200 text-slate-900 font-bold' 
@@ -264,50 +329,78 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar border-t border-white/5">
-            {assets.map((asset) => (
-              <button
-                key={asset.id}
-                onClick={() => setSelectedAsset(asset.id)}
-                className={`w-full text-left p-6 border-b border-white/5 transition-all group relative ${
-                  selectedAsset === asset.id 
-                  ? 'bg-cyan-400/5 border-l-2 border-l-cyan-400' 
-                  : 'hover:bg-white/5'
-                }`}
-              >
-                <div className="space-y-2">
-                  <h4 className={`font-mono text-[13px] font-bold truncate ${
-                    selectedAsset === asset.id ? 'text-cyan-400' : 'group-hover:text-cyan-400'
-                  }`}>
-                    {asset.filename}
-                  </h4>
-                  <div className="flex items-center gap-4 opacity-50 font-mono text-[10px]">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      {asset.author}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {asset.timestamp}
+            {isLoading ? (
+              <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-600">
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <span className="font-mono text-[10px] tracking-widest">Scanning Repository...</span>
+              </div>
+            ) : assets.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="font-mono text-[10px] text-slate-600">No HTML templates found in {GITHUB_REPO}</p>
+              </div>
+            ) : (
+              assets.map((asset) => (
+                <button
+                  key={asset.id}
+                  onClick={() => setSelectedAsset(asset.id)}
+                  className={`w-full text-left p-6 border-b border-white/5 transition-all group relative ${
+                    selectedAsset === asset.id 
+                    ? 'bg-cyan-400/5 border-l-2 border-l-cyan-400' 
+                    : 'hover:bg-white/5'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <h4 className={`font-mono text-[13px] font-bold truncate ${
+                      selectedAsset === asset.id ? 'text-cyan-400' : 'group-hover:text-cyan-400'
+                    }`}>
+                      {asset.filename}
+                    </h4>
+                    <div className="flex items-center gap-4 opacity-50 font-mono text-[10px]">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        {asset.author}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {asset.timestamp}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <ChevronRight className={`absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-transform ${
-                  selectedAsset === asset.id ? 'text-cyan-400' : 'text-white/20 group-hover:translate-x-1 group-hover:text-cyan-400'
-                }`} />
-              </button>
-            ))}
+                  <ChevronRight className={`absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-transform ${
+                    selectedAsset === asset.id ? 'text-cyan-400' : 'text-white/20 group-hover:translate-x-1 group-hover:text-cyan-400'
+                  }`} />
+                </button>
+              ))
+            )}
           </div>
         </aside>
 
         {/* Main Content Area */}
         <main className="flex-1 relative flex flex-col p-12 overflow-y-auto items-center justify-center bg-gradient-to-b from-transparent to-black/20">
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 z-50 max-w-lg w-full"
+              >
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <p className="text-xs font-bold leading-relaxed">{error}</p>
+                <button onClick={() => setError(null)} className="ml-auto text-red-400/50 hover:text-red-400">
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl w-full text-center space-y-2"
           >
             <h1 className="text-6xl font-black italic tracking-tighter text-slate-100">Fast Sync</h1>
-            <p className="text-slate-400 text-lg">
+            <p className="text-slate-400 text-lg normal-case">
               Drag your HTML template here to broadcast to the administrative repository.
             </p>
           </motion.div>
@@ -335,7 +428,7 @@ export default function App() {
               <Upload className={`w-12 h-12 transition-colors ${isDragOver || pendingFile ? 'text-cyan-400' : 'text-slate-300'}`} />
             </div>
 
-            <h2 className="text-3xl font-bold text-slate-100 mb-8">
+            <h2 className="text-3xl font-bold text-slate-100 mb-8 truncate max-w-full italic tracking-tighter">
               {pendingFile ? pendingFile.name : 'Drop File or Click'}
             </h2>
             
@@ -344,14 +437,21 @@ export default function App() {
                 e.stopPropagation();
                 handleUpload();
               }}
-              disabled={!pendingFile}
-              className={`w-full py-5 rounded-xl border border-white/5 font-mono font-bold uppercase tracking-[0.2em] transition-all ${
+              disabled={!pendingFile || isCommiting}
+              className={`w-full py-5 rounded-xl border border-white/5 font-mono font-bold uppercase tracking-[0.2em] transition-all relative overflow-hidden ${
                 pendingFile 
-                ? 'bg-cyan-400 text-cyan-950 border-cyan-400 pulse shadow-[0_0_20px_rgba(34,211,238,0.3)]' 
+                ? 'bg-cyan-400 text-cyan-950 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:scale-[1.02]' 
                 : 'bg-white/5 text-slate-600 cursor-not-allowed'
               }`}
             >
-              Finalize Commit
+              {isCommiting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Broadcasting...
+                </div>
+              ) : (
+                'Finalize Commit'
+              )}
             </button>
 
             <AnimatePresence>
@@ -381,8 +481,8 @@ export default function App() {
                     <FileCode className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Selected Template</p>
-                    <p className="text-xs font-mono font-bold text-slate-200 truncate max-w-[200px]">
+                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1">Selected Template</p>
+                    <p className="text-xs font-mono font-bold text-slate-200 truncate max-w-[200px] normal-case">
                       {selectedAssetData.filename}
                     </p>
                   </div>
