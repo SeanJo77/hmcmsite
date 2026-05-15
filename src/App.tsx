@@ -29,6 +29,14 @@ import { motion, AnimatePresence } from 'motion/react';
 const GITHUB_OWNER = 'seanjo77';
 const GITHUB_REPO = 'hmcmsite';
 
+const USERS = [
+  { id: 'sean', pw: 'sean', name: '조선두' },
+  { id: 'b21368', pw: 'b21368', name: '황선필' },
+  { id: 'b25026', pw: 'b25026', name: '박상원' },
+  { id: 'b21320', pw: 'b21320', name: '강지영' },
+  { id: 'b22004', pw: 'b22004', name: '강상구' },
+];
+
 interface Asset {
   id: string;
   filename: string;
@@ -41,7 +49,7 @@ interface Asset {
   rawDate?: number;
 }
 
-function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => void, onGuestAccess: () => void }) {
+function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string, userName: string) => void, onGuestAccess: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
@@ -56,10 +64,10 @@ function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => voi
     // For this mock-up, we use a predefined team access logic
     setTimeout(() => {
       setIsLoading(false);
-      const isValidAdmin = userId === 'admin' && (password === 'hmcm2024' || password === 'sync');
+      const user = USERS.find(u => u.id === userId && u.pw === password);
       
-      if (isValidAdmin) {
-        onLogin(import.meta.env.VITE_GITHUB_TOKEN || ''); 
+      if (user) {
+        onLogin(import.meta.env.VITE_GITHUB_TOKEN || '', user.name); 
       } else {
         setError('Invalid credentials. Check with your HMCM administrator.');
       }
@@ -171,6 +179,7 @@ function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => voi
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
   const [githubToken, setGithubToken] = useState<string | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
@@ -240,6 +249,7 @@ export default function App() {
               
               return { 
                 ...asset,
+                author: committerName,
                 rawDate: date.getTime(),
                 timestamp: date.toLocaleString('ko-KR', { 
                   month: 'numeric', 
@@ -352,7 +362,11 @@ export default function App() {
         body: JSON.stringify({
           message: `Broadcast template: ${pendingFile.name} (Updated at ${new Date().toLocaleString()})`,
           content: fileContent,
-          sha: existingFile?.sha
+          sha: existingFile?.sha,
+          committer: {
+            name: userName || 'Unknown',
+            email: "system@hmcm.com"
+          }
         }),
       });
 
@@ -430,14 +444,16 @@ export default function App() {
 
   const selectedAssetData = assets.find(a => a.id === selectedAsset);
 
-  const handleLogin = (token: string) => {
+  const handleLogin = (token: string, name: string) => {
     setGithubToken(token || null);
+    setUserName(name);
     setIsAdmin(true);
     setIsLoggedIn(true);
   };
 
   const handleGuestAccess = () => {
     setGithubToken(null);
+    setUserName(null);
     setIsAdmin(false);
     setIsLoggedIn(true);
     setViewMode('PREVIEW');
@@ -464,7 +480,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
             <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-100/70">
-              {isAdmin ? (githubToken ? 'ADMIN ACCESS' : 'ADMIN (TOKEN MISSING)') : 'GUEST MODE'}
+              {isAdmin ? (githubToken ? `${userName} (ADMIN)` : `${userName} (TOKEN MISSING)`) : 'GUEST MODE'}
             </span>
           </div>
         </div>
@@ -500,6 +516,7 @@ export default function App() {
             onClick={() => {
               setIsLoggedIn(false);
               setIsAdmin(false);
+              setUserName(null);
               setGithubToken(null);
             }}
             className="flex items-center gap-2 px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded font-bold text-[10px] uppercase tracking-widest transition-all"
@@ -547,6 +564,10 @@ export default function App() {
                         {asset.filename}
                       </h4>
                       <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px]">
+                        <div className="flex items-center gap-1 uppercase tracking-tighter">
+                          <User className="w-3 h-3" />
+                          {asset.author}
+                        </div>
                         <div className="flex items-center gap-1 uppercase tracking-tighter">
                           <Clock className="w-3 h-3 text-emerald-600/60" />
                           {asset.timestamp}
@@ -613,9 +634,6 @@ export default function App() {
                   <>
                     <div className="max-w-2xl w-full text-center mb-10">
                       <h1 className="text-6xl font-black tracking-tighter text-slate-800 mb-2 font-display">Fast Sync</h1>
-                      <p className="text-slate-500 text-lg normal-case font-medium">
-                        Seamlessly broadcast HTML templates to the production environment.
-                      </p>
                     </div>
 
                     {!githubToken && (
