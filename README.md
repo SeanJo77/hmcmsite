@@ -9,18 +9,21 @@ To deploy this application to GitHub Pages, follow these steps:
 1. **Export to GitHub**:
    - In AI Studio, click the **Settings** (gear icon).
    - Select **Export to GitHub**.
-   - **IMPORTANT**: Ensure `package-lock.json` is included in your repository. GitHub Actions requires it for caching.
+   - Create a repository named `hmcmsite`.
 
-2. **Configure GitHub Pages**:
-   - Go to your repository on GitHub.com.
+2. **Add GitHub Token to Repository Secrets**:
+   - Go to your repository on GitHub (`https://github.com/seanjo77/hmcmsite`).
+   - Navigate to **Settings** > **Secrets and variables** > **Actions**.
+   - Click **New repository secret**.
+   - Name: `VITE_GITHUB_TOKEN`
+   - Value: (사용자님의 GitHub Personal Access Token)
+
+3. **Configure GitHub Pages**:
    - Go to **Settings** > **Pages**.
-   - In the **Build and deployment** section, under **Source**, select **GitHub Actions**.
+   - Set **Source** to **GitHub Actions**.
 
-3. **Deploy Workflow**:
-   - Create a file at `.github/workflows/deploy.yml` with the content below.
-   - Note: We use **Node 24** to avoid deprecation warnings.
-
-### GitHub Action Workflow (`.github/workflows/deploy.yml`)
+4. **Deploy Workflow**:
+   - Create a file at `.github/workflows/deploy.yml` with the following:
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -36,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }} # 이 부분이 토큰을 빌드에 주입합니다.
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -19,13 +19,15 @@ import {
   Mail,
   ArrowRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  Code,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const GITHUB_OWNER = 'seanjo77';
 const GITHUB_REPO = 'hmcmsite';
-const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
 
 interface Asset {
   id: string;
@@ -34,96 +36,135 @@ interface Asset {
   timestamp: string;
   path: string;
   sha?: string;
+  downloadUrl?: string;
+  size?: number;
 }
 
-function LoginPage({ onLogin }: { onLogin: () => void }) {
+function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => void, onGuestAccess: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
+    
+    // Simulation: In a real app with Firebase, we would call signInWithEmailAndPassword
+    // For this mock-up, we use a predefined team access logic
     setTimeout(() => {
       setIsLoading(false);
-      onLogin();
-    }, 1000);
+      const isValidAdmin = userId === 'admin' && (password === 'hmcm2024' || password === 'sync');
+      
+      if (isValidAdmin) {
+        onLogin(import.meta.env.VITE_GITHUB_TOKEN || ''); 
+      } else {
+        setError('Invalid credentials. Check with your HMCM administrator.');
+      }
+    }, 1200);
   };
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-[#0c1324] relative overflow-hidden">
+    <div className="h-screen w-full flex items-center justify-center bg-[#f0f4f3] relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-cyan-500/10 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 blur-[120px] rounded-full" />
+        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-[#244d47]/5 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-[#244d47]/5 blur-[120px] rounded-full" />
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md p-8 glass-panel rounded-[32px] border-white/10 z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md p-10 bg-white rounded-[40px] shadow-2xl border border-black/5 z-10"
       >
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-cyan-400/10 rounded-2xl flex items-center justify-center border border-cyan-400/20 mb-6 group">
-            <Layers className="w-8 h-8 text-cyan-400 group-hover:rotate-12 transition-transform duration-500" />
+          <div className="w-20 h-20 bg-[#244d47]/5 rounded-[32px] flex items-center justify-center border border-[#244d47]/10 mb-6 group">
+            <Layers className="w-9 h-9 text-[#244d47] group-hover:rotate-6 transition-transform duration-500" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-2">SYNC_CORE v2.0</h1>
-          <p className="text-slate-400 text-sm font-mono tracking-widest uppercase">Admin Terminal Login</p>
+          <h1 className="text-3xl font-black tracking-tighter text-slate-800 mb-2 font-display">HMCM Mock-up</h1>
+          <p className="text-slate-500 text-xs font-bold tracking-[0.2em] uppercase text-center px-4 leading-relaxed">
+            Professional Administrative Portal<br/>Template Sync System
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-mono ml-1">Terminal ID</label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">Member ID</label>
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+              <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-[#244d47] transition-colors" />
               <input 
-                type="email" 
+                type="text" 
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@sync.core"
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-400/5 transition-all outline-none"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder="Enter your ID"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-4 text-sm focus:outline-none focus:border-[#244d47] focus:ring-4 focus:ring-[#244d47]/5 transition-all outline-none"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-mono ml-1">Secure Key</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">Secure Password</label>
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-[#244d47] transition-colors" />
               <input 
                 type="password" 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-400/5 transition-all outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-4 text-sm focus:outline-none focus:border-[#244d47] focus:ring-4 focus:ring-[#244d47]/5 transition-all outline-none"
               />
             </div>
           </div>
 
-          <button 
-            type="submit"
-            className="w-full bg-cyan-400 hover:bg-cyan-300 disabled:bg-cyan-900 disabled:text-cyan-400/30 text-cyan-950 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 group overflow-hidden relative"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                Initialize Session
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold"
+            >
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </motion.div>
+          )}
+
+          <div className="space-y-4 pt-2">
+            <button 
+              type="submit"
+              disabled={isLoading || !userId || !password}
+              className="w-full bg-[#244d47] hover:bg-[#1a3834] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group overflow-hidden relative shadow-xl active:scale-[0.98]"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <span className="tracking-widest uppercase text-xs">Access Dashboard</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+
+            <div className="text-center">
+               <p className="text-[10px] text-slate-400 font-medium">Initial credentials: ID: admin / PW: hmcm2024</p>
+            </div>
+
+            <button 
+              type="button"
+              onClick={onGuestAccess}
+              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-slate-200 text-xs tracking-widest uppercase"
+            >
+              Enter as Guest (Viewer)
+            </button>
+          </div>
         </form>
 
-        <div className="mt-10 flex items-center justify-between border-t border-white/5 pt-8">
-          <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${GITHUB_TOKEN ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">
-              {GITHUB_TOKEN ? 'GitHub Link Stable' : 'API Token Missing'}
-            </span>
+        <div className="mt-10 flex items-center justify-between border-t border-slate-100 pt-8">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            Active Security v2.1
           </div>
-          <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">V2.0.4.R3</span>
+          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">HMCM_AUTH_PRO</span>
         </div>
       </motion.div>
     </div>
@@ -132,9 +173,12 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState('ALL');
+  const [githubToken, setGithubToken] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('All');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const [previewContent, setPreviewContent] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'PREVIEW' | 'UPLOAD'>('UPLOAD');
   const [isDragOver, setIsDragOver] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -144,40 +188,98 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFiles = useCallback(async () => {
-    if (!GITHUB_TOKEN) {
-      setError('GitHub Token is missing. Please add VITE_GITHUB_TOKEN in Secrets.');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`, {
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
+      const headers: Record<string, string> = {
+        'Accept': 'application/vnd.github.v3+json'
+      };
+      
+      if (githubToken) {
+        headers['Authorization'] = `token ${githubToken}`;
+      }
+
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/upload`, {
+        headers
       });
       
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.status === 404) {
+        setAssets([]);
+        return;
+      }
+      
+      if (!response.ok) {
+        if (response.status === 403) throw new Error('API rate limit exceeded or access denied. Please use a token.');
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       const data = await response.json();
+      
+      // Map basic data
       const mappedAssets: Asset[] = data
-        .filter((file: any) => file.type === 'file' && file.name.endsWith('.html'))
+        .filter((file: any) => file.type === 'file' && (file.name.endsWith('.html') || file.name.endsWith('.htm')))
         .map((file: any) => ({
           id: file.sha,
           filename: file.name,
           author: GITHUB_OWNER,
-          timestamp: 'Sync Success',
+          timestamp: '...', // Will be updated
           path: file.path,
-          sha: file.sha
+          sha: file.sha,
+          downloadUrl: file.download_url,
+          size: file.size
         }));
-      
+
       setAssets(mappedAssets);
+
+      // Fetch commits for timestamps (batches)
+      const updatedAssets = await Promise.all(mappedAssets.map(async (asset) => {
+        try {
+          const commitResp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?path=${asset.path}&per_page=1`, { headers });
+          if (commitResp.ok) {
+            const commitData = await commitResp.json();
+            if (commitData.length > 0) {
+              const date = new Date(commitData[0].commit.committer.date);
+              const committerName = commitData[0].commit.committer.name;
+              
+              // Mapping committer name to Korean labels if possible
+              let displayAuthor = committerName;
+              if (committerName.toLowerCase().includes('sean') || committerName.includes('주')) displayAuthor = '박상원';
+              if (committerName.includes('강')) displayAuthor = '강지영';
+              
+              return { 
+                ...asset,
+                author: displayAuthor,
+                timestamp: date.toLocaleString('ko-KR', { 
+                  month: 'numeric', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                }) 
+              };
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch commit date', e);
+        }
+        return { ...asset, timestamp: 'Recently' };
+      }));
+      
+      setAssets(updatedAssets);
     } catch (err: any) {
       setError(`Failed to fetch files: ${err.message}`);
     } finally {
       setIsLoading(false);
+    }
+  }, [githubToken]);
+
+  const fetchPreview = useCallback(async (url: string) => {
+    try {
+      const resp = await fetch(url);
+      const text = await resp.text();
+      setPreviewContent(text);
+      setViewMode('PREVIEW');
+    } catch (err) {
+      setError('Failed to load preview content');
     }
   }, []);
 
@@ -186,6 +288,14 @@ export default function App() {
       fetchFiles();
     }
   }, [isLoggedIn, fetchFiles]);
+
+  const onAssetSelect = (id: string) => {
+    setSelectedAsset(id);
+    const asset = assets.find(a => a.id === id);
+    if (asset?.downloadUrl) {
+      fetchPreview(asset.downloadUrl);
+    }
+  };
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -213,38 +323,38 @@ export default function App() {
   };
 
   const handleUpload = async () => {
-    if (!pendingFile || !GITHUB_TOKEN) return;
+    if (!pendingFile || !githubToken) return;
 
     setIsCommiting(true);
     setError(null);
     
     try {
-      // Check if file already exists to get SHA for overwrite
+      // Refresh assets first to get latest SHA if any
+      await fetchFiles();
+      
       const existingFile = assets.find(a => a.filename === pendingFile.name);
       
-      // 1. Read file as base64
       const reader = new FileReader();
       const fileContent = await new Promise<string>((resolve, reject) => {
         reader.onload = () => {
           const result = reader.result as string;
-          resolve(result.split(',')[1]); // Get the base64 part
+          resolve(result.split(',')[1]);
         };
         reader.onerror = reject;
         reader.readAsDataURL(pendingFile);
       });
 
-      // 2. Commit to GitHub
-      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${pendingFile.name}`, {
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/upload/${pendingFile.name}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Authorization': `token ${githubToken}`,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: `Broadcast template: ${pendingFile.name}`,
+          message: `Broadcast template: ${pendingFile.name} (Updated at ${new Date().toLocaleString()})`,
           content: fileContent,
-          sha: existingFile?.sha // Crucial for overwriting
+          sha: existingFile?.sha
         }),
       });
 
@@ -254,7 +364,12 @@ export default function App() {
       }
 
       setPendingFile(null);
-      await fetchFiles(); // Refresh list
+      // Wait a moment for GitHub to process before refresh
+      setTimeout(async () => {
+        await fetchFiles();
+        setSelectedAsset(null);
+        setPreviewContent(null);
+      }, 500);
     } catch (err: any) {
       setError(`Commit failed: ${err.message}`);
     } finally {
@@ -262,64 +377,134 @@ export default function App() {
     }
   };
 
+  const handleDelete = async (asset: Asset) => {
+    if (!githubToken) {
+      alert('Delete permission is restricted to administrators.');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete "${asset.filename}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${asset.path}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Delete template: ${asset.filename}`,
+          sha: asset.sha
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete file');
+      }
+
+      if (selectedAsset === asset.id) {
+        setSelectedAsset(null);
+        setPreviewContent(null);
+      }
+      
+      await fetchFiles();
+    } catch (err: any) {
+      setError(`Delete failed: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openInNewWindow = () => {
+    if (!previewContent) return;
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write(previewContent);
+      newWindow.document.close();
+    }
+  };
+
   const selectedAssetData = assets.find(a => a.id === selectedAsset);
 
+  const handleLogin = (token: string) => {
+    setGithubToken(token);
+    setIsLoggedIn(true);
+  };
+
+  const handleGuestAccess = () => {
+    setGithubToken(null);
+    setIsLoggedIn(true);
+    setViewMode('PREVIEW');
+  };
+
   if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+    return <LoginPage onLogin={handleLogin} onGuestAccess={handleGuestAccess} />;
   }
 
   return (
-    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#0c1324] text-slate-200 uppercase tracking-tighter">
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-white text-slate-900 tracking-tight">
       {/* Top Navbar */}
-      <nav className="h-16 px-8 flex items-center justify-between border-b border-white/10 bg-surface-dark/80 backdrop-blur-xl z-50 shrink-0">
+      <nav className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-[#244d47] text-white z-50 shrink-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-cyan-400/10 border border-cyan-400/20">
-              <Layers className="w-5 h-5 text-cyan-400" />
+            <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 border border-white/20">
+              <Layers className="w-5 h-5 text-emerald-300" />
             </div>
-            <span className="font-mono font-bold tracking-[0.2em] text-cyan-400 text-sm">SYNC_CORE v2.0</span>
+            <span className="font-bold tracking-tight text-white text-lg">HMCM Mock-up</span>
           </div>
           
-          <div className="h-6 w-px bg-white/10" />
+          <div className="h-6 w-px bg-white/20" />
           
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-cyan-400/70" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400">Active: Admin</span>
+            <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/70">
+              {githubToken ? 'ADMIN ACCESS' : 'GUEST MODE'}
+            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <button 
             onClick={fetchFiles}
-            className={`p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-cyan-400 ${isLoading ? 'animate-spin' : ''}`}
+            className={`p-2 hover:bg-white/10 rounded-full transition-colors ${isLoading ? 'animate-spin' : ''}`}
           >
             <RefreshCw className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setIsLoggedIn(false)}
-            className="flex items-center gap-2 px-4 py-1.5 border border-white/10 rounded font-mono text-[11px] uppercase tracking-widest hover:bg-white/5 transition-all hover:text-red-400 hover:border-red-400/30"
+            onClick={() => {
+              setIsLoggedIn(false);
+              setGithubToken(null);
+            }}
+            className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded font-bold text-[11px] uppercase tracking-widest transition-all"
           >
             <LogOut className="w-4 h-4" />
-            Exit
+            Sign Out
           </button>
         </div>
       </nav>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-80 flex flex-col border-r border-white/10 bg-[#070d1f]/40 transition-all shrink-0">
+        <aside className="w-80 flex flex-col border-r border-black/5 bg-[#f8faf9] transition-all shrink-0">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <p className="font-mono text-[10px] text-slate-500 uppercase tracking-[0.2em]">HMCM TEAM PORTAL</p>
+              <p className="font-bold text-[11px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
             </div>
             <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-              {['ALL', '김00', '강00', '황00', '조00'].map((tab) => (
+              {['All', '강지영', '황선필', '강상구', '박상원'].map((tab) => (
                 <button
                   key={tab}
-                  className={`px-3 py-1.5 rounded-sm font-mono text-[11px] transition-all whitespace-nowrap ${
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3 py-1.5 rounded-md text-[11px] transition-all whitespace-nowrap font-bold ${
                     activeTab === tab 
-                    ? 'bg-slate-200 text-slate-900 font-bold' 
-                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                    ? 'bg-[#244d47] text-white shadow-sm' 
+                    : 'bg-black/5 text-slate-500 hover:bg-black/10'
                   }`}
                 >
                   {tab}
@@ -328,183 +513,238 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar border-t border-white/5">
-            {isLoading ? (
-              <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-600">
+          <div className="flex-1 overflow-y-auto custom-scrollbar border-t border-black/5">
+            {isLoading && assets.length === 0 ? (
+              <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin" />
-                <span className="font-mono text-[10px] tracking-widest">Scanning Repository...</span>
+                <span className="font-bold text-[10px] tracking-widest uppercase">Fetching files...</span>
               </div>
             ) : assets.length === 0 ? (
               <div className="p-12 text-center">
-                <p className="font-mono text-[10px] text-slate-600">No HTML templates found in {GITHUB_REPO}</p>
+                <p className="text-[11px] text-slate-400">No templates detected in target directory.</p>
               </div>
             ) : (
-              assets.map((asset) => (
-                <button
-                  key={asset.id}
-                  onClick={() => setSelectedAsset(asset.id)}
-                  className={`w-full text-left p-6 border-b border-white/5 transition-all group relative ${
-                    selectedAsset === asset.id 
-                    ? 'bg-cyan-400/5 border-l-2 border-l-cyan-400' 
-                    : 'hover:bg-white/5'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <h4 className={`font-mono text-[13px] font-bold truncate ${
-                      selectedAsset === asset.id ? 'text-cyan-400' : 'group-hover:text-cyan-400'
-                    }`}>
-                      {asset.filename}
-                    </h4>
-                    <div className="flex items-center gap-4 opacity-50 font-mono text-[10px]">
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {asset.author}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {asset.timestamp}
+              assets
+                .filter(asset => activeTab === 'All' || asset.author === activeTab || asset.filename.includes(activeTab))
+                .map((asset) => (
+                <div key={asset.id} className="relative group">
+                  <button
+                    onClick={() => onAssetSelect(asset.id)}
+                    className={`w-full text-left p-6 border-b border-black/5 transition-all relative ${
+                      selectedAsset === asset.id 
+                      ? 'bg-[#244d47]/5 border-l-4 border-l-[#244d47]' 
+                      : 'hover:bg-black/[0.02]'
+                    }`}
+                  >
+                    <div className="space-y-1.5 pr-8">
+                      <h4 className={`text-[13px] font-bold truncate transition-colors ${
+                        selectedAsset === asset.id ? 'text-[#244d47]' : 'text-slate-700 group-hover:text-[#244d47]'
+                      }`}>
+                        {asset.filename}
+                      </h4>
+                      <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px]">
+                        <div className="flex items-center gap-1 uppercase tracking-tighter">
+                          <User className="w-3 h-3" />
+                          {asset.author}
+                        </div>
+                        <div className="flex items-center gap-1 uppercase tracking-tighter">
+                          <Clock className="w-3 h-3 text-emerald-600/60" />
+                          {asset.timestamp}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <ChevronRight className={`absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-transform ${
-                    selectedAsset === asset.id ? 'text-cyan-400' : 'text-white/20 group-hover:translate-x-1 group-hover:text-cyan-400'
-                  }`} />
-                </button>
+                    <ChevronRight className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-all ${
+                      selectedAsset === asset.id ? 'text-[#244d47] translate-x-1' : 'text-slate-300 group-hover:translate-x-1 group-hover:text-[#244d47]'
+                    }`} />
+                  </button>
+                  
+                  {githubToken && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(asset);
+                      }}
+                      className="absolute right-12 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10"
+                      title="Delete Template"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               ))
             )}
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 relative flex flex-col p-12 overflow-y-auto items-center justify-center bg-gradient-to-b from-transparent to-black/20">
-          <AnimatePresence>
-            {error && (
+        <main className="flex-1 relative flex flex-col bg-[#f0f4f3] overflow-hidden">
+          {/* Mode Tabs */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white shadow-xl rounded-full p-1 z-40 border border-black/5">
+            <button 
+              onClick={() => setViewMode('UPLOAD')}
+              className={`px-8 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${
+                viewMode === 'UPLOAD' ? 'bg-[#244d47] text-white' : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              BROADCAST
+            </button>
+            <button 
+              onClick={() => setViewMode('PREVIEW')}
+              className={`px-8 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${
+                viewMode === 'PREVIEW' ? 'bg-[#244d47] text-white' : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              PREVIEW
+            </button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {viewMode === 'UPLOAD' ? (
               <motion.div 
-                initial={{ opacity: 0, y: -20 }}
+                key="upload-view"
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 z-50 max-w-lg w-full"
+                exit={{ opacity: 0, y: -10 }}
+                className="flex-1 flex flex-col items-center justify-center p-12"
               >
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <p className="text-xs font-bold leading-relaxed">{error}</p>
-                <button onClick={() => setError(null)} className="ml-auto text-red-400/50 hover:text-red-400">
-                  <RefreshCw className="w-4 h-4" />
-                </button>
+                {!githubToken ? (
+                  <div className="max-w-md text-center space-y-6 glass-panel p-10 rounded-[40px] shadow-2xl border-black/5">
+                    <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
+                      <Lock className="w-10 h-10 text-amber-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-800 tracking-tighter mb-2 font-display">Authentication Required</h2>
+                      <p className="text-slate-500 text-sm normal-case leading-relaxed font-medium">
+                        Sync capabilities are locked for Guest sessions. Please authorize via GitHub Token to deploy new templates.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setIsLoggedIn(false);
+                        setGithubToken(null);
+                      }}
+                      className="w-full py-4 bg-[#244d47] text-white rounded-2xl font-bold text-xs tracking-widest hover:bg-[#1a3834] transition-all uppercase shadow-lg"
+                    >
+                      Return to Secure Login
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="max-w-2xl w-full text-center mb-12">
+                      <h1 className="text-6xl font-black tracking-tighter text-slate-800 mb-2 font-display">Fast Sync</h1>
+                      <p className="text-slate-500 text-lg normal-case font-medium">
+                        Seamlessly broadcast HTML templates to the production environment.
+                      </p>
+                    </div>
+
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full max-w-xl aspect-[4/3] rounded-[48px] flex flex-col items-center justify-center p-12 transition-all duration-500 border-2 relative overflow-hidden bg-white cursor-pointer group shadow-xl ${
+                        isDragOver ? 'border-emerald-500 bg-emerald-50 scale-[1.02]' : 'border-dashed border-slate-200 hover:border-emerald-400'
+                      }`}
+                    >
+                      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept=".html,.htm" />
+                      
+                      <div className={`w-32 h-32 rounded-[40px] bg-slate-50 border border-slate-200 flex items-center justify-center mb-8 transition-all duration-500 ${
+                        isDragOver || pendingFile ? 'scale-110 border-emerald-500 bg-emerald-50 shadow-[0_0_40px_rgba(16,185,129,0.1)]' : 'group-hover:scale-105 group-hover:border-emerald-200'
+                      }`}>
+                        <Upload className={`w-12 h-12 transition-colors ${isDragOver || pendingFile ? 'text-emerald-500' : 'text-slate-300'}`} />
+                      </div>
+
+                      <h2 className="text-2xl font-bold text-slate-800 mb-8 truncate max-w-full tracking-tight font-display">
+                        {pendingFile ? pendingFile.name : 'Select or Drop Content'}
+                      </h2>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleUpload(); }}
+                        disabled={!pendingFile || isCommiting}
+                        className={`w-full py-5 rounded-2xl font-bold uppercase tracking-[0.2em] transition-all text-xs ${
+                          pendingFile 
+                          ? 'bg-[#244d47] text-white shadow-xl hover:scale-[1.02] active:scale-[0.98]' 
+                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {isCommiting ? <Loader2 className="animate-spin inline mr-2 h-4 w-4" /> : 'Execute Synchronization'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="preview-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col p-8 pt-20"
+              >
+                {previewContent ? (
+                  <div className="flex-1 w-full bg-white rounded-[40px] overflow-hidden shadow-2xl border border-black/5 flex flex-col">
+                    <div className="h-14 px-8 flex items-center justify-between border-b border-black/5 bg-[#f8faf9]">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-slate-200" />
+                          <div className="w-3 h-3 rounded-full bg-slate-200" />
+                          <div className="w-3 h-3 rounded-full bg-slate-200" />
+                        </div>
+                        <div className="h-4 w-px bg-slate-200 ml-4" />
+                        <span className="font-bold text-[11px] text-slate-500 truncate max-w-xs uppercase tracking-widest">{selectedAssetData?.filename}</span>
+                      </div>
+                      
+                      <button 
+                        onClick={openInNewWindow}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#244d47] text-white hover:bg-[#1a3834] transition-all font-bold text-[10px] tracking-widest uppercase shadow-md"
+                      >
+                        New Window
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <iframe 
+                      title="live-preview"
+                      srcDoc={previewContent} 
+                      className="flex-1 w-full bg-white border-none"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-6">
+                    <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center">
+                      <Eye className="w-10 h-10 opacity-40" />
+                    </div>
+                    <p className="font-bold text-[12px] tracking-widest uppercase text-slate-400">Select an asset to visualize</p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl w-full text-center space-y-2"
-          >
-            <h1 className="text-6xl font-black italic tracking-tighter text-slate-100">Fast Sync</h1>
-            <p className="text-slate-400 text-lg normal-case">
-              Drag your HTML template here to broadcast to the administrative repository.
-            </p>
-          </motion.div>
-
-          <motion.div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`mt-16 w-full max-w-xl aspect-[4/3] rounded-[48px] flex flex-col items-center justify-center p-12 transition-all duration-500 border relative overflow-hidden glass-panel cursor-pointer group ${
-              isDragOver ? 'border-cyan-400/50 bg-cyan-400/5 scale-[1.02]' : 'border-white/10 hover:bg-white/5'
-            }`}
-          >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              onChange={handleFileSelect}
-              accept=".html,.htm"
-            />
-            
-            <div className={`w-32 h-32 rounded-[32px] bg-slate-800/50 border border-white/10 flex items-center justify-center mb-8 transition-all duration-500 ${
-              isDragOver || pendingFile ? 'scale-110 border-cyan-400 bg-cyan-400/20 shadow-[0_0_30px_rgba(34,211,238,0.2)]' : 'group-hover:scale-105'
-            }`}>
-              <Upload className={`w-12 h-12 transition-colors ${isDragOver || pendingFile ? 'text-cyan-400' : 'text-slate-300'}`} />
-            </div>
-
-            <h2 className="text-3xl font-bold text-slate-100 mb-8 truncate max-w-full italic tracking-tighter">
-              {pendingFile ? pendingFile.name : 'Drop File or Click'}
-            </h2>
-            
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleUpload();
-              }}
-              disabled={!pendingFile || isCommiting}
-              className={`w-full py-5 rounded-xl border border-white/5 font-mono font-bold uppercase tracking-[0.2em] transition-all relative overflow-hidden ${
-                pendingFile 
-                ? 'bg-cyan-400 text-cyan-950 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:scale-[1.02]' 
-                : 'bg-white/5 text-slate-600 cursor-not-allowed'
-              }`}
-            >
-              {isCommiting ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Broadcasting...
-                </div>
-              ) : (
-                'Finalize Commit'
-              )}
-            </button>
-
-            <AnimatePresence>
-              {isDragOver && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 pointer-events-none border-2 border-cyan-400/30 rounded-[48px] border-dashed animate-pulse"
-                />
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Quick Stats Overlay */}
-          <AnimatePresence mode="wait">
-            {selectedAssetData && (
+          <AnimatePresence>
+            {isDragOver && (
               <motion.div 
-                key={selectedAssetData.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="absolute right-12 bottom-12 flex flex-col gap-4"
-              >
-                <div className="glass-panel px-6 py-4 rounded-2xl flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-cyan-400/10 flex items-center justify-center border border-cyan-400/20">
-                    <FileCode className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1">Selected Template</p>
-                    <p className="text-xs font-mono font-bold text-slate-200 truncate max-w-[200px] normal-case">
-                      {selectedAssetData.filename}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 pointer-events-none border-2 border-emerald-400/20 rounded-[48px] border-dashed animate-pulse z-50 m-12"
+              />
             )}
           </AnimatePresence>
         </main>
       </div>
 
       {/* Footer / Status Bar */}
-      <footer className="h-10 px-8 flex items-center justify-between border-t border-white/5 bg-surface-dark/80 backdrop-blur-md z-50 shrink-0">
+      <footer className="h-10 px-8 flex items-center justify-between border-t border-black/5 bg-white text-slate-400 shrink-0">
         <div className="flex items-center gap-3">
-          <Terminal className="w-3.5 h-3.5 text-slate-500" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">HM CM PLANNING V1.0.0</span>
+          <Terminal className="w-3.5 h-3.5 text-emerald-600/40" />
+          <span className="font-bold text-[9px] uppercase tracking-[0.2em]">HMCM PLATFORM v2.1.0</span>
         </div>
 
-        <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/20 text-cyan-400">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="font-mono text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+        <div className="flex items-center gap-3 text-emerald-600">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bold text-[9px] tracking-widest uppercase flex items-center gap-1.5">
             <ShieldCheck className="w-3 h-3" />
-            Verified Access
+            System Secure
           </span>
         </div>
       </footer>
