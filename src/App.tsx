@@ -171,7 +171,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [githubToken, setGithubToken] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('All');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const [previewContent, setPreviewContent] = useState<string | null>(null);
@@ -238,14 +237,8 @@ export default function App() {
               const date = new Date(commitData[0].commit.committer.date);
               const committerName = commitData[0].commit.committer.name;
               
-              // Mapping committer name to Korean labels if possible
-              let displayAuthor = committerName;
-              if (committerName.toLowerCase().includes('sean') || committerName.includes('주')) displayAuthor = '박상원';
-              if (committerName.includes('강')) displayAuthor = '강지영';
-              
               return { 
                 ...asset,
-                author: displayAuthor,
                 timestamp: date.toLocaleString('ko-KR', { 
                   month: 'numeric', 
                   day: 'numeric', 
@@ -497,28 +490,13 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="w-80 flex flex-col border-r border-black/5 bg-[#f8faf9] transition-all shrink-0">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-6 border-b border-black/5">
+            <div className="flex items-center justify-between">
               <p className="font-bold text-[11px] text-slate-500 uppercase tracking-widest">Repository Contents</p>
-            </div>
-            <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-              {['All', '강지영', '황선필', '강상구', '박상원'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-md text-[11px] transition-all whitespace-nowrap font-bold ${
-                    activeTab === tab 
-                    ? 'bg-[#244d47] text-white shadow-sm' 
-                    : 'bg-black/5 text-slate-500 hover:bg-black/10'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar border-t border-black/5">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             {isLoading && assets.length === 0 ? (
               <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin" />
@@ -529,9 +507,7 @@ export default function App() {
                 <p className="text-[11px] text-slate-400">No templates detected in target directory.</p>
               </div>
             ) : (
-              assets
-                .filter(asset => activeTab === 'All' || asset.author === activeTab || asset.filename.includes(activeTab))
-                .map((asset) => (
+              assets.map((asset) => (
                 <div key={asset.id} className="relative group">
                   <button
                     onClick={() => onAssetSelect(asset.id)}
@@ -548,10 +524,6 @@ export default function App() {
                         {asset.filename}
                       </h4>
                       <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px]">
-                        <div className="flex items-center gap-1 uppercase tracking-tighter">
-                          <User className="w-3 h-3" />
-                          {asset.author}
-                        </div>
                         <div className="flex items-center gap-1 uppercase tracking-tighter">
                           <Clock className="w-3 h-3 text-emerald-600/60" />
                           {asset.timestamp}
