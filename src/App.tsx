@@ -145,13 +145,6 @@ function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => voi
               )}
             </button>
 
-            <div className="text-center space-y-2">
-               <p className="text-[10px] text-slate-400 font-medium tracking-tight">Initial credentials: ID: admin / PW: hmcm2024</p>
-               <p className="text-[9px] text-slate-300 font-medium leading-relaxed italic">
-                 Note: Credentials management code is located in <code className="bg-slate-100 px-1 rounded">App.tsx</code> (LoginPage component).
-               </p>
-            </div>
-
             <button 
               type="button"
               onClick={onGuestAccess}
@@ -176,6 +169,7 @@ function LoginPage({ onLogin, onGuestAccess }: { onLogin: (token: string) => voi
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [githubToken, setGithubToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('All');
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -326,7 +320,12 @@ export default function App() {
   };
 
   const handleUpload = async () => {
-    if (!pendingFile || !githubToken) return;
+    if (!pendingFile) return;
+
+    if (!githubToken) {
+      setError('GitHub Token is not configured. Please set VITE_GITHUB_TOKEN in environment settings.');
+      return;
+    }
 
     setIsCommiting(true);
     setError(null);
@@ -436,12 +435,14 @@ export default function App() {
   const selectedAssetData = assets.find(a => a.id === selectedAsset);
 
   const handleLogin = (token: string) => {
-    setGithubToken(token);
+    setGithubToken(token || null);
+    setIsAdmin(true);
     setIsLoggedIn(true);
   };
 
   const handleGuestAccess = () => {
     setGithubToken(null);
+    setIsAdmin(false);
     setIsLoggedIn(true);
     setViewMode('PREVIEW');
   };
@@ -465,9 +466,9 @@ export default function App() {
           <div className="h-6 w-px bg-white/20" />
           
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            <div className={`w-2 h-2 rounded-full ${isAdmin ? (githubToken ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-slate-400'}`} />
             <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/70">
-              {githubToken ? 'ADMIN ACCESS' : 'GUEST MODE'}
+              {isAdmin ? (githubToken ? 'ADMIN ACCESS' : 'ADMIN (TOKEN MISSING)') : 'GUEST MODE'}
             </span>
           </div>
         </div>
@@ -482,6 +483,7 @@ export default function App() {
           <button 
             onClick={() => {
               setIsLoggedIn(false);
+              setIsAdmin(false);
               setGithubToken(null);
             }}
             className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded font-bold text-[11px] uppercase tracking-widest transition-all"
@@ -561,7 +563,7 @@ export default function App() {
                     }`} />
                   </button>
                   
-                  {githubToken && (
+                  {isAdmin && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -608,22 +610,23 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex-1 flex flex-col items-center justify-center p-12"
+                className="flex-1 flex flex-col items-center justify-center p-12 overflow-y-auto"
               >
-                {!githubToken ? (
-                  <div className="max-w-md text-center space-y-6 glass-panel p-10 rounded-[40px] shadow-2xl border-black/5">
+                {!isAdmin ? (
+                  <div className="max-w-md text-center space-y-6 bg-white p-10 rounded-[40px] shadow-2xl border border-black/5">
                     <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
                       <Lock className="w-10 h-10 text-amber-600" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-slate-800 tracking-tighter mb-2 font-display">Authentication Required</h2>
                       <p className="text-slate-500 text-sm normal-case leading-relaxed font-medium">
-                        Sync capabilities are locked for Guest sessions. Please authorize via GitHub Token to deploy new templates.
+                        Sync capabilities are locked for Guest sessions. Please authorize via Administrative credentials to execute synchronization.
                       </p>
                     </div>
                     <button 
                       onClick={() => {
                         setIsLoggedIn(false);
+                        setIsAdmin(false);
                         setGithubToken(null);
                       }}
                       className="w-full py-4 bg-[#244d47] text-white rounded-2xl font-bold text-xs tracking-widest hover:bg-[#1a3834] transition-all uppercase shadow-lg"
@@ -633,12 +636,31 @@ export default function App() {
                   </div>
                 ) : (
                   <>
-                    <div className="max-w-2xl w-full text-center mb-12">
+                    <div className="max-w-2xl w-full text-center mb-10">
                       <h1 className="text-6xl font-black tracking-tighter text-slate-800 mb-2 font-display">Fast Sync</h1>
                       <p className="text-slate-500 text-lg normal-case font-medium">
                         Seamlessly broadcast HTML templates to the production environment.
                       </p>
                     </div>
+
+                    {!githubToken && (
+                      <div className="w-full max-w-xl mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-4">
+                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Secret Configuration Required</p>
+                          <p className="text-xs text-amber-700 leading-relaxed">
+                            Admin session active, but GitHub API Token is missing. Please add <code className="bg-amber-100 px-1 rounded">VITE_GITHUB_TOKEN</code> to AI Studio Secrets to enable deployments.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="w-full max-w-xl mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                        <p className="text-xs font-bold text-red-700">{error}</p>
+                      </div>
+                    )}
 
                     <div
                       onDragOver={handleDragOver}
