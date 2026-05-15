@@ -30,11 +30,11 @@ const GITHUB_OWNER = 'seanjo77';
 const GITHUB_REPO = 'hmcmsite';
 
 const USERS = [
-  { id: 'admin', pw: 'hmcm2024', name: '관리자' },
-  { id: 'HSP', pw: 'hsp1', name: '황선필' },
-  { id: 'SJP', pw: 'sjp1', name: '박상원' },
-  { id: 'JYK', pw: 'jyk1', name: '강지영' },
-  { id: 'SGK', pw: 'sgk1', name: '강상구' },
+  { id: 'sean', pw: 'sean', name: '조선두' },
+  { id: 'b21368', pw: 'b21368', name: '황선필' },
+  { id: 'b25026', pw: 'b25026', name: '박상원' },
+  { id: 'b21320', pw: 'b21320', name: '강지영' },
+  { id: 'b22004', pw: 'b22004', name: '강상구' },
 ];
 
 interface Asset {
