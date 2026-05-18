@@ -235,6 +235,7 @@ export default function App() {
   const [selectedTeam, setSelectedTeam] = useState<string>("CM기획팀");
   const [githubToken, setGithubToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("All");
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const [previewContent, setPreviewContent] = useState<string | null>(null);
@@ -381,9 +382,36 @@ export default function App() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetchFiles();
+      const loadUsersList = async () => {
+        try {
+          const headers: Record<string, string> = {
+            Accept: "application/vnd.github.v3+json",
+          };
+          if (githubToken) headers["Authorization"] = `token ${githubToken}`;
+          
+          const response = await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/users.json`,
+            { headers }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const contentStr = decodeURIComponent(escape(atob(data.content)));
+            setUsersList(JSON.parse(contentStr));
+          }
+        } catch (e) {
+          console.error("Failed to fetch users list", e);
+        }
+      };
+      loadUsersList();
     }
-  }, [isLoggedIn, fetchFiles]);
+  }, [isLoggedIn, githubToken]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchFiles();
+      setActiveTab("All");
+    }
+  }, [isLoggedIn, fetchFiles, selectedTeam]);
 
   const onAssetSelect = (id: string) => {
     setSelectedAsset(id);
@@ -704,7 +732,7 @@ export default function App() {
             <span className="font-bold text-xs uppercase tracking-widest text-emerald-100/90">
               {isAdmin
                 ? githubToken
-                  ? `${userName} (ADMIN)`
+                  ? `${userName}`
                   : `${userName} (TOKEN MISSING)`
                 : "GUEST MODE"}
             </span>
@@ -766,12 +794,12 @@ export default function App() {
                 Repository Contents
               </p>
             </div>
-            <div className="flex gap-1 pb-1">
-              {["All", "강지영", "황선필", "강상구", "박상원"].map((tab) => (
+            <div className="flex gap-1 pb-1 overflow-x-auto custom-scrollbar">
+              {["All", ...usersList.filter((u) => u.team === selectedTeam).map((u) => u.name)].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-1 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold flex-1 ${
+                  className={`px-3 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold flex-1 ${
                     activeTab === tab
                       ? "bg-[#244d47] text-white shadow-sm"
                       : "bg-black/5 text-slate-500 hover:bg-black/10"
@@ -825,19 +853,21 @@ export default function App() {
                         >
                           {asset.filename}
                         </h4>
-                        <div className="flex items-center gap-4 text-slate-400 font-bold text-xs">
-                          <div className="flex items-center gap-1 uppercase tracking-tighter">
-                            <User className="w-3.5 h-3.5" />
-                            {asset.author}
+                        <div className="flex flex-col gap-1.5 text-slate-400 font-bold text-[11px] mt-2">
+                          <div className="flex items-center justify-between uppercase tracking-tighter">
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5" />
+                              <span className="truncate">{asset.author}</span>
+                            </div>
+                            <div className="flex items-center text-emerald-600/60">
+                              {asset.isFolder ? (
+                                <FolderArchive className="w-3.5 h-3.5" />
+                              ) : (
+                                <Layers className="w-3.5 h-3.5" />
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 uppercase tracking-tighter text-emerald-600/60">
-                            {asset.isFolder ? (
-                              <FolderArchive className="w-3.5 h-3.5" />
-                            ) : (
-                              <Layers className="w-3.5 h-3.5" />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 uppercase tracking-tighter">
+                          <div className="flex items-center gap-1.5 uppercase tracking-tighter">
                             <Clock className="w-3.5 h-3.5 text-emerald-600/60" />
                             {asset.timestamp}
                           </div>
