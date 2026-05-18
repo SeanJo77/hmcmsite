@@ -298,7 +298,10 @@ export default function App() {
       for (const item of data) {
         if (
           item.type === "file" &&
-          (item.name.endsWith(".html") || item.name.endsWith(".htm"))
+          (item.name.toLowerCase().endsWith(".html") ||
+            item.name.toLowerCase().endsWith(".htm") ||
+            item.name.toLowerCase().endsWith(".md") ||
+            item.name.toLowerCase().endsWith(".txt"))
         ) {
           mappedAssets.push({
             id: item.sha,
@@ -864,20 +867,21 @@ export default function App() {
                   (asset) =>
                     activeTab === "All" ||
                     asset.author?.includes(activeTab) ||
-                    asset.filename.includes(activeTab)
+                    asset.filename.includes(activeTab),
                 );
 
                 const webAssets = filteredAssets.filter(
-                  (a) => a.isFolder || a.filename.toLowerCase().endsWith(".html")
+                  (a) =>
+                    a.isFolder || a.filename.toLowerCase().endsWith(".html"),
                 );
                 const mdAssets = filteredAssets.filter((a) =>
-                  a.filename.toLowerCase().endsWith(".md")
+                  a.filename.toLowerCase().endsWith(".md"),
                 );
                 const otherAssets = filteredAssets.filter(
                   (a) =>
                     !a.isFolder &&
                     !a.filename.toLowerCase().endsWith(".html") &&
-                    !a.filename.toLowerCase().endsWith(".md")
+                    !a.filename.toLowerCase().endsWith(".md"),
                 );
 
                 const renderItem = (asset: Asset) => (
@@ -1152,11 +1156,30 @@ export default function App() {
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <iframe
-                      title="live-preview"
-                      srcDoc={previewContent}
-                      className="flex-1 w-full bg-white border-none"
-                    />
+                    {selectedAssetData?.isFolder ? (
+                      <iframe
+                        title="live-preview"
+                        src={previewContent || ""}
+                        className="flex-1 w-full bg-white border-none"
+                      />
+                    ) : selectedAssetData?.filename
+                        .toLowerCase()
+                        .endsWith(".md") ||
+                      selectedAssetData?.filename
+                        .toLowerCase()
+                        .endsWith(".txt") ? (
+                      <div className="flex-1 w-full bg-white overflow-auto p-8">
+                        <pre className="whitespace-pre-wrap font-mono text-sm text-slate-800 font-medium">
+                          {previewContent}
+                        </pre>
+                      </div>
+                    ) : (
+                      <iframe
+                        title="live-preview"
+                        srcDoc={previewContent || ""}
+                        className="flex-1 w-full bg-white border-none"
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-6">
