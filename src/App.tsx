@@ -794,12 +794,12 @@ export default function App() {
                 Repository Contents
               </p>
             </div>
-            <div className="flex gap-1 pb-1 overflow-x-auto custom-scrollbar">
+            <div className="grid grid-cols-2 gap-1 pb-1">
               {["All", ...usersList.filter((u) => u.team === selectedTeam).map((u) => u.name)].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold flex-1 ${
+                  className={`px-3 py-1.5 rounded-md text-[10px] transition-all whitespace-nowrap font-bold ${
                     activeTab === tab
                       ? "bg-[#244d47] text-white shadow-sm"
                       : "bg-black/5 text-slate-500 hover:bg-black/10"
