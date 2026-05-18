@@ -57,7 +57,12 @@ function LoginPage({
   onLogin,
   onGuestAccess,
 }: {
-  onLogin: (token: string, userName: string, userTeam: string) => void;
+  onLogin: (
+    token: string,
+    userName: string,
+    userTeam: string,
+    userRole: string,
+  ) => void;
   onGuestAccess: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +106,12 @@ function LoginPage({
       );
 
       if (user) {
-        onLogin(token || "", user.name, user.team || "CM기획팀");
+        onLogin(
+          token || "",
+          user.name,
+          user.team || "CM기획팀",
+          user.role || "normal",
+        );
       } else {
         setError("Invalid credentials. Check with your HMCM administrator.");
       }
@@ -232,6 +242,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [userTeam, setUserTeam] = useState<string>("CM기획팀");
+  const [userRole, setUserRole] = useState<string>("normal");
   const [selectedTeam, setSelectedTeam] = useState<string>("CM기획팀");
   const [githubToken, setGithubToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("All");
@@ -608,7 +619,16 @@ export default function App() {
 
   const handleDelete = async (asset: Asset) => {
     if (!githubToken) {
-      alert("Delete permission is restricted to administrators.");
+      alert("Delete permission is restricted.");
+      return;
+    }
+
+    const canDelete =
+      userTeam === "ADMIN" ||
+      userRole === "master" ||
+      (userName && asset.author.includes(userName));
+    if (!canDelete) {
+      alert("You do not have permission to delete this file.");
       return;
     }
 
@@ -668,10 +688,16 @@ export default function App() {
 
   const selectedAssetData = assets.find((a) => a.id === selectedAsset);
 
-  const handleLogin = (token: string, name: string, team: string) => {
+  const handleLogin = (
+    token: string,
+    name: string,
+    team: string,
+    role: string,
+  ) => {
     setGithubToken(token || null);
     setUserName(name);
     setUserTeam(team || "CM기획팀");
+    setUserRole(role || "normal");
     setSelectedTeam(team === "ADMIN" ? "CM기획팀" : team || "CM기획팀");
     setIsAdmin(true);
     setIsLoggedIn(true);
@@ -889,18 +915,21 @@ export default function App() {
                       />
                     </button>
 
-                    {isAdmin && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(asset);
-                        }}
-                        className="absolute right-10 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 group-hover:opacity-100 z-10 bg-white/50 backdrop-blur-sm"
-                        title="Delete Template"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    {isAdmin &&
+                      (userTeam === "ADMIN" ||
+                        userRole === "master" ||
+                        (userName && asset.author.includes(userName))) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(asset);
+                          }}
+                          className="absolute right-10 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 group-hover:opacity-100 z-10 bg-white/50 backdrop-blur-sm"
+                          title="Delete Template"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                   </div>
                 ))
             )}
