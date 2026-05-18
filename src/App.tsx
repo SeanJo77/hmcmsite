@@ -859,14 +859,28 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              assets
-                .filter(
+              (() => {
+                const filteredAssets = assets.filter(
                   (asset) =>
                     activeTab === "All" ||
                     asset.author?.includes(activeTab) ||
-                    asset.filename.includes(activeTab),
-                )
-                .map((asset) => (
+                    asset.filename.includes(activeTab)
+                );
+
+                const webAssets = filteredAssets.filter(
+                  (a) => a.isFolder || a.filename.toLowerCase().endsWith(".html")
+                );
+                const mdAssets = filteredAssets.filter((a) =>
+                  a.filename.toLowerCase().endsWith(".md")
+                );
+                const otherAssets = filteredAssets.filter(
+                  (a) =>
+                    !a.isFolder &&
+                    !a.filename.toLowerCase().endsWith(".html") &&
+                    !a.filename.toLowerCase().endsWith(".md")
+                );
+
+                const renderItem = (asset: Asset) => (
                   <div key={asset.id} className="relative group">
                     <button
                       onClick={() => onAssetSelect(asset.id)}
@@ -931,7 +945,43 @@ export default function App() {
                         </button>
                       )}
                   </div>
-                ))
+                );
+
+                return (
+                  <div className="flex flex-col pb-4">
+                    {webAssets.length > 0 && (
+                      <div className="mb-2">
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Web Templates
+                          </span>
+                        </div>
+                        <div>{webAssets.map(renderItem)}</div>
+                      </div>
+                    )}
+                    {mdAssets.length > 0 && (
+                      <div className="mb-2">
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Markdown
+                          </span>
+                        </div>
+                        <div>{mdAssets.map(renderItem)}</div>
+                      </div>
+                    )}
+                    {otherAssets.length > 0 && (
+                      <div className="mb-2">
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Others
+                          </span>
+                        </div>
+                        <div>{otherAssets.map(renderItem)}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
             )}
           </div>
         </aside>
