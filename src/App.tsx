@@ -388,10 +388,10 @@ export default function App() {
             Accept: "application/vnd.github.v3+json",
           };
           if (githubToken) headers["Authorization"] = `token ${githubToken}`;
-          
+
           const response = await fetch(
             `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/users.json`,
-            { headers }
+            { headers },
           );
           if (response.ok) {
             const data = await response.json();
@@ -672,7 +672,7 @@ export default function App() {
     setGithubToken(token || null);
     setUserName(name);
     setUserTeam(team || "CM기획팀");
-    setSelectedTeam(team || "CM기획팀");
+    setSelectedTeam(team === "ADMIN" ? "CM기획팀" : team || "CM기획팀");
     setIsAdmin(true);
     setIsLoggedIn(true);
   };
@@ -732,7 +732,9 @@ export default function App() {
             <span className="font-bold text-xs uppercase tracking-widest text-emerald-100/90">
               {isAdmin
                 ? githubToken
-                  ? `${userName}`
+                  ? userTeam === "ADMIN"
+                    ? `${userName} (ADMIN)`
+                    : `${userName}`
                   : `${userName} (TOKEN MISSING)`
                 : "GUEST MODE"}
             </span>
@@ -795,7 +797,12 @@ export default function App() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-1 pb-1">
-              {["All", ...usersList.filter((u) => u.team === selectedTeam).map((u) => u.name)].map((tab) => (
+              {[
+                "All",
+                ...usersList
+                  .filter((u) => u.team === selectedTeam)
+                  .map((u) => u.name),
+              ].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
