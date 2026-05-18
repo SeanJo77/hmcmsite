@@ -1,9 +1,15 @@
 [
   {
+    "id": "b19309",
+    "pw": "b19309",
+    "name": "이동원",
+    "team": "ADMIN"
+  },
+  {
     "id": "sean",
     "pw": "sean",
     "name": "조선두",
-    "team": "CM기획팀"
+    "team": "ADMIN"
   },
   {
     "id": "b21320",
