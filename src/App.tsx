@@ -11,6 +11,7 @@ import {
   LogOut,
   Clock,
   ChevronRight,
+  ChevronDown,
   Upload,
   Terminal,
   ShieldCheck,
@@ -259,6 +260,9 @@ export default function App() {
   const [isCommiting, setIsCommiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMarkdownDark, setIsMarkdownDark] = useState(false);
+  const [isWebExpanded, setIsWebExpanded] = useState(true);
+  const [isMdExpanded, setIsMdExpanded] = useState(true);
+  const [isOthersExpanded, setIsOthersExpanded] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -850,7 +854,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 flex flex-col min-h-0">
             {isLoading && assets.length === 0 ? (
               <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin" />
@@ -955,35 +959,80 @@ export default function App() {
                 );
 
                 return (
-                  <div className="flex flex-col pb-4">
+                  <div className="flex flex-col h-full">
                     {webAssets.length > 0 && (
-                      <div className="mb-2">
-                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Web Templates
+                      <div
+                        className={`flex flex-col min-h-0 border-b border-slate-200 ${isWebExpanded ? "shrink" : "shrink-0"}`}
+                      >
+                        <button
+                          onClick={() => setIsWebExpanded(!isWebExpanded)}
+                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
+                        >
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Web Templates{" "}
+                            <span className="text-slate-400 font-normal ml-1">
+                              ({webAssets.length})
+                            </span>
                           </span>
-                        </div>
-                        <div>{webAssets.map(renderItem)}</div>
+                          <ChevronDown
+                            className={`w-4 h-4 text-slate-400 transition-transform ${isWebExpanded ? "" : "-rotate-90"}`}
+                          />
+                        </button>
+                        {isWebExpanded && (
+                          <div className="overflow-y-auto custom-scrollbar flex-1">
+                            {webAssets.map(renderItem)}
+                          </div>
+                        )}
                       </div>
                     )}
                     {mdAssets.length > 0 && (
-                      <div className="mb-2">
-                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Markdown
+                      <div
+                        className={`flex flex-col min-h-0 border-b border-slate-200 ${isMdExpanded ? "shrink" : "shrink-0"}`}
+                      >
+                        <button
+                          onClick={() => setIsMdExpanded(!isMdExpanded)}
+                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
+                        >
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Markdown{" "}
+                            <span className="text-slate-400 font-normal ml-1">
+                              ({mdAssets.length})
+                            </span>
                           </span>
-                        </div>
-                        <div>{mdAssets.map(renderItem)}</div>
+                          <ChevronDown
+                            className={`w-4 h-4 text-slate-400 transition-transform ${isMdExpanded ? "" : "-rotate-90"}`}
+                          />
+                        </button>
+                        {isMdExpanded && (
+                          <div className="overflow-y-auto custom-scrollbar flex-1">
+                            {mdAssets.map(renderItem)}
+                          </div>
+                        )}
                       </div>
                     )}
                     {otherAssets.length > 0 && (
-                      <div className="mb-2">
-                        <div className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-1.5 border-y border-slate-200">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Others
+                      <div
+                        className={`flex flex-col min-h-0 ${isOthersExpanded ? "shrink" : "shrink-0"}`}
+                      >
+                        <button
+                          onClick={() => setIsOthersExpanded(!isOthersExpanded)}
+                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
+                        >
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Others{" "}
+                            <span className="text-slate-400 font-normal ml-1">
+                              ({otherAssets.length})
+                            </span>
                           </span>
-                        </div>
-                        <div>{otherAssets.map(renderItem)}</div>
+                          <ChevronDown
+                            className={`w-4 h-4 text-slate-400 transition-transform ${isOthersExpanded ? "" : "-rotate-90"}`}
+                          />
+                        </button>
+                        {isOthersExpanded && (
+                          <div className="overflow-y-auto custom-scrollbar flex-1">
+                            {otherAssets.map(renderItem)}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
