@@ -103,9 +103,7 @@ function LoginPage({
       const contentStr = decodeURIComponent(escape(atob(data.content)));
       const usersConfig = JSON.parse(contentStr);
 
-      const user = usersConfig.find(
-        (u: any) => u.id === userId,
-      );
+      const user = usersConfig.find((u: any) => u.id === userId);
 
       if (user) {
         onLogin(
@@ -696,11 +694,12 @@ export default function App() {
   };
 
   const handleGuestAccess = () => {
-    setGithubToken(null);
-    setUserName(null);
+    setGithubToken(import.meta.env.VITE_GITHUB_TOKEN || null);
+    setUserName("Guest");
     setUserTeam("CM기획팀");
     setSelectedTeam("CM기획팀");
     setIsAdmin(false);
+    setUserRole("guest");
     setIsLoggedIn(true);
     setViewMode("PREVIEW");
   };
