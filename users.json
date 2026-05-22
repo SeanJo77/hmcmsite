@@ -1,5 +1,12 @@
 [
   {
+    "id": "hymicro",
+    "pw": "hymicro",
+    "name": "양병홍",
+    "team": "ADMIN",
+    "role": "master"
+  },
+  {
     "id": "b19309",
     "pw": "b19309",
     "name": "이동원",
