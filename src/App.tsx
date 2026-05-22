@@ -70,7 +70,6 @@ function LoginPage({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +104,7 @@ function LoginPage({
       const usersConfig = JSON.parse(contentStr);
 
       const user = usersConfig.find(
-        (u: any) => u.id === userId && u.pw === password,
+        (u: any) => u.id === userId,
       );
 
       if (user) {
@@ -170,23 +169,6 @@ function LoginPage({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">
-              Secure Password
-            </label>
-            <div className="relative group">
-              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-[#244d47] transition-colors" />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-4 text-sm focus:outline-none focus:border-[#244d47] focus:ring-4 focus:ring-[#244d47]/5 transition-all outline-none"
-              />
-            </div>
-          </div>
-
           {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -201,7 +183,7 @@ function LoginPage({
           <div className="space-y-4 pt-2">
             <button
               type="submit"
-              disabled={isLoading || !userId || !password}
+              disabled={isLoading || !userId}
               className="w-full bg-[#244d47] hover:bg-[#1a3834] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group overflow-hidden relative shadow-xl active:scale-[0.98]"
             >
               {isLoading ? (
