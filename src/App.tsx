@@ -30,9 +30,41 @@ import { motion, AnimatePresence } from "motion/react";
 import JSZip from "jszip";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import mermaid from "mermaid";
+import { toHtml } from "hast-util-to-html";
 
 const GITHUB_OWNER = "seanjo77";
 const GITHUB_REPO = "hmcmsite";
+
+function MermaidChart({ chart, isDark }: { chart: string; isDark: boolean }) {
+  const [svgStr, setSvgStr] = useState("");
+  const idRef = useRef(`mermaid-${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: isDark ? "dark" : "default",
+      securityLevel: "loose",
+    });
+    const renderChart = async () => {
+      try {
+        const { svg } = await mermaid.render(idRef.current, chart);
+        setSvgStr(svg);
+      } catch (e) {
+        console.error("Mermaid parsing error:", e);
+      }
+    };
+    renderChart();
+  }, [chart, isDark]);
+
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: svgStr }}
+      className="my-4 flex justify-center w-full overflow-x-auto"
+    />
+  );
+}
 
 const TEAMS = [
   "DfMA팀",
@@ -1223,8 +1255,83 @@ export default function App() {
                                 : "prose-slate prose-a:text-emerald-600 prose-code:bg-slate-100 prose-pre:bg-slate-50"
                             }`}
                           >
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {previewContent || ""}
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypeRaw]}
+                              components={{
+                                code({
+                                  node,
+                                  className,
+                                  children,
+                                  ...props
+                                }: any) {
+                                  const match = /language-(\w+)/.exec(
+                                    className || "",
+                                  );
+                                  const lang = match ? match[1] : "";
+                                  if (lang === "mermaid") {
+                                    return (
+                                      <MermaidChart
+                                        chart={String(children).replace(
+                                          /\n$/,
+                                          "",
+                                        )}
+                                        isDark={isMarkdownDark}
+                                      />
+                                    );
+                                  }
+                                  if (
+                                    lang === "html" ||
+                                    lang === "svg" ||
+                                    lang === "xml"
+                                  ) {
+                                    const contentStr = String(children).replace(
+                                      /\n$/,
+                                      "",
+                                    );
+                                    const trimmed = contentStr.trim();
+                                    if (
+                                      trimmed.startsWith("<svg") ||
+                                      trimmed.startsWith("<table") ||
+                                      trimmed.startsWith("<!--")
+                                    ) {
+                                      return (
+                                        <div
+                                          className="my-4 overflow-x-auto w-full flex justify-center bg-transparent rounded-lg"
+                                          dangerouslySetInnerHTML={{
+                                            __html: contentStr,
+                                          }}
+                                        />
+                                      );
+                                    }
+                                  }
+                                  return (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                                svg({ node }) {
+                                  return (
+                                    <div
+                                      className="my-4 overflow-x-auto w-full flex justify-center"
+                                      dangerouslySetInnerHTML={{
+                                        __html: toHtml(node as any),
+                                      }}
+                                    />
+                                  );
+                                },
+                              }}
+                            >
+                              {(previewContent || "")
+                                .replace(
+                                  /<\s*svg[\s\S]*?<\/\s*svg\s*>/gi,
+                                  (match) => match.replace(/\n\s*\n/g, "\n"),
+                                )
+                                .replace(
+                                  /<\s*table[\s\S]*?<\/\s*table\s*>/gi,
+                                  (match) => match.replace(/\n\s*\n/g, "\n"),
+                                )}
                             </ReactMarkdown>
                           </div>
                         </div>
