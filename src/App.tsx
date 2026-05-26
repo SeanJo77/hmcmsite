@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   Layers,
   User,
@@ -31,6 +31,7 @@ import JSZip from "jszip";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSlug from "rehype-slug";
 import mermaid from "mermaid";
 import { toHtml } from "hast-util-to-html";
 
@@ -63,6 +64,151 @@ function MermaidChart({ chart, isDark }: { chart: string; isDark: boolean }) {
       dangerouslySetInnerHTML={{ __html: svgStr }}
       className="my-4 flex justify-center w-full overflow-x-auto"
     />
+  );
+}
+
+function MarkdownToc({
+  content,
+  isDark,
+  filename,
+}: {
+  content: string;
+  isDark: boolean;
+  filename: string;
+}) {
+  const [activeId, setActiveId] = useState<string>("");
+
+  const headings = useMemo(() => {
+    const lines = content.split("\n");
+    let inCodeBlock = false;
+    const items: Array<{ level: number; text: string; id: string }> = [];
+
+    // Custom slugify to match rehype-slug output
+    const slugify = (text: string) => {
+      return text
+        .toLowerCase()
+        .replace(/<[^>]*>/g, "") // Remove HTML tags
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w\-가-힣]/g, "");
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith("```")) {
+        inCodeBlock = !inCodeBlock;
+      }
+      if (!inCodeBlock) {
+        const match = /^(#{1,6})\s+(.+)$/.exec(line);
+        if (match) {
+          const rawText = match[2];
+          const text = rawText.replace(/<[^>]*>/g, "").trim(); // Remove basic HTML tags from text
+          items.push({
+            level: match[1].length,
+            text: text,
+            id: slugify(text),
+          });
+        }
+      }
+    }
+
+    // Provide unique IDs for duplicates
+    const idCount: Record<string, number> = {};
+    return items.map((item) => {
+      let id = item.id;
+      if (idCount[id]) {
+        const newId = `${id}-${idCount[id]}`;
+        idCount[id]++;
+        id = newId;
+      } else {
+        idCount[id] = 1;
+      }
+      return { ...item, id };
+    });
+  }, [content]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = document.getElementById("markdown-scroll-container");
+      if (!container) return;
+
+      const elements = headings
+        .map((h) => document.getElementById(h.id))
+        .filter(Boolean);
+      let currentActiveId = "";
+
+      // Find the last element that is past the threshold
+      for (const el of elements) {
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          // If the element's top is less than the container's top + some offset
+          if (rect.top - containerRect.top <= 100) {
+            currentActiveId = el.id;
+          }
+        }
+      }
+
+      if (currentActiveId) {
+        setActiveId(currentActiveId);
+      }
+    };
+
+    const container = document.getElementById("markdown-scroll-container");
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [headings]);
+
+  if (headings.length === 0) return null;
+
+  return (
+    <div
+      className={`w-64 flex-shrink-0 border-l ${isDark ? "border-slate-800" : "border-slate-200"} overflow-y-auto hidden md:block py-6 px-4 sticky top-0 h-full ${
+        isDark ? "custom-scrollbar-dark" : "custom-scrollbar"
+      }`}
+    >
+      <h3
+        className={`text-xs font-bold mb-4 uppercase tracking-widest ${isDark ? "text-slate-500" : "text-slate-400"}`}
+      >
+        Contents
+      </h3>
+      <div className="flex flex-col space-y-2">
+        {headings.map((h, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              const el = document.getElementById(h.id);
+              const container = document.getElementById(
+                "markdown-scroll-container",
+              );
+              if (el && container) {
+                const elRect = el.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                container.scrollBy({
+                  top: elRect.top - containerRect.top - 40,
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className={`text-left text-xs ${h.level === 1 ? "font-bold mt-2" : ""} ${h.level > 1 ? "ml-" + (h.level - 1) * 3 : ""} ${
+              activeId === h.id
+                ? "text-[#244d47] font-bold"
+                : isDark
+                  ? "text-slate-400 hover:text-slate-200"
+                  : "text-slate-500 hover:text-slate-800"
+            } transition-colors line-clamp-2`}
+          >
+            {h.text}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -1243,98 +1389,130 @@ export default function App() {
                         .toLowerCase()
                         .endsWith(".md") ? (
                       <div
-                        className={`flex-1 w-full overflow-y-auto p-12 custom-scrollbar ${
+                        className={`flex-1 w-full flex overflow-hidden ${
                           isMarkdownDark ? "bg-[#1e1e1e]" : "bg-white"
                         }`}
                       >
-                        <div className="max-w-3xl mx-auto">
-                          <div
-                            className={`prose max-w-none prose-headings:font-bold prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md marker:text-slate-400 ${
-                              isMarkdownDark
-                                ? "prose-invert prose-slate prose-a:text-emerald-400 prose-code:bg-[#2d2d2d] prose-pre:bg-[#2d2d2d]"
-                                : "prose-slate prose-a:text-emerald-600 prose-code:bg-slate-100 prose-pre:bg-slate-50"
-                            }`}
-                          >
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              rehypePlugins={[rehypeRaw]}
-                              components={{
-                                code({
-                                  node,
-                                  className,
-                                  children,
-                                  ...props
-                                }: any) {
-                                  const match = /language-(\w+)/.exec(
-                                    className || "",
-                                  );
-                                  const lang = match ? match[1] : "";
-                                  if (lang === "mermaid") {
-                                    return (
-                                      <MermaidChart
-                                        chart={String(children).replace(
-                                          /\n$/,
-                                          "",
-                                        )}
-                                        isDark={isMarkdownDark}
-                                      />
-                                    );
-                                  }
-                                  if (
-                                    lang === "html" ||
-                                    lang === "svg" ||
-                                    lang === "xml"
-                                  ) {
-                                    const contentStr = String(children).replace(
-                                      /\n$/,
-                                      "",
-                                    );
-                                    const trimmed = contentStr.trim();
+                        <div
+                          id="markdown-scroll-container"
+                          className={`flex-1 overflow-y-auto p-12 lg:px-12 scroll-smooth ${
+                            isMarkdownDark
+                              ? "custom-scrollbar-dark"
+                              : "custom-scrollbar"
+                          }`}
+                        >
+                          <div className="max-w-4xl mx-auto">
+                            <div
+                              className={`prose max-w-none prose-headings:font-bold prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md marker:text-slate-400 ${
+                                isMarkdownDark
+                                  ? "prose-invert prose-slate prose-a:text-emerald-400 prose-code:bg-[#2d2d2d] prose-pre:bg-[#2d2d2d]"
+                                  : "prose-slate prose-a:text-emerald-600 prose-code:bg-slate-100 prose-pre:bg-slate-50 prose-pre:text-slate-800 prose-code:text-slate-800"
+                              }`}
+                            >
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw, rehypeSlug]}
+                                components={{
+                                  div({ node, className, ...props }: any) {
                                     if (
-                                      trimmed.startsWith("<svg") ||
-                                      trimmed.startsWith("<table") ||
-                                      trimmed.startsWith("<!--")
+                                      className === "raw-html-embed" &&
+                                      props["data-html"]
                                     ) {
+                                      let rawHtml = "";
+                                      try {
+                                        rawHtml = decodeURIComponent(
+                                          escape(atob(props["data-html"])),
+                                        );
+                                      } catch (e) {
+                                        rawHtml =
+                                          "<div>[Embedded HTML decoding failed]</div>";
+                                      }
                                       return (
                                         <div
                                           className="my-4 overflow-x-auto w-full flex justify-center bg-transparent rounded-lg"
                                           dangerouslySetInnerHTML={{
-                                            __html: contentStr,
+                                            __html: rawHtml,
                                           }}
                                         />
                                       );
                                     }
-                                  }
-                                  return (
-                                    <code className={className} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                                svg({ node }) {
-                                  return (
-                                    <div
-                                      className="my-4 overflow-x-auto w-full flex justify-center"
-                                      dangerouslySetInnerHTML={{
-                                        __html: toHtml(node as any),
-                                      }}
-                                    />
-                                  );
-                                },
-                              }}
-                            >
-                              {(previewContent || "")
-                                .replace(
-                                  /<\s*svg[\s\S]*?<\/\s*svg\s*>/gi,
-                                  (match) => match.replace(/\n\s*\n/g, "\n"),
-                                )
-                                .replace(
-                                  /<\s*table[\s\S]*?<\/\s*table\s*>/gi,
-                                  (match) => match.replace(/\n\s*\n/g, "\n"),
-                                )}
-                            </ReactMarkdown>
+                                    return (
+                                      <div className={className} {...props} />
+                                    );
+                                  },
+                                  code({
+                                    node,
+                                    className,
+                                    children,
+                                    ...props
+                                  }: any) {
+                                    const match = /language-(\w+)/.exec(
+                                      className || "",
+                                    );
+                                    const lang = match ? match[1] : "";
+                                    if (lang === "mermaid") {
+                                      return (
+                                        <MermaidChart
+                                          chart={String(children).replace(
+                                            /\n$/,
+                                            "",
+                                          )}
+                                          isDark={isMarkdownDark}
+                                        />
+                                      );
+                                    }
+                                    if (
+                                      lang === "html" ||
+                                      lang === "svg" ||
+                                      lang === "xml"
+                                    ) {
+                                      const contentStr = String(
+                                        children,
+                                      ).replace(/\n$/, "");
+                                      const trimmed = contentStr.trim();
+                                      if (
+                                        trimmed.startsWith("<svg") ||
+                                        trimmed.startsWith("<table") ||
+                                        trimmed.startsWith("<!--")
+                                      ) {
+                                        return (
+                                          <div
+                                            className="my-4 overflow-x-auto w-full flex justify-center bg-transparent rounded-lg"
+                                            dangerouslySetInnerHTML={{
+                                              __html: contentStr,
+                                            }}
+                                          />
+                                        );
+                                      }
+                                    }
+                                    return (
+                                      <code className={className} {...props}>
+                                        {children}
+                                      </code>
+                                    );
+                                  },
+                                }}
+                              >
+                                {(previewContent || "")
+                                  .replace(
+                                    /<\s*svg[\s\S]*?<\/\s*svg\s*>/gi,
+                                    (match) =>
+                                      `<div class="raw-html-embed" data-html="${btoa(unescape(encodeURIComponent(match)))}"></div>`,
+                                  )
+                                  .replace(
+                                    /<\s*table[\s\S]*?<\/\s*table\s*>/gi,
+                                    (match) =>
+                                      `<div class="raw-html-embed" data-html="${btoa(unescape(encodeURIComponent(match)))}"></div>`,
+                                  )}
+                              </ReactMarkdown>
+                            </div>
                           </div>
                         </div>
+                        <MarkdownToc
+                          content={previewContent || ""}
+                          isDark={isMarkdownDark}
+                          filename={selectedAssetData?.filename || ""}
+                        />
                       </div>
                     ) : selectedAssetData?.filename
                         .toLowerCase()
