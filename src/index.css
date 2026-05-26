@@ -29,14 +29,18 @@
   }
   
   .custom-scrollbar::-webkit-scrollbar {
-    @apply w-1;
+    @apply w-1.5;
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-white/2;
+    @apply bg-transparent;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-black/10 rounded-full;
+  }
+  
+  .custom-scrollbar-dark::-webkit-scrollbar-thumb {
     @apply bg-white/10 rounded-full;
   }
 }
