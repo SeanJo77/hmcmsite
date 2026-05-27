@@ -421,6 +421,9 @@ export default function App() {
   const [isWebExpanded, setIsWebExpanded] = useState(true);
   const [isMdExpanded, setIsMdExpanded] = useState(true);
   const [isOthersExpanded, setIsOthersExpanded] = useState(true);
+  const [isWebOldExpanded, setIsWebOldExpanded] = useState(false);
+  const [isMdOldExpanded, setIsMdOldExpanded] = useState(false);
+  const [isOthersOldExpanded, setIsOthersOldExpanded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1036,18 +1039,40 @@ export default function App() {
                     asset.filename.includes(activeTab),
                 );
 
-                const webAssets = filteredAssets.filter(
+                const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+                const webAssetsAll = filteredAssets.filter(
                   (a) =>
                     a.isFolder || a.filename.toLowerCase().endsWith(".html"),
                 );
-                const mdAssets = filteredAssets.filter((a) =>
+                const webAssets = webAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) >= cutoff,
+                );
+                const webAssetsOld = webAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) < cutoff,
+                );
+
+                const mdAssetsAll = filteredAssets.filter((a) =>
                   a.filename.toLowerCase().endsWith(".md"),
                 );
-                const otherAssets = filteredAssets.filter(
+                const mdAssets = mdAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) >= cutoff,
+                );
+                const mdAssetsOld = mdAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) < cutoff,
+                );
+
+                const otherAssetsAll = filteredAssets.filter(
                   (a) =>
                     !a.isFolder &&
                     !a.filename.toLowerCase().endsWith(".html") &&
                     !a.filename.toLowerCase().endsWith(".md"),
+                );
+                const otherAssets = otherAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) >= cutoff,
+                );
+                const otherAssetsOld = otherAssetsAll.filter(
+                  (a) => (a.rawDate || Date.now()) < cutoff,
                 );
 
                 const renderItem = (asset: Asset) => (
@@ -1119,77 +1144,154 @@ export default function App() {
 
                 return (
                   <div className="flex flex-col h-full">
-                    {webAssets.length > 0 && (
+                    {webAssetsAll.length > 0 && (
                       <div
                         className={`flex flex-col min-h-0 border-b border-slate-200 ${isWebExpanded ? "shrink" : "shrink-0"}`}
                       >
-                        <button
-                          onClick={() => setIsWebExpanded(!isWebExpanded)}
-                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
-                        >
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Web Templates{" "}
-                            <span className="text-slate-400 font-normal ml-1">
-                              ({webAssets.length})
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] border-y border-slate-200 flex items-center justify-between group">
+                          <button
+                            onClick={() => setIsWebExpanded(!isWebExpanded)}
+                            className="flex-1 flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                          >
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-left">
+                              Web Templates{" "}
+                              <span className="text-slate-400 font-normal ml-1">
+                                ({webAssetsAll.length})
+                              </span>
                             </span>
-                          </span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-slate-400 transition-transform ${isWebExpanded ? "" : "-rotate-90"}`}
-                          />
-                        </button>
+                          </button>
+                          <div className="flex items-center">
+                            {webAssetsOld.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setIsWebOldExpanded(!isWebOldExpanded)
+                                }
+                                className={`px-2 py-0.5 mr-2 text-[9px] font-bold rounded flex items-center uppercase transition-colors ${
+                                  isWebOldExpanded
+                                    ? "bg-[#244d47] text-white hover:bg-[#1a3834]"
+                                    : "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                                }`}
+                              >
+                                OLD({webAssetsOld.length})
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setIsWebExpanded(!isWebExpanded)}
+                              className="px-4 py-2 hover:bg-slate-50 transition-colors"
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 text-slate-400 transition-transform ${isWebExpanded ? "" : "-rotate-90"}`}
+                              />
+                            </button>
+                          </div>
+                        </div>
                         {isWebExpanded && (
                           <div className="overflow-y-auto custom-scrollbar flex-1">
                             {webAssets.map(renderItem)}
+                            {isWebOldExpanded && webAssetsOld.map(renderItem)}
                           </div>
                         )}
                       </div>
                     )}
-                    {mdAssets.length > 0 && (
+                    {mdAssetsAll.length > 0 && (
                       <div
                         className={`flex flex-col min-h-0 border-b border-slate-200 ${isMdExpanded ? "shrink" : "shrink-0"}`}
                       >
-                        <button
-                          onClick={() => setIsMdExpanded(!isMdExpanded)}
-                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
-                        >
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Markdown{" "}
-                            <span className="text-slate-400 font-normal ml-1">
-                              ({mdAssets.length})
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] border-y border-slate-200 flex items-center justify-between group">
+                          <button
+                            onClick={() => setIsMdExpanded(!isMdExpanded)}
+                            className="flex-1 flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                          >
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-left">
+                              Markdown{" "}
+                              <span className="text-slate-400 font-normal ml-1">
+                                ({mdAssetsAll.length})
+                              </span>
                             </span>
-                          </span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-slate-400 transition-transform ${isMdExpanded ? "" : "-rotate-90"}`}
-                          />
-                        </button>
+                          </button>
+                          <div className="flex items-center">
+                            {mdAssetsOld.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setIsMdOldExpanded(!isMdOldExpanded)
+                                }
+                                className={`px-2 py-0.5 mr-2 text-[9px] font-bold rounded flex items-center uppercase transition-colors ${
+                                  isMdOldExpanded
+                                    ? "bg-[#244d47] text-white hover:bg-[#1a3834]"
+                                    : "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                                }`}
+                              >
+                                OLD({mdAssetsOld.length})
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setIsMdExpanded(!isMdExpanded)}
+                              className="px-4 py-2 hover:bg-slate-50 transition-colors"
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 text-slate-400 transition-transform ${isMdExpanded ? "" : "-rotate-90"}`}
+                              />
+                            </button>
+                          </div>
+                        </div>
                         {isMdExpanded && (
                           <div className="overflow-y-auto custom-scrollbar flex-1">
                             {mdAssets.map(renderItem)}
+                            {isMdOldExpanded && mdAssetsOld.map(renderItem)}
                           </div>
                         )}
                       </div>
                     )}
-                    {otherAssets.length > 0 && (
+                    {otherAssetsAll.length > 0 && (
                       <div
                         className={`flex flex-col min-h-0 ${isOthersExpanded ? "shrink" : "shrink-0"}`}
                       >
-                        <button
-                          onClick={() => setIsOthersExpanded(!isOthersExpanded)}
-                          className="sticky top-0 z-10 bg-[#f8faf9] px-4 py-2 border-y border-slate-200 flex items-center justify-between group hover:bg-slate-50 transition-colors"
-                        >
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Others{" "}
-                            <span className="text-slate-400 font-normal ml-1">
-                              ({otherAssets.length})
+                        <div className="sticky top-0 z-10 bg-[#f8faf9] border-y border-slate-200 flex items-center justify-between group">
+                          <button
+                            onClick={() =>
+                              setIsOthersExpanded(!isOthersExpanded)
+                            }
+                            className="flex-1 flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                          >
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-left">
+                              Others{" "}
+                              <span className="text-slate-400 font-normal ml-1">
+                                ({otherAssetsAll.length})
+                              </span>
                             </span>
-                          </span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-slate-400 transition-transform ${isOthersExpanded ? "" : "-rotate-90"}`}
-                          />
-                        </button>
+                          </button>
+                          <div className="flex items-center">
+                            {otherAssetsOld.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setIsOthersOldExpanded(!isOthersOldExpanded)
+                                }
+                                className={`px-2 py-0.5 mr-2 text-[9px] font-bold rounded flex items-center uppercase transition-colors ${
+                                  isOthersOldExpanded
+                                    ? "bg-[#244d47] text-white hover:bg-[#1a3834]"
+                                    : "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                                }`}
+                              >
+                                OLD({otherAssetsOld.length})
+                              </button>
+                            )}
+                            <button
+                              onClick={() =>
+                                setIsOthersExpanded(!isOthersExpanded)
+                              }
+                              className="px-4 py-2 hover:bg-slate-50 transition-colors"
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 text-slate-400 transition-transform ${isOthersExpanded ? "" : "-rotate-90"}`}
+                              />
+                            </button>
+                          </div>
+                        </div>
                         {isOthersExpanded && (
                           <div className="overflow-y-auto custom-scrollbar flex-1">
                             {otherAssets.map(renderItem)}
+                            {isOthersOldExpanded &&
+                              otherAssetsOld.map(renderItem)}
                           </div>
                         )}
                       </div>
