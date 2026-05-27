@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bCMf FS v0.2.7 — 관제 대시보드</title>
+  <meta name="description" content="대산-당진 고속도로 전 구간 통합 스마트 관제 시스템">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S-10: 상단 통합 리스크 바 (Fixed Top)                    -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <header class="risk-bar" id="risk-bar">
+    <div class="risk-bar__brand">
+      <div class="risk-bar__logo">FS</div>
+      <div class="risk-bar__title">
+        <span class="risk-bar__system-name">bCMf Field-Sync</span>
+        <span class="risk-bar__project-name">대산-당진 고속도로 통합 관제</span>
+      </div>
+    </div>
+
+    <div class="risk-bar__alerts">
+      <div class="alert-group">
+        <div class="risk-bar__alert risk-bar__alert--danger">
+          <span class="risk-bar__alert-icon">🔴</span>
+          <span class="risk-bar__alert-label">S등급</span>
+          <span class="risk-bar__alert-value">2건</span>
+        </div>
+        <div class="risk-bar__alert risk-bar__alert--warning">
+          <span class="risk-bar__alert-icon">🟡</span>
+          <span class="risk-bar__alert-label">A등급</span>
+          <span class="risk-bar__alert-value">4건</span>
+        </div>
+      </div>
+      <div class="alert-separator"></div>
+      <div class="alert-group">
+        <div class="risk-bar__alert" style="cursor:pointer;" onclick="openCompensationModal()">
+          <span class="risk-bar__alert-icon">⚠️</span>
+          <span class="risk-bar__alert-label">미보상 필지</span>
+          <span class="risk-bar__alert-value">3필지</span>
+        </div>
+        <div class="risk-bar__alert">
+          <span class="risk-bar__alert-icon">📊</span>
+          <span class="risk-bar__alert-label">보상률</span>
+          <span class="risk-bar__alert-value">94.2%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S-07: 듀얼 모드 전환 -->
+    <div class="mode-toggle" id="mode-toggle">
+      <button class="mode-toggle__btn mode-toggle__btn--yesterday" id="btn-yesterday">
+        <span class="mode-toggle__icon">📋</span> Yesterday <span id="yesterday-date"
+          style="margin-left:3px; font-size:10px; opacity:0.8;"></span>
+      </button>
+      <button class="mode-toggle__btn mode-toggle__btn--today mode-toggle__btn--active" id="btn-today">
+        <span class="mode-toggle__icon">🔶</span> Today <span id="today-date"
+          style="margin-left:3px; font-size:10px; opacity:0.8;"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S-01: 메인 콘텐츠 (3-Panel Layout)                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <main class="dashboard">
+    <!-- S-06: 좌측 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__section">
+        <button class="sidebar__briefing-btn" id="btn-briefing">
+          <span>📄</span> 전 공구 통합 브리핑 보드
+        </button>
+      </div>
+
+      <!-- [FB-06] 공정 현황 -->
+      <div class="sidebar__section">
+        <h3 class="sidebar__heading">공정 현황</h3>
+        <div class="progress-list" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- 전체 공구 -->
+          <div class="progress-item"
+            style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border-subtle);">
+            <div class="progress-label"
+              style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:4px;">
+              <span style="font-weight:700; color:var(--text-primary);">전체 공정률</span>
+              <span style="font-weight:700; color:var(--color-main);">49.3%</span>
+            </div>
+            <div class="progress-track"
+              style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+              <div class="progress-fill" style="width:49.3%; height:100%; background:var(--color-main);"></div>
+            </div>
+          </div>
+          <!-- 1공구 -->
+          <div class="progress-item" style="cursor:pointer;" onclick="openProgressModal('1공구')">
+            <div class="progress-label"
+              style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+              <span style="display:flex; align-items:center; gap:6px;"><span
+                  class="filter-tree__badge filter-tree__badge--s1">1</span> 코오롱글로벌</span>
+              <span style="font-weight:700;">45.2%</span>
+            </div>
+            <div class="progress-track"
+              style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+              <div class="progress-fill" style="width:45.2%; height:100%; background:var(--color-accent);"></div>
+            </div>
+          </div>
+          <!-- 2공구 -->
+          <div class="progress-item" style="cursor:pointer;" onclick="openProgressModal('2공구')">
+            <div class="progress-label"
+              style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+              <span style="display:flex; align-items:center; gap:6px;"><span
+                  class="filter-tree__badge filter-tree__badge--s2">2</span> KCC건설</span>
+              <span style="font-weight:700;">52.8%</span>
+            </div>
+            <div class="progress-track"
+              style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+              <div class="progress-fill" style="width:52.8%; height:100%; background:var(--color-accent);"></div>
+            </div>
+          </div>
+          <!-- 3공구 -->
+          <div class="progress-item" style="cursor:pointer;" onclick="openProgressModal('3공구')">
+            <div class="progress-label"
+              style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+              <span style="display:flex; align-items:center; gap:6px;"><span
+                  class="filter-tree__badge filter-tree__badge--s3">3</span> 태영건설</span>
+              <span style="font-weight:700;">38.5%</span>
+            </div>
+            <div class="progress-track"
+              style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+              <div class="progress-fill" style="width:38.5%; height:100%; background:var(--color-accent);"></div>
+            </div>
+          </div>
+          <!-- 4공구 -->
+          <div class="progress-item" style="cursor:pointer;" onclick="openProgressModal('4공구')">
+            <div class="progress-label"
+              style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:4px;">
+              <span style="display:flex; align-items:center; gap:6px;"><span
+                  class="filter-tree__badge filter-tree__badge--s4">4</span> 금호건설</span>
+              <span style="font-weight:700;">61.0%</span>
+            </div>
+            <div class="progress-track"
+              style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+              <div class="progress-fill" style="width:61.0%; height:100%; background:var(--color-accent);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 공구 현황 (순서 1-2-3-4로 조정, 제목/클릭 이동 준비) -->
+      <div class="sidebar__section">
+        <h3 class="sidebar__heading">공구 현황</h3>
+
+        <div class="resource-card" id="card-s1" style="cursor:pointer;" onclick="moveToSite('1공구')">
+          <div class="resource-card__header">
+            <span class="resource-card__site">1공구</span>
+            <span class="resource-card__company">코오롱글로벌 <span id="count-s1"
+                style="font-size:10px; color:var(--text-muted); font-weight:normal; margin-left:4px;">(...)</span></span>
+            <button class="resource-card__report-btn" title="일일작업보고 보기" onclick="event.stopPropagation()">📑</button>
+          </div>
+          <div class="resource-card__body">
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">인원</span>
+              <span class="resource-card__stat-value">28명</span>
+              <span class="resource-card__trend resource-card__trend--up">▲ 3</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">장비</span>
+              <span class="resource-card__stat-value">4대</span>
+              <span class="resource-card__trend resource-card__trend--flat">— 0</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">S등급</span>
+              <span class="resource-card__stat-value" id="count-s1-sgrade" style="color:var(--color-s-grade);">0건</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resource-card" id="card-s2" style="cursor:pointer;" onclick="moveToSite('2공구')">
+          <div class="resource-card__header">
+            <span class="resource-card__site">2공구</span>
+            <span class="resource-card__company">KCC건설 <span id="count-s2"
+                style="font-size:10px; color:var(--text-muted); font-weight:normal; margin-left:4px;">(...)</span></span>
+            <button class="resource-card__report-btn" title="일일작업보고 보기" onclick="event.stopPropagation()">📑</button>
+          </div>
+          <div class="resource-card__body">
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">인원</span>
+              <span class="resource-card__stat-value">33명</span>
+              <span class="resource-card__trend resource-card__trend--up">▲ 5</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">장비</span>
+              <span class="resource-card__stat-value">7대</span>
+              <span class="resource-card__trend resource-card__trend--down">▼ 2</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">S등급</span>
+              <span class="resource-card__stat-value" id="count-s2-sgrade" style="color:var(--color-s-grade);">2건</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resource-card" id="card-s3" style="cursor:pointer;" onclick="moveToSite('3공구')">
+          <div class="resource-card__header">
+            <span class="resource-card__site">3공구</span>
+            <span class="resource-card__company">태영건설 <span id="count-s3"
+                style="font-size:10px; color:var(--text-muted); font-weight:normal; margin-left:4px;">(...)</span></span>
+            <button class="resource-card__report-btn" title="일일작업보고 보기" onclick="event.stopPropagation()">📑</button>
+          </div>
+          <div class="resource-card__body">
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">인원</span>
+              <span class="resource-card__stat-value">15명</span>
+              <span class="resource-card__trend resource-card__trend--up">▲ 1</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">장비</span>
+              <span class="resource-card__stat-value">3대</span>
+              <span class="resource-card__trend resource-card__trend--up">▲ 1</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">S등급</span>
+              <span class="resource-card__stat-value" id="count-s3-sgrade" style="color:var(--color-s-grade);">1건</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resource-card" id="card-s4" style="cursor:pointer;" onclick="moveToSite('4공구')">
+          <div class="resource-card__header">
+            <span class="resource-card__site">4공구</span>
+            <span class="resource-card__company">금호건설 <span id="count-s4"
+                style="font-size:10px; color:var(--text-muted); font-weight:normal; margin-left:4px;">(...)</span></span>
+            <button class="resource-card__report-btn" title="일일작업보고 보기" onclick="event.stopPropagation()">📑</button>
+          </div>
+          <div class="resource-card__body">
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">인원</span>
+              <span class="resource-card__stat-value">22명</span>
+              <span class="resource-card__trend resource-card__trend--down">▼ 4</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">장비</span>
+              <span class="resource-card__stat-value">5대</span>
+              <span class="resource-card__trend resource-card__trend--flat">— 0</span>
+            </div>
+            <div class="resource-card__stat">
+              <span class="resource-card__stat-label">S등급</span>
+              <span class="resource-card__stat-value" id="count-s4-sgrade" style="color:var(--color-s-grade);">0건</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 미조치 지시 요약 버튼 (FB-09) -->
+        <div class="sidebar__section"
+          style="margin-top:auto; border-top:1px solid var(--border-subtle); padding-top:12px;">
+          <button class="sidebar__briefing-btn" id="btn-unresolved-action"
+            style="background:rgba(229,57,53,0.15); border-color:var(--color-s-grade); color:var(--color-s-grade); font-weight:700; justify-content:center;">
+            🔴 미조치 지시 <strong id="unresolved-count" style="margin-left:4px; font-size:15px;">2</strong>건
+          </button>
+        </div>
+    </aside>
+
+    <!-- 중앙 지도 영역 -->
+    <section class="map-container" id="map-container">
+      <div id="map"></div>
+
+      <!-- 지도 컨트롤 영역 (임의의 DOM 버튼들이 있다면 그 근처로 이동했다고 가정) -->
+      <!-- 플로팅 토글 필터 (핵심 장비) -->
+      <button id="btn-equip-filter"
+        style="position:absolute; top:20px; left:16px; z-index:500; border-radius:20px; border:1px solid var(--color-main); padding:8px 14px; font-weight:700; background:rgba(31,82,75,0.9); color:white; cursor:pointer; font-size:12px; box-shadow:var(--shadow-md); backdrop-filter:blur(4px);">
+        🚜 핵심 장비
+      </button>
+      <div id="equip-filter-panel"
+        style="display:none; position:absolute; top:60px; left:16px; z-index:500; background:rgba(15,26,24,0.95); padding:16px; border-radius:var(--radius-lg); border:1px solid var(--border-light); box-shadow:var(--shadow-lg); width:240px; backdrop-filter:blur(8px);">
+        <h3
+          style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+          장비 키워드 필터</h3>
+        <div class="keyword-filter">
+          <div class="keyword-filter__tag keyword-filter__tag--active">◇ 크레인</div>
+          <div class="keyword-filter__tag keyword-filter__tag--active">◇ 카고</div>
+          <div class="keyword-filter__tag">◇ 항타기</div>
+          <div class="keyword-filter__tag">◇ 펌프카</div>
+          <button class="keyword-filter__add">+ 추가</button>
+        </div>
+      </div>
+
+      <!-- S-02: 마커 범례 -->
+      <div class="map-legend" id="map-legend">
+        <h4 class="map-legend__title">범례</h4>
+        <div class="map-legend__items">
+          <div class="map-legend__group">
+            <span class="map-legend__subtitle">공종</span>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#8D6E63">토</span> 토공 <span
+                id="legend-count-토공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#1E88E5">교</span> 교량공 <span
+                id="legend-count-교량공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#4CAF50">부</span> 부대공 <span
+                id="legend-count-부대공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#5D4037">터</span> 터널공 <span
+                id="legend-count-터널공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#9E9E9E">포</span> 포장공 <span
+                id="legend-count-포장공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#00BCD4">배</span> 배수공 <span
+                id="legend-count-배수공" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-marker" style="background:#BDBDBD">기</span> 기타 <span
+                id="legend-count-기타" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0건)</span>
+            </div>
+          </div>
+          <div class="map-legend__group">
+            <span class="map-legend__subtitle">위험등급</span>
+            <div class="map-legend__item"><span class="legend-risk legend-risk--s"></span> S등급</div>
+            <div class="map-legend__item"><span class="legend-risk legend-risk--a"></span> A등급</div>
+            <div class="map-legend__item"><span class="legend-risk legend-risk--bc"></span> 기타(B/C 등급 등)</div>
+          </div>
+          <div class="map-legend__group">
+            <span class="map-legend__subtitle">안전인력</span>
+            <div class="map-legend__item"><span class="legend-badge legend-badge--flag">🚩</span> 신호수 <span
+                id="legend-count-신호수" style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0명)</span>
+            </div>
+            <div class="map-legend__item"><span class="legend-badge legend-badge--star">👷</span> 작업지휘자 <span
+                id="legend-count-작업지휘자"
+                style="font-size:10px; color:rgba(255,255,255,0.6); margin-left:4px;">(0명)</span></div>
+            <div class="map-legend__item"><span class="legend-badge legend-badge--shield">🛡️</span> 모두 투입</div>
+          </div>
+          <div class="map-legend__group">
+            <span class="map-legend__subtitle">기타</span>
+            <div class="map-legend__item"><span class="legend-diamond">◇</span> 핵심 장비</div>
+          </div>
+          <div class="map-legend__group">
+            <span class="map-legend__subtitle">스마트 클러스터</span>
+            <div class="map-legend__item"><span class="custom-cluster cluster-pulse"
+                style="border-color:#E53935; width:20px; height:20px; font-size:9px;">⚠️</span> S등급 포함</div>
+            <div class="map-legend__item"><span class="custom-cluster"
+                style="border-color:#FFC107; width:20px; height:20px; font-size:9px;">N</span> A등급 포함</div>
+            <div class="map-legend__item"><span class="custom-cluster"
+                style="border-color:#D05C26; width:20px; height:20px; font-size:9px;">◇</span> 핵심장비 포함</div>
+            <div class="map-legend__item"><span class="custom-cluster"
+                style="border-color:#1F524B; width:20px; height:20px; font-size:9px;">N</span> 일반(B/C)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S-04: Unmapped Drawer FAB -->
+      <button class="drawer-fab" id="drawer-fab">
+        <span class="drawer-fab__icon">📍❓</span>
+        <span class="drawer-fab__badge" id="unmapped-count">3</span>
+        <span class="drawer-fab__label">위치정보 없음</span>
+      </button>
+    </section>
+
+    <!-- S-05: 우측 상세 패널 -->
+    <aside class="detail-panel" id="detail-panel">
+      <div class="detail-panel__empty" id="detail-empty">
+        <div class="detail-panel__empty-icon">🗺️</div>
+        <p>지도에서 마커를 클릭하면<br>상세 정보가 표시됩니다</p>
+      </div>
+
+      <div class="detail-panel__content" id="detail-content" style="display:none;">
+        <div class="detail-panel__header">
+          <div class="detail-panel__title-row">
+            <span class="detail-panel__marker-preview" id="detail-marker"></span>
+            <div>
+              <h3 class="detail-panel__title" style="display:flex; align-items:center; gap:6px;"
+                id="detail-title-wrapper">
+                <span class="risk-tag risk-tag--s" id="detail-risk-badge"
+                  style="font-size:10px; padding:2px 6px;">S</span>
+                <span id="detail-title">본선2구간 천공</span>
+              </h3>
+              <span class="detail-panel__subtitle" id="detail-subtitle" style="display:block; margin-top:4px;">2공구 ·
+                KCC건설</span>
+            </div>
+          </div>
+          <button class="detail-panel__close" id="detail-close">✕</button>
+        </div>
+
+        <div class="detail-panel__section">
+          <h4 class="detail-panel__section-title">위치 정보</h4>
+          <div class="detail-panel__field">
+            <span class="detail-panel__label">STA</span>
+            <span class="detail-panel__value" id="detail-sta">STA.2+278</span>
+          </div>
+          <div class="detail-panel__field">
+            <span class="detail-panel__label">위치</span>
+            <span class="detail-panel__value" id="detail-location">본선</span>
+          </div>
+        </div>
+
+        <div class="detail-panel__section">
+          <h4 class="detail-panel__section-title">투입 인원</h4>
+          <div class="detail-panel__table" id="detail-personnel">
+            <!-- JS 동적 생성 -->
+          </div>
+        </div>
+
+        <div class="detail-panel__section">
+          <h4 class="detail-panel__section-title">투입 장비</h4>
+          <div class="detail-panel__table" id="detail-equipment">
+            <div class="detail-panel__row">
+              <span>B/H 1.0</span><span>2대</span>
+            </div>
+            <div class="detail-panel__row">
+              <span>유압드릴</span><span>1대</span>
+            </div>
+            <div class="detail-panel__row">
+              <span>살수차</span><span>2대</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FS-Loop -->
+        <div class="detail-panel__section detail-panel__section--fsloop">
+          <h4 class="detail-panel__section-title">FS-Loop 지시/조치</h4>
+          <div class="fsloop" id="fsloop">
+            <div class="fsloop__status fsloop__status--none">
+              <span>지시 없음</span>
+            </div>
+            <button class="fsloop__btn fsloop__btn--order" id="btn-fsloop-order">
+              🔴 조치 지시
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S-04: Unmapped Drawer (Bottom-Right Slide Panel)       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__header">
+      <h3 class="drawer__title">📍❓ 위치정보 없음 데이터 <span class="drawer__count">3건</span></h3>
+      <button class="drawer__close" id="drawer-close">✕</button>
+    </div>
+    <div class="drawer__list" id="drawer-list">
+      <div class="drawer__item drawer__item--isolated" data-id="U1">
+        <div class="drawer__item-header">
+          <span class="drawer__item-badge" style="background:#8D6E63">토</span>
+          <span class="drawer__item-title">본선구간 절토부 정리</span>
+          <span class="drawer__item-site">2공구</span>
+        </div>
+        <div class="drawer__item-body">
+          <span class="drawer__item-status">🔴 격리됨</span>
+          <span class="drawer__item-reason">STA 기입 오류</span>
+        </div>
+        <button class="drawer__item-edit">STA 보정</button>
+      </div>
+      <div class="drawer__item drawer__item--isolated" data-id="U2">
+        <div class="drawer__item-header">
+          <span class="drawer__item-badge" style="background:#1E88E5">교</span>
+          <span class="drawer__item-title">사성1교 거푸집 해체</span>
+          <span class="drawer__item-site">2공구</span>
+        </div>
+        <div class="drawer__item-body">
+          <span class="drawer__item-status">🔴 격리됨</span>
+          <span class="drawer__item-reason">위치 미기재</span>
+        </div>
+        <button class="drawer__item-edit">STA 보정</button>
+      </div>
+      <div class="drawer__item drawer__item--isolated" data-id="U3">
+        <div class="drawer__item-header">
+          <span class="drawer__item-badge" style="background:#4CAF50">부</span>
+          <span class="drawer__item-title">농도305호선 용수공급</span>
+          <span class="drawer__item-site">3공구</span>
+        </div>
+        <div class="drawer__item-body">
+          <span class="drawer__item-status">🔴 격리됨</span>
+          <span class="drawer__item-reason">범위 파싱 실패</span>
+        </div>
+        <button class="drawer__item-edit">STA 보정</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S-04: Action Drawer (Bottom-Right Slide Panel for FS-Loop) -->
+  <div class="drawer" id="action-drawer">
+    <div class="drawer__header">
+      <h3 class="drawer__title">🔴 미조치 지시 <span class="drawer__count" id="action-drawer-count">2건</span></h3>
+      <button class="drawer__close" id="action-drawer-close">✕</button>
+    </div>
+    <div class="drawer__list" id="action-drawer-list">
+      <!-- items generated dynamically/mocked -->
+      <div class="drawer__item drawer__item--isolated" data-id="A1">
+        <div class="drawer__item-header">
+          <span class="drawer__item-badge" style="background:#5D4037">터</span>
+          <span class="drawer__item-title">당진방향 공동구 1차 기계타설</span>
+          <span class="drawer__item-site">2공구</span>
+        </div>
+        <div class="drawer__item-body">
+          <span class="drawer__item-status" style="color:var(--color-s-grade); font-weight:700;">대기 중</span>
+          <span class="drawer__item-reason">살수차 추가 투입 요망</span>
+        </div>
+      </div>
+      <div class="drawer__item drawer__item--isolated" data-id="A2">
+        <div class="drawer__item-header">
+          <span class="drawer__item-badge" style="background:#8D6E63">토</span>
+          <span class="drawer__item-title">절토부 발파 작업 (화약 사용)</span>
+          <span class="drawer__item-site">2공구</span>
+        </div>
+        <div class="drawer__item-body">
+          <span class="drawer__item-status" style="color:var(--color-s-grade); font-weight:700;">대기 중</span>
+          <span class="drawer__item-reason">신호수 전방 100m 추가 배치 바람</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S-04: Reassembly 팝업 (STA 수동 보정)                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="reassembly-overlay"></div>
+  <div class="modal reassembly-modal" id="reassembly-modal">
+    <div class="modal__header">
+      <h3>🔄 STA 수동 보정 (재조립)</h3>
+      <button class="modal__close" id="reassembly-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__field">
+        <label>원문 (full_data)</label>
+        <div class="modal__original" id="reassembly-original">본선구간 절토부 정리 (B/H 1.0 2, 살수차 1)</div>
+      </div>
+      <div class="modal__field">
+        <label>Location 1 (L1)</label>
+        <select class="modal__select" id="reassembly-l1">
+          <option value="">선택하세요</option>
+          <option value="본선">본선</option>
+          <option value="농도">농도</option>
+          <option value="진입로">진입로</option>
+        </select>
+      </div>
+      <div class="modal__field">
+        <label>Location 2 (L2)</label>
+        <input type="text" class="modal__input" id="reassembly-l2" placeholder="예: 대호지교">
+      </div>
+      <div class="modal__field">
+        <label>STA 입력</label>
+        <input type="text" class="modal__input" id="reassembly-sta" placeholder="예: STA.10+400">
+      </div>
+      <div class="modal__field">
+        <label>STA 범위 (선택)</label>
+        <input type="text" class="modal__input" id="reassembly-range" placeholder="예: STA.10+400~10+500">
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="modal__btn modal__btn--cancel" id="reassembly-cancel">취소</button>
+      <button class="modal__btn modal__btn--save" id="reassembly-save">💾 저장 및 재조립</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S-08: 통합 브리핑 보드 (F-12) 팝업                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="briefing-overlay"></div>
+  <div class="modal briefing-modal" id="briefing-modal">
+    <div class="modal__header">
+      <div>
+        <h3>📄 전 공구 통합 브리핑 보드</h3>
+        <span class="modal__date">2026-03-03 (화) · Today 기준</span>
+      </div>
+      <div class="modal__header-actions">
+        <button class="modal__popout" id="briefing-popout" title="새 창으로 보기">↗️ 새 창</button>
+        <button class="modal__close" id="briefing-close">✕</button>
+      </div>
+    </div>
+    <div class="modal__body briefing-body">
+      <table class="briefing-table">
+        <thead>
+          <tr>
+            <th class="briefing-table__corner">
+              <div class="briefing-table__date">기준일</div>
+              <div class="briefing-table__date-val">26.03.03 (화)</div>
+            </th>
+            <th class="briefing-table__site-header briefing-table__site-header--s1">
+              <span class="briefing-table__site-num">1공구</span>
+              <span class="briefing-table__site-co">코오롱글로벌</span>
+              <span class="briefing-table__site-mgr">현장대리인 홍길동</span>
+            </th>
+            <th class="briefing-table__site-header briefing-table__site-header--s2">
+              <span class="briefing-table__site-num">2공구</span>
+              <span class="briefing-table__site-co">KCC 건설</span>
+              <span class="briefing-table__site-mgr">현장대리인 박재성</span>
+            </th>
+            <th class="briefing-table__site-header briefing-table__site-header--s3">
+              <span class="briefing-table__site-num">3공구</span>
+              <span class="briefing-table__site-co">태영건설</span>
+              <span class="briefing-table__site-mgr">현장대리인 전성권</span>
+            </th>
+            <th class="briefing-table__site-header briefing-table__site-header--s4">
+              <span class="briefing-table__site-num">4공구</span>
+              <span class="briefing-table__site-co">금호건설</span>
+              <span class="briefing-table__site-mgr">현장대리인 강성귀</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🚜</span>토공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell">
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> 본선2구간 천공, 발파암 정리</div>
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> STA.2+278 천공 (유압드릴 1)</div>
+            </td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🌊</span>배수공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell">
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> STA.0+029 수로암거 뒷채움 및 다짐</div>
+            </td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🚧</span>포장공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"><span class="briefing-cell--empty">—</span></td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🌉</span>교량공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell">
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> 사성1교 A1 벽체/날개벽 거푸집 해체 및 면정리</div>
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> 사성1교 A2 천안 2단 벽체, 날개벽/A2 당진 날개벽 양생
+              </div>
+            </td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🏔️</span>터널공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell">
+              <div class="briefing-cell"><span class="risk-tag risk-tag--s">S</span> STA.2+338 당진방향 공동구 1차 기계타설 250m³
+              </div>
+            </td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">🏗️</span>부대공</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell">
+              <div class="briefing-cell"><span class="risk-tag risk-tag--c">C</span> 농도305호선 A1 용수공급 (살수차 3)</div>
+            </td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+          <tr>
+            <td class="briefing-table__work-type"><span class="briefing-table__work-icon">📋</span>기타</td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"><span class="briefing-cell--empty">—</span></td>
+            <td class="briefing-table__cell"></td>
+            <td class="briefing-table__cell"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Progress Modal -->
+  <div class="modal-overlay" id="progress-overlay"></div>
+  <div class="modal" id="progress-modal" style="width: 400px; padding: 20px;">
+    <div class="modal__header">
+      <div class="modal__title-group">
+        <h2 class="modal__title"><span id="progress-modal-title">1공구</span> 상세 공정 현황</h2>
+      </div>
+      <div class="modal__header-actions">
+        <button class="modal__close" id="progress-close">✕</button>
+      </div>
+    </div>
+    <div class="modal__body"
+      style="padding: 32px 16px; text-align:center; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:8px; border:1px dashed var(--border-subtle);">
+      <p style="font-size:14px; line-height:1.6;">선택한 공구의 공종별 상세 공정률 그래프 내역이 표출되는 영역입니다.</p>
+    </div>
+  </div>
+
+  </div>
+  </div>
+
+  <!-- Compensation Modal -->
+  <div class="modal-overlay" id="compensation-overlay"></div>
+  <div class="modal" id="compensation-modal" style="width: 480px; padding: 20px;">
+    <div class="modal__header">
+      <div class="modal__title-group">
+        <h2 class="modal__title">공구별 상세 보상현황</h2>
+      </div>
+      <div class="modal__header-actions">
+        <button class="modal__close" id="compensation-close">✕</button>
+      </div>
+    </div>
+    <div class="modal__body"
+      style="padding: 32px 16px; text-align:center; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:8px; border:1px dashed var(--border-subtle);">
+      <p style="font-size:14px; line-height:1.6;">공구별 상세 보상현황이 나타나는 창입니다.</p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
