@@ -651,7 +651,13 @@ export default function App() {
       ) {
         const file = pendingFiles[0];
         // Process ZIP file
-        const zipNameWithoutExt = file.name.replace(/\.zip$/i, "");
+        let zipNameWithoutExt = file.name.replace(/\.zip$/i, "");
+        const isZipFolderExists = assets.some(
+          (a) => a.isFolder && a.filename === zipNameWithoutExt,
+        );
+        if (isZipFolderExists) {
+          zipNameWithoutExt = `${zipNameWithoutExt}_${Date.now()}`;
+        }
         const zip = new JSZip();
         const loadedZip = await zip.loadAsync(file);
 
@@ -698,9 +704,16 @@ export default function App() {
             f.name.toLowerCase().endsWith(".html") ||
             f.name.toLowerCase().endsWith(".htm"),
         );
-        const folderName = htmlFile
+        let folderName = htmlFile
           ? htmlFile.name.replace(/\.html?$/i, "")
           : `Project_${Date.now()}`;
+
+        const isFolderExists = assets.some(
+          (a) => a.isFolder && a.filename === folderName,
+        );
+        if (isFolderExists) {
+          folderName = `${folderName}_${Date.now()}`;
+        }
 
         for (const file of pendingFiles) {
           const content = await new Promise<string>((resolve, reject) => {
