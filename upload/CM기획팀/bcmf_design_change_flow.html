@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCMF 설계변경 업무 흐름도</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#F4F3EF;color:#2C2C2A;font-size:11px}
+.hdr{background:#fff;border-bottom:1px solid #E0DED6;padding:10px 16px;position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:14px;font-weight:700}.hmeta{font-size:10px;color:#AAA89E;margin-top:1px}
+.hbtns{display:flex;gap:6px;flex-shrink:0}
+.hbtn{padding:4px 10px;font-size:10px;font-weight:600;border-radius:14px;border:1.5px solid;cursor:pointer;white-space:nowrap}
+.hbtn-u{background:#FFF3E0;color:#E65100;border-color:#E65100}.hbtn-u:hover{background:#E65100;color:#fff}
+.hbtn-m{background:#EAF3DE;color:#639922;border-color:#639922}.hbtn-m:hover{background:#639922;color:#fff}
+.wrap{display:flex;gap:0;padding:12px 16px;align-items:flex-start}
+.flow-col{flex:0 0 auto}
+.flow-col svg{display:block;width:660px;height:auto}
+.doc-col{flex:0 0 260px;padding-left:16px}
+
+/* 서류 구간 */
+.doc-group{background:#fff;border:1px solid #E8E6DE;border-radius:8px;padding:8px}
+.dg-sil{border-left:3px solid #185FA5}
+.dg-des{border-left:3px solid #4F46E5}
+.dg-title{font-size:10px;font-weight:700;color:#5F5E5A;margin-bottom:6px}
+
+/* 서류 카드 — 최소 여백 */
+.dc{background:#FAFAF8;border:1px solid #F0EEE8;border-radius:5px;padding:4px 7px;margin-top:4px}
+.dc:first-of-type{margin-top:0}
+.dh{display:flex;align-items:center;gap:4px;margin-bottom:2px;padding-bottom:2px;border-bottom:1px solid #EDEAE2}
+.db{font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;white-space:nowrap}
+.dn{font-size:9px;font-weight:600}
+.da{font-size:8px;color:#888780;margin-left:auto;white-space:nowrap}
+.dr{display:flex;align-items:baseline;gap:3px;padding:1px 0;line-height:1.25}
+.dr:not(:last-child){border-bottom:1px solid #F4F3EF}
+.dd{flex:1;font-size:9px;color:#2C2C2A}
+.dw{font-size:7px;white-space:nowrap}
+.tg{display:inline-block;font-size:7px;font-weight:600;padding:1px 3px;border-radius:2px}
+.tg-s{background:#E6F1FB;color:#0C447C}.tg-g{background:#EAF3DE;color:#3B6D11}.tg-p{background:#EEF2FF;color:#3730A3}
+.b-bl{background:#E6F1FB;color:#185FA5}.b-gn{background:#EAF3DE;color:#639922}.b-in{background:#EEF2FF;color:#4F46E5}.b-in{background:#FAEEDA;color:#4F46E5}
+
+.mbk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.mbk.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:min(90vw,520px);max-height:80vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.2);animation:su .18s ease}
+@keyframes su{from{transform:translateY(16px);opacity:0}}
+.mhd{padding:12px 14px 10px;border-bottom:1px solid #E0DED6;display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0}
+.mtitle{font-size:13px;font-weight:700}.msub{font-size:10px;color:#888780;margin-top:2px}
+.mclose{width:22px;height:22px;border-radius:50%;background:#F1EFE8;border:none;cursor:pointer;font-size:13px;color:#5F5E5A;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mbody{padding:12px 14px 16px}.mbody svg{display:block;width:100%;height:auto}
+.badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-bottom:4px}
+.b-ug{background:#FFF3E0;color:#E65100}.b-mn{background:#EAF3DE;color:#639922}
+</style>
+</head>
+<body>
+<div class="hdr"><div><div class="htitle">설계변경 업무 흐름도</div><div class="hmeta">BCMF · 대산당진 고속도로 2공구 · v0.1.5 · 제67조</div></div><div class="hbtns"><button class="hbtn hbtn-u" onclick="openM('u')">긴급 트랙 ⑩항</button><button class="hbtn hbtn-m" onclick="openM('m')">경미 트랙 ④항</button></div></div>
+
+<div class="wrap">
+<div class="flow-col">
+<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 810 1960" role="img" aria-labelledby="title desc">
+<title id="title">BCMF 설계변경 업무 흐름 v0.1.5</title>
+<desc id="desc">변경 유형(긴급/경미/일반) 진입 분기 + 실정보고 1~4단계 + 설계변경 5~8단계</desc>
+<defs>
+<marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.box { fill: #fff; stroke-width: 0.5; }
+.blue    { fill: #E6F1FB; stroke: #185FA5; } .t-blue   { fill: #042C53; }
+.green   { fill: #EAF3DE; stroke: #639922; } .t-green  { fill: #173404; }
+.mint    { fill: #CCFBF1; stroke: #639922; } .t-mint   { fill: #042C27; }
+.indigo  { fill: #EEF2FF; stroke: #4F46E5; } .t-indigo { fill: #1E1B6E; }
+.amber   { fill: #FAEEDA; stroke: #4F46E5; stroke-width: 1.2; } .t-indigo  { fill: #1E1B6E; }
+.gray    { fill: #F1EFE8; stroke: #888780; } .t-gray   { fill: #5F5E5A; }
+.red     { fill: #FCEBEB; stroke: #A32D2D; } .t-red    { fill: #501313; }
+.orange  { fill: #FFF3E0; stroke: #E65100; } .t-orange { fill: #4E1700; }
+.dia-gray   { fill: #FFFFFF; stroke: #888780;  stroke-width: 1.2; }
+.dia-green  { fill: #FFFFFF; stroke: #639922;  stroke-width: 1.2; }
+.dia-indigo { fill: #FFFFFF; stroke: #4F46E5;  stroke-width: 1.2; }
+.dia-amber  { fill: #FFFFFF; stroke: #4F46E5;  stroke-width: 1.2; }
+text { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 13px; }
+.th { font-weight: 500; font-size: 14px; } .ts { font-size: 12px; }
+</style>
+</defs>
+
+<!-- ══════════════════════════════════════
+     변경 유형 판단 구역
+     ══════════════════════════════════════ -->
+<rect x="20" y="20" width="720" height="296" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="44">변경 유형 판단</text>
+<text class="ts t-gray" x="40" y="62">현장 사유 발생 후 변경 유형에 따라 진입 경로 결정</text>
+
+<!-- 현장 사유 발생 -->
+<rect class="box gray" x="310" y="76" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="92" text-anchor="middle" dominant-baseline="central">현장 사유 발생</text>
+<text class="ts t-gray" x="400" y="108" text-anchor="middle" dominant-baseline="central">시공사 · 변경 사유 발견</text>
+<line x1="400" y1="120" x2="400" y2="144" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 변경 유형 다이아몬드 -->
+<polygon class="dia-gray" points="400,144 520,184 400,224 280,184"/>
+<text class="th t-gray" x="400" y="176" text-anchor="middle" dominant-baseline="central">변경 유형</text>
+<text class="ts t-gray" x="400" y="194" text-anchor="middle" dominant-baseline="central">긴급 / 경미 / 일반</text>
+
+<!-- 경미 ← 좌측 -->
+<line x1="280" y1="184" x2="166" y2="184" stroke="#639922" stroke-width="1" marker-end="url(#ag)"/>
+<text class="ts" fill="#639922" x="223" y="175" text-anchor="middle">경미</text>
+<rect class="box green" x="30" y="148" width="132" height="76" style="cursor:pointer" onclick="openM('m')" rx="8"/>
+<text class="th t-green" x="96" y="164" style="cursor:pointer;pointer-events:all" onclick="openM('m')" text-anchor="middle" dominant-baseline="central">경미한 설계변경</text>
+<text class="ts t-green" x="96" y="180" style="cursor:pointer;pointer-events:all" onclick="openM('m')" text-anchor="middle" dominant-baseline="central">중심선·계획고·구조·공법</text>
+<text class="ts t-green" x="96" y="196" style="cursor:pointer;pointer-events:all" onclick="openM('m')" text-anchor="middle" dominant-baseline="central">변경 없음 (제67조 ④항)</text>
+<text class="ts t-green" x="96" y="212" style="cursor:pointer;pointer-events:all" onclick="openM('m')" text-anchor="middle" dominant-baseline="central">→ 실정보고 생략 가능</text>
+
+<!-- 긴급 → 우측 (충분히 오른쪽으로) -->
+<line x1="520" y1="184" x2="648" y2="184" stroke="#E65100" stroke-width="1" marker-end="url(#ag)"/>
+<text class="ts" fill="#E65100" x="588" y="175" text-anchor="middle">긴급</text>
+<rect class="box orange" x="650" y="148" width="130" height="76" style="cursor:pointer" onclick="openM('u')" rx="8"/>
+<text class="th t-orange" x="715" y="164" style="cursor:pointer;pointer-events:all" onclick="openM('u')" text-anchor="middle" dominant-baseline="central">긴급 실정보고</text>
+<text class="ts t-orange" x="715" y="180" style="cursor:pointer;pointer-events:all" onclick="openM('u')" text-anchor="middle" dominant-baseline="central">기초·주공정 중대 영향</text>
+<text class="ts t-orange" x="715" y="196" style="cursor:pointer;pointer-events:all" onclick="openM('u')" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스 즉시 보고</text>
+<text class="ts t-orange" x="715" y="212" style="cursor:pointer;pointer-events:all" onclick="openM('u')" text-anchor="middle" dominant-baseline="central">(제67조 ⑩항)</text>
+
+<!-- 일반 → 아래 -->
+<text class="ts" fill="#3d3d3a" x="450" y="244" text-anchor="middle">일반</text>
+<line x1="400" y1="224" x2="400" y2="296" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+<text class="ts t-gray" x="400" y="272" text-anchor="middle">↓ 일반 프로세스</text>
+
+<!-- ══════════════════════════════════════
+     실정보고 구간 (1~4단계)
+     ══════════════════════════════════════ -->
+<rect x="20" y="336" width="720" height="648" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="360">실정보고 구간 (1~4단계)</text>
+<text class="ts t-gray" x="40" y="378">현장 실정과 변경 필요성을 보고하고 승인받는 구간</text>
+
+<!-- 1. 실정보고 접수 — 시공사 -->
+<rect class="box blue" x="310" y="396" width="180" height="48" rx="8"/>
+<text class="th t-blue" x="400" y="414" text-anchor="middle" dominant-baseline="central">1. 실정보고 접수</text>
+<text class="ts t-blue" x="400" y="432" text-anchor="middle" dominant-baseline="central">시공사 · 구비서류 제출</text>
+<line x1="400" y1="444" x2="400" y2="468" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 2. 공사감독원 검토중 — 공사감독원 -->
+<rect class="box green" x="310" y="468" width="180" height="48" rx="8"/>
+<text class="th t-green" x="400" y="486" text-anchor="middle" dominant-baseline="central">2. 공사감독원 검토중</text>
+<text class="ts t-green" x="400" y="504" text-anchor="middle" dominant-baseline="central">공사감독원 · 실정보고 검토</text>
+<line x1="400" y1="516" x2="400" y2="540" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 공사감독원 판단 — 흰색/연두 -->
+<polygon class="dia-green" points="400,540 520,580 400,620 280,580"/>
+<text class="th t-green" x="400" y="568" text-anchor="middle" dominant-baseline="central">공사감독원 판단</text>
+<text class="ts t-green" x="400" y="586" text-anchor="middle" dominant-baseline="central">서류 적정성 확인</text>
+
+<rect class="box red" x="80" y="560" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="576" text-anchor="middle" dominant-baseline="central">시공사 보완 요청</text>
+<text class="ts t-red" x="160" y="594" text-anchor="middle" dominant-baseline="central">서류 수정 후 재제출</text>
+<line x1="280" y1="580" x2="242" y2="580" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="572" text-anchor="middle">반려</text>
+<path d="M80 582 L 60 582 L 60 492 L 310 492" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+<text class="ts" fill="#639922" x="542" y="572" text-anchor="middle">확인</text>
+<line x1="520" y1="580" x2="564" y2="580" stroke="#639922" marker-end="url(#ag)"/>
+<ellipse class="box green" cx="626" cy="582" rx="60" ry="22"/>
+<text class="th t-green" x="626" y="578" text-anchor="middle" dominant-baseline="central">검토 완료</text>
+<text class="ts t-green" x="626" y="592" text-anchor="middle" dominant-baseline="central">승인요청 이관</text>
+<path d="M626 604 L 626 640 L 400 640 L 400 664" stroke="#639922" stroke-width="1" fill="none" marker-end="url(#ag)"/>
+
+<!-- 3. 실정보고 승인요청중 — 공사감독원 보고 -->
+<rect class="box green" x="310" y="664" width="180" height="48" rx="8"/>
+<text class="th t-green" x="400" y="682" text-anchor="middle" dominant-baseline="central">3. 실정보고 승인요청중</text>
+<text class="ts t-green" x="400" y="700" text-anchor="middle" dominant-baseline="central">발주청 · 방침 승인 대기</text>
+<line x1="400" y1="712" x2="400" y2="736" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 발주청 판단 — 흰색/인디고 -->
+<polygon class="dia-indigo" points="400,736 520,776 400,816 280,776"/>
+<text class="th t-indigo" x="400" y="764" text-anchor="middle" dominant-baseline="central">발주청 판단</text>
+<text class="ts t-indigo" x="400" y="782" text-anchor="middle" dominant-baseline="central">T/F팀 검토 결과</text>
+
+<rect class="box red" x="80" y="756" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="772" text-anchor="middle" dominant-baseline="central">이행불가 통보</text>
+<text class="ts t-red" x="160" y="790" text-anchor="middle" dominant-baseline="central">검토의견서 첨부 · 종결</text>
+<line x1="280" y1="776" x2="242" y2="776" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="768" text-anchor="middle">불가</text>
+
+<text class="ts" fill="#4F46E5" x="450" y="832" text-anchor="middle">승인</text>
+<line x1="400" y1="816" x2="400" y2="848" stroke="#4F46E5" stroke-width="1" marker-end="url(#ag)"/>
+
+<!-- 4. 실정보고 승인 — 발주청 -->
+<rect class="box indigo" x="310" y="848" width="180" height="48" rx="8"/>
+<text class="th t-indigo" x="400" y="866" text-anchor="middle" dominant-baseline="central">4. 실정보고 승인</text>
+<text class="ts t-indigo" x="400" y="884" text-anchor="middle" dominant-baseline="central">발주청 · 승인공문 등록</text>
+<line x1="400" y1="896" x2="400" y2="920" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 설계변경 지시·통보 (외부) -->
+<rect class="box gray" x="310" y="920" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="936" text-anchor="middle" dominant-baseline="central">설계변경 지시·통보</text>
+<text class="ts t-gray" x="400" y="952" text-anchor="middle" dominant-baseline="central">발주청 → 공사감독원 → 시공사</text>
+<line x1="400" y1="964" x2="400" y2="1024" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- ══════════════════════════════════════
+     설계변경 구간 (5~8단계)
+     ══════════════════════════════════════ -->
+<rect x="20" y="1040" width="720" height="844" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="1056">설계변경 구간 (5~8단계)</text>
+<text class="ts t-gray" x="40" y="1074">승인된 실정보고를 근거로 설계변경과 계약금액 조정 절차</text>
+
+<!-- 변경설계서 작성 (외부) -->
+<rect class="box gray" x="310" y="1090" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="1106" text-anchor="middle" dominant-baseline="central">변경설계서 작성</text>
+<text class="ts t-gray" x="400" y="1122" text-anchor="middle" dominant-baseline="central">시공사 · 도면·시방서·산출조서</text>
+<line x1="400" y1="1134" x2="400" y2="1158" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 5. 설계변경 접수 — 시공사 -->
+<rect class="box blue" x="310" y="1158" width="180" height="48" rx="8"/>
+<text class="th t-blue" x="400" y="1176" text-anchor="middle" dominant-baseline="central">5. 설계변경 접수</text>
+<text class="ts t-blue" x="400" y="1194" text-anchor="middle" dominant-baseline="central">시공사 · 변경 서류 제출</text>
+<line x1="400" y1="1206" x2="400" y2="1230" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 6. 공사감독원 검토중 — 공사감독원 -->
+<rect class="box green" x="310" y="1230" width="180" height="48" rx="8"/>
+<text class="th t-green" x="400" y="1248" text-anchor="middle" dominant-baseline="central">6. 공사감독원 검토중</text>
+<text class="ts t-green" x="400" y="1266" text-anchor="middle" dominant-baseline="central">공사감독원 · 변경설계서 검토</text>
+<line x1="400" y1="1278" x2="400" y2="1302" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 공사감독원 판단 — 흰색/연두 -->
+<polygon class="dia-green" points="400,1302 520,1342 400,1382 280,1342"/>
+<text class="th t-green" x="400" y="1330" text-anchor="middle" dominant-baseline="central">공사감독원 판단</text>
+<text class="ts t-green" x="400" y="1348" text-anchor="middle" dominant-baseline="central">서류 적정성 확인</text>
+
+<rect class="box red" x="80" y="1322" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="1338" text-anchor="middle" dominant-baseline="central">시공사 보완 요청</text>
+<text class="ts t-red" x="160" y="1356" text-anchor="middle" dominant-baseline="central">서류 수정 후 재제출</text>
+<line x1="280" y1="1342" x2="242" y2="1342" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="1334" text-anchor="middle">반려</text>
+<path d="M80 1344 L 60 1344 L 60 1254 L 310 1254" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+<text class="ts" fill="#639922" x="542" y="1334" text-anchor="middle">확인</text>
+<line x1="520" y1="1342" x2="564" y2="1342" stroke="#639922" marker-end="url(#ag)"/>
+<ellipse class="box green" cx="626" cy="1344" rx="60" ry="22"/>
+<text class="th t-green" x="626" y="1340" text-anchor="middle" dominant-baseline="central">검토 완료</text>
+<text class="ts t-green" x="626" y="1354" text-anchor="middle" dominant-baseline="central">승인요청 이관</text>
+<path d="M626 1366 L 626 1402 L 400 1402 L 400 1426" stroke="#639922" stroke-width="1" fill="none" marker-end="url(#ag)"/>
+
+<!-- 7. 설계변경 승인요청중 — 공사감독원 보고 -->
+<rect class="box green" x="310" y="1426" width="180" height="48" rx="8"/>
+<text class="th t-green" x="400" y="1444" text-anchor="middle" dominant-baseline="central">7. 설계변경 승인요청중</text>
+<text class="ts t-green" x="400" y="1462" text-anchor="middle" dominant-baseline="central">발주청 · 결재권자 승인 대기</text>
+<line x1="400" y1="1474" x2="400" y2="1498" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 금액 기준 판단 — 흰색/인디고 -->
+<polygon class="dia-indigo" points="400,1498 520,1538 400,1578 280,1538"/>
+<text class="th t-indigo" x="400" y="1526" text-anchor="middle" dominant-baseline="central">금액 기준 판단</text>
+<text class="ts t-indigo" x="400" y="1544" text-anchor="middle" dominant-baseline="central">5억원 기준 결재권자 분기</text>
+
+<rect class="box gray" x="80" y="1518" width="160" height="44" stroke-dasharray="3 2" rx="6"/>
+<text class="th t-gray" x="160" y="1534" text-anchor="middle" dominant-baseline="central">건설처 승인</text>
+<text class="ts t-gray" x="160" y="1552" text-anchor="middle" dominant-baseline="central">5억원 이상</text>
+<line x1="280" y1="1538" x2="242" y2="1538" stroke="#4F46E5" marker-end="url(#ag)"/>
+<text class="ts" fill="#4F46E5" x="261" y="1530" text-anchor="middle">5억≥</text>
+
+<rect class="box gray" x="562" y="1518" width="128" height="44" stroke-dasharray="3 2" rx="6"/>
+<text class="th t-gray" x="626" y="1534" text-anchor="middle" dominant-baseline="central">사업단장 전결</text>
+<text class="ts t-gray" x="626" y="1552" text-anchor="middle" dominant-baseline="central">5억원 미만</text>
+<line x1="520" y1="1538" x2="558" y2="1538" stroke="#4F46E5" marker-end="url(#ag)"/>
+<text class="ts" fill="#4F46E5" x="541" y="1530" text-anchor="middle">5억&lt;</text>
+
+<path d="M160 1562 L 160 1598 L 400 1598 L 400 1624" stroke="#4F46E5" stroke-width="1" fill="none" marker-end="url(#ag)"/>
+<path d="M626 1562 L 626 1598 L 400 1598" stroke="#4F46E5" stroke-width="1" fill="none"/>
+
+<!-- 결재권자 판단 — 흰색/호박색 -->
+<polygon class="dia-indigo" points="400,1624 520,1664 400,1704 280,1664"/>
+<text class="th t-indigo" x="400" y="1652" text-anchor="middle" dominant-baseline="central">결재권자 판단</text>
+<text class="ts t-indigo" x="400" y="1670" text-anchor="middle" dominant-baseline="central">설계변경 최종 승인 여부</text>
+
+<rect class="box red" x="80" y="1644" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="1660" text-anchor="middle" dominant-baseline="central">반려 통보</text>
+<text class="ts t-red" x="160" y="1678" text-anchor="middle" dominant-baseline="central">반려 사유서 첨부 · 재상신</text>
+<line x1="280" y1="1664" x2="242" y2="1664" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="1656" text-anchor="middle">반려</text>
+<path d="M80 1666 L 48 1666 L 48 1182 L 310 1182" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+<text class="ts" fill="#4F46E5" x="450" y="1722" text-anchor="middle">승인</text>
+<line x1="400" y1="1704" x2="400" y2="1746" stroke="#4F46E5" marker-end="url(#ag)"/>
+
+<!-- 8. 설계변경 승인 — 사업단장/건설처 -->
+<rect class="box indigo" x="310" y="1746" width="180" height="48" rx="8"/>
+<text class="th t-indigo" x="400" y="1764" text-anchor="middle" dominant-baseline="central">8. 설계변경 승인</text>
+<text class="ts t-indigo" x="400" y="1782" text-anchor="middle" dominant-baseline="central">발주청 · 승인공문 등록</text>
+<line x1="400" y1="1794" x2="400" y2="1818" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 변경 시공·계약변경 (외부) -->
+<rect class="box gray" x="310" y="1818" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="1834" text-anchor="middle" dominant-baseline="central">변경 시공·계약변경</text>
+<text class="ts t-gray" x="400" y="1850" text-anchor="middle" dominant-baseline="central">준공 75일 전까지 완료</text>
+
+<!-- 범례 -->
+<rect x="40" y="1896" width="730" height="56" rx="4" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 2"/>
+<text class="ts t-gray" x="405" y="1914" text-anchor="middle" dominant-baseline="central">파랑=시공사 · 연두=공사감독원 · 인디고=발주청 · 호박색=결재권자 · 주황=긴급</text>
+<text class="ts t-gray" x="405" y="1932" text-anchor="middle" dominant-baseline="central">민트=검토완료 · 빨강=반려·이행불가 · 회색점선=시스템외부 · 다이아몬드=흰색+주체색테두리</text>
+</svg>
+
+</div>
+<div class="doc-col">
+<div class="doc-group dg-sil" style="margin-top:285px">
+<div class="dg-title">📋 실정보고 구간 서류</div>
+<div class="dc">
+<div class="dh"><span class="db b-bl">1단계</span><span class="dn">실정보고 접수</span><span class="da">시공사 제출</span></div>
+<div class="dr"><span class="dd">실정보고(설계변경)사유서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">공사비증감 내역서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">변경 수량산출서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">변경 설계도면</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">변경 예정공정표</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">현황사진·위치도 등</span><span class="dw"><span class="tg tg-s">시공사</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">2단계</span><span class="dn">공사감독원 검토중</span><span class="da">공사감독원 작성</span></div>
+<div class="dr"><span class="dd">기술검토의견서</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">현장 확인자료</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">보완 검토자료</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">3단계</span><span class="dn">실정보고 승인요청중</span><span class="da">발주청 대기</span></div>
+<div class="dr"><span class="dd">승인요청 공문</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">기술검토의견서(최종)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-in">4단계</span><span class="dn">실정보고 승인</span><span class="da">발주청→시공사</span></div>
+<div class="dr"><span class="dd">실정보고 승인공문</span><span class="dw"><span class="tg tg-p">발주청</span></span></div><div class="dr"><span class="dd">설계변경 지시·통보</span><span class="dw"><span class="tg tg-p">발주청→공사감독원</span></span></div></div>
+
+</div>
+<div class="doc-group dg-des" style="margin-top:220px">
+<div class="dg-title">📋 설계변경 구간 서류</div>
+<div class="dc">
+<div class="dh"><span class="db b-bl">5단계</span><span class="dn">설계변경 접수</span><span class="da">시공사 제출</span></div>
+<div class="dr"><span class="dd">설계변경개요서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">변경 도면·시방서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">계산서·수량산출조서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">변경공사비 내역서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div><div class="dr"><span class="dd">기타 필요한 서류</span><span class="dw"><span class="tg tg-s">시공사</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">6단계</span><span class="dn">공사감독원 검토중</span><span class="da">공사감독원 작성</span></div>
+<div class="dr"><span class="dd">기술검토의견서</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">수량·공사비 검토</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">계약금액 조정 검토</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">7단계</span><span class="dn">설계변경 승인요청중</span><span class="da">결재권자 대기</span></div>
+<div class="dr"><span class="dd">승인요청 공문</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">기술검토의견서(최종)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">계약금액조정요청서</span><span class="dw"><span class="tg tg-s">시공사</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-in">8단계</span><span class="dn">설계변경 승인</span><span class="da">결재권자 발행</span></div>
+<div class="dr"><span class="dd">설계변경 승인공문</span><span class="dw"><span class="tg tg-p">사업단장/건설처</span></span></div><div class="dr"><span class="dd">계약변경 통보 공문</span><span class="dw"><span class="tg tg-p">발주청</span></span></div></div>
+
+</div>
+</div>
+</div>
+
+<!-- 긴급 모달 -->
+<div class="mbk" id="mb-u" onclick="closeM('u',event)"><div class="modal"><div class="mhd"><div><span class="badge b-ug">제67조 ⑩항</span><div class="mtitle">긴급 트랙</div><div class="msub">기초·주공정 중대 영향 — 구두·전자 즉시 보고, 정식 서류 사후 보완</div></div><button class="mclose" onclick="closeM('u')">✕</button></div><div class="mbody">
+<svg width="100%" viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg"><defs><marker id="au" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><style>.bx{stroke-width:.8}.bl{fill:#E6F1FB;stroke:#185FA5}.tbl{fill:#042C53}.gn{fill:#EAF3DE;stroke:#639922}.tgn{fill:#173404}.in{fill:#EEF2FF;stroke:#4F46E5}.tin{fill:#1E1B6E}.am{fill:#EEF2FF;stroke:#4F46E5;stroke-width:1.1}.tam{fill:#1E1B6E}.gy{fill:#F1EFE8;stroke:#888780}.tgy{fill:#5F5E5A}.og{fill:#FFF3E0;stroke:#E65100}.tog{fill:#4E1700}text{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:10px}.th{font-weight:600;font-size:11px}.ts{font-size:9px}</style>
+<rect class="bx gy" x="6" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="86" y="18" text-anchor="middle" dominant-baseline="central">시공자</text><rect class="bx gy" x="200" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="280" y="18" text-anchor="middle" dominant-baseline="central">공사감독원</text><rect class="bx gy" x="394" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="474" y="18" text-anchor="middle" dominant-baseline="central">발주청</text>
+<rect class="bx og" x="6" y="42" width="160" height="60" rx="6"/><text class="th tog" x="86" y="58" text-anchor="middle" dominant-baseline="central">긴급 실정보고</text><text class="ts tog" x="86" y="72" text-anchor="middle" dominant-baseline="central">기초·주공정 영향</text><text class="ts tog" x="86" y="86" text-anchor="middle" dominant-baseline="central">⑧·⑨항 미적용</text><line x1="166" y1="72" x2="198" y2="72" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx gn" x="200" y="42" width="160" height="60" rx="6"/><text class="th tgn" x="280" y="58" text-anchor="middle" dominant-baseline="central">접수 및 즉시보고</text><text class="ts tgn" x="280" y="72" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스</text><text class="ts tgn" x="280" y="86" text-anchor="middle" dominant-baseline="central">지체없이 통보</text><line x1="360" y1="72" x2="392" y2="72" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx in" x="394" y="42" width="160" height="60" rx="6"/><text class="th tin" x="474" y="58" text-anchor="middle" dominant-baseline="central">긴급 접수</text><text class="ts tin" x="474" y="72" text-anchor="middle" dominant-baseline="central">기술검토팀(T/F)</text><text class="ts tin" x="474" y="86" text-anchor="middle" dominant-baseline="central">긴급 구성·운영</text><line x1="474" y1="102" x2="474" y2="118" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx bl" x="6" y="118" width="160" height="60" rx="6"/><text class="th tbl" x="86" y="134" text-anchor="middle" dominant-baseline="central">방침 접수</text><text class="ts tbl" x="86" y="150" text-anchor="middle" dominant-baseline="central">변경 시행 준비</text><text class="ts tbl" x="86" y="164" text-anchor="middle" dominant-baseline="central">정식 서류 사후 작성</text><line x1="198" y1="148" x2="168" y2="148" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx gn" x="200" y="118" width="160" height="60" rx="6"/><text class="th tgn" x="280" y="134" text-anchor="middle" dominant-baseline="central">방침 접수·통보</text><text class="ts tgn" x="280" y="150" text-anchor="middle" dominant-baseline="central">시공자에게 통보</text><text class="ts tgn" x="280" y="164" text-anchor="middle" dominant-baseline="central">기술검토의견서 작성</text><line x1="392" y1="148" x2="362" y2="148" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx in" x="394" y="118" width="160" height="60" rx="6"/><text class="th tin" x="474" y="134" text-anchor="middle" dominant-baseline="central">방침 확정</text><text class="ts tin" x="474" y="150" text-anchor="middle" dominant-baseline="central">단수 7일 / 그 외 14일</text><text class="ts tin" x="474" y="164" text-anchor="middle" dominant-baseline="central">지연시 사유 명시</text><line x1="86" y1="178" x2="86" y2="194" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx bl" x="6" y="194" width="160" height="60" rx="6"/><text class="th tbl" x="86" y="210" text-anchor="middle" dominant-baseline="central">설계변경 구비서류</text><text class="ts tbl" x="86" y="226" text-anchor="middle" dominant-baseline="central">개요서·도면·시방서</text><text class="ts tbl" x="86" y="240" text-anchor="middle" dominant-baseline="central">수량산출조서 등</text><line x1="166" y1="224" x2="198" y2="224" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx gn" x="200" y="194" width="160" height="60" rx="6"/><text class="th tgn" x="280" y="210" text-anchor="middle" dominant-baseline="central">정식 검토</text><text class="ts tgn" x="280" y="226" text-anchor="middle" dominant-baseline="central">기술지원기술인 확인</text><text class="ts tgn" x="280" y="240" text-anchor="middle" dominant-baseline="central">기술검토서 작성</text><line x1="360" y1="224" x2="392" y2="224" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx in" x="394" y="194" width="160" height="60" rx="6"/><text class="th tin" x="474" y="210" text-anchor="middle" dominant-baseline="central">정식 승인</text><text class="ts tin" x="474" y="226" text-anchor="middle" dominant-baseline="central">설계변경 확정</text><text class="ts tin" x="474" y="240" text-anchor="middle" dominant-baseline="central">계약변경 통보</text><line x1="474" y1="254" x2="474" y2="270" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx in" x="6" y="270" width="548" height="38" rx="6"/><text class="th tin" x="280" y="283" text-anchor="middle" dominant-baseline="central">계약금액 조정</text><text class="ts tin" x="280" y="299" text-anchor="middle" dominant-baseline="central">공사감독원 검토확인 → 발주청 승인 → 준공예정일 75일 전까지 제출</text>
+<text class="ts tgy" x="6" y="324">행1: →→  /  행2: ←← (ㄹ자)  /  행3: →→</text></svg></div></div></div>
+
+<!-- 경미 모달 -->
+<div class="mbk" id="mb-m" onclick="closeM('m',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">제67조 ④항</span><div class="mtitle">경미 트랙</div><div class="msub">중심선·계획고·구조·공법 변경 없음 — 실정보고 생략 가능</div></div><button class="mclose" onclick="closeM('m')">✕</button></div><div class="mbody">
+<svg width="100%" viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="am" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+.bx{stroke-width:.8}
+.bl{fill:#E6F1FB;stroke:#185FA5}.tbl{fill:#042C53}
+.gn{fill:#EAF3DE;stroke:#639922}.tgn{fill:#173404}
+.in{fill:#EEF2FF;stroke:#4F46E5}.tin{fill:#1E1B6E}
+.gy{fill:#F1EFE8;stroke:#888780}.tgy{fill:#5F5E5A}
+.dgn{fill:#fff;stroke:#639922;stroke-width:.9}
+text{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:10px}
+.th{font-weight:600;font-size:11px}.ts{font-size:9px}
+</style>
+
+<!-- 열 헤더 -->
+<rect class="bx gy" x="6" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="86" y="18" text-anchor="middle" dominant-baseline="central">시공사</text>
+<rect class="bx gy" x="200" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="280" y="18" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<rect class="bx gy" x="394" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="474" y="18" text-anchor="middle" dominant-baseline="central">발주청</text>
+
+<!-- 행1: 시공사(제출) → 공사감독원(접수·검토) -->
+<rect class="bx bl" x="6" y="46" width="160" height="64" rx="6"/>
+<text class="th tbl" x="86" y="62" text-anchor="middle" dominant-baseline="central">경미 변경사항 제출</text>
+<text class="ts tbl" x="86" y="78" text-anchor="middle" dominant-baseline="central">설계변경도면</text>
+<text class="ts tbl" x="86" y="92" text-anchor="middle" dominant-baseline="central">수량증감·증감공사비</text>
+
+<line x1="166" y1="78" x2="198" y2="78" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx gn" x="200" y="46" width="160" height="64" rx="6"/>
+<text class="th tgn" x="280" y="62" text-anchor="middle" dominant-baseline="central">접수·검토</text>
+<text class="ts tgn" x="280" y="78" text-anchor="middle" dominant-baseline="central">경미 해당여부 판단</text>
+<text class="ts tgn" x="280" y="92" text-anchor="middle" dominant-baseline="central">수량·공사비 적정성</text>
+
+<!-- 공사감독원 → 판단 다이아몬드 -->
+<line x1="280" y1="110" x2="280" y2="126" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+<polygon class="dgn" points="280,126 344,152 280,178 216,152"/>
+<text class="th tgn" x="280" y="146" text-anchor="middle" dominant-baseline="central">경미 해당?</text>
+<text class="ts tgn" x="280" y="162" text-anchor="middle" dominant-baseline="central">④항 기준</text>
+
+<!-- 아니오 → 시공사 쪽으로 (← 방향, 점선) -->
+<line x1="216" y1="152" x2="168" y2="152" stroke="#A32D2D" stroke-width=".8" stroke-dasharray="3 2" marker-end="url(#am)"/>
+<text class="ts" fill="#A32D2D" x="192" y="144" text-anchor="middle">아니오</text>
+<rect class="bx gy" x="6" y="134" width="160" height="38" rx="6" stroke-dasharray="3 2" fill-opacity=".5"/>
+<text class="ts tgy" x="86" y="148" text-anchor="middle" dominant-baseline="central">경미 미해당</text>
+<text class="ts tgy" x="86" y="162" text-anchor="middle" dominant-baseline="central">→ 일반 실정보고 절차 전환</text>
+
+<!-- 예 → 아래로 -->
+<text class="ts" fill="#639922" x="248" y="196" text-anchor="middle">예</text>
+<line x1="280" y1="178" x2="280" y2="210" stroke="#639922" stroke-width="1" marker-end="url(#am)"/>
+
+<!-- 행2: 공사감독원(보고) → 발주청(접수), 시공사(변경시행) -->
+<rect class="bx gn" x="200" y="210" width="160" height="52" rx="6"/>
+<text class="th tgn" x="280" y="226" text-anchor="middle" dominant-baseline="central">발주청 보고</text>
+<text class="ts tgn" x="280" y="242" text-anchor="middle" dominant-baseline="central">검토결과 통보</text>
+<text class="ts tgn" x="280" y="256" text-anchor="middle" dominant-baseline="central">기술검토의견 첨부</text>
+
+<line x1="360" y1="236" x2="392" y2="236" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx in" x="394" y="210" width="160" height="52" rx="6"/>
+<text class="th tin" x="474" y="226" text-anchor="middle" dominant-baseline="central">발주청 접수</text>
+<text class="ts tin" x="474" y="242" text-anchor="middle" dominant-baseline="central">④항: 별도 승인절차 없음</text>
+<text class="ts tin" x="474" y="256" text-anchor="middle" dominant-baseline="central">보고로 종결</text>
+
+<!-- 공사감독원 → 시공사 (변경 통보, ← 방향) -->
+<line x1="198" y1="236" x2="168" y2="236" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx bl" x="6" y="210" width="160" height="52" rx="6"/>
+<text class="th tbl" x="86" y="226" text-anchor="middle" dominant-baseline="central">변경 시행</text>
+<text class="ts tbl" x="86" y="242" text-anchor="middle" dominant-baseline="central">설계변경 통보 접수</text>
+<text class="ts tbl" x="86" y="256" text-anchor="middle" dominant-baseline="central">시공 진행</text>
+
+<!-- 계약금액 조정 -->
+<line x1="280" y1="262" x2="280" y2="280" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+<rect class="bx in" x="6" y="280" width="548" height="36" rx="6"/>
+<text class="th tin" x="280" y="292" text-anchor="middle" dominant-baseline="central">계약금액 조정 (정산)</text>
+<text class="ts tin" x="280" y="306" text-anchor="middle" dominant-baseline="central">단가·수량 정산 → 정식 계약변경에 합산 → 준공예정일 75일 전까지 제출</text>
+
+<!-- 근거 -->
+<text class="ts tgy" x="6" y="334">④항: 중심선·계획고·구조·공법 변경 없이 위치변경, 수량증감, 단순 구조물 추가·삭제</text>
+<text class="ts tgy" x="6" y="350">경미 미해당 시 시공사가 일반 실정보고 서류 재작성하여 제출</text>
+</svg>
+</div></div></div>
+
+<script>
+function openM(id){document.getElementById('mb-'+id).classList.add('open');document.body.style.overflow='hidden'}
+function closeM(id,e){if(e&&e.target!==document.getElementById('mb-'+id))return;document.getElementById('mb-'+id).classList.remove('open');document.body.style.overflow=''}
+</script>
+</body>
+</html>
