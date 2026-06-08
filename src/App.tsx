@@ -215,9 +215,6 @@ function MarkdownToc({
 const TEAMS = [
   "DfMA팀",
   "일반구조물팀",
-  "구조물계획팀",
-  "하부구조팀",
-  "터널팀",
   "CM기획팀",
 ];
 
