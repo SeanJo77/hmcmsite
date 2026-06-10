@@ -1,0 +1,2033 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCMF 설계변경 업무 흐름도 r5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--app-scale:1.5;--scaled-vw:66.6667vw;--scaled-vh:66.6667vh;--hdr-h:34px}
+html{width:100%;height:100%;overflow:hidden}
+body{width:var(--scaled-vw);height:var(--scaled-vh);overflow:hidden;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#F4F3EF;color:#2C2C2A;font-size:11px;zoom:var(--app-scale)}
+.hdr{height:var(--hdr-h);background:#fff;border-bottom:1px solid #E0DED6;padding:4px 16px;position:relative;z-index:20;display:flex;align-items:center;gap:14px}
+.htitle{font-size:14px;font-weight:700}.hmeta{font-size:10px;color:#AAA89E;margin-top:1px}
+.hbtns{display:flex;gap:6px;flex-shrink:0}
+.hbtn{padding:4px 10px;font-size:10px;font-weight:600;border-radius:14px;border:1.5px solid;cursor:pointer;white-space:nowrap}
+.hbtn-u{background:#FFF3E0;color:#E65100;border-color:#E65100}.hbtn-u:hover{background:#E65100;color:#fff}
+.hbtn-m{background:#FEF9E7;color:#D4A017;border-color:#D4A017}.hbtn-m:hover{background:#D4A017;color:#fff}
+.top-nav{display:flex;gap:4px;align-items:center;overflow-x:auto}
+.stage-nav{min-height:24px;height:auto;background:#F4F3EF;border-bottom:1px solid #E0DED6;padding:2px 0 8px;position:relative;top:auto;z-index:1;display:flex;gap:3px;row-gap:4px;align-items:center;align-content:flex-start;flex-wrap:wrap;overflow:hidden;margin-bottom:10px}
+.top-nav-btn{border:1px solid #D8D5CC;background:#FAFAF8;color:#5F5E5A;border-radius:12px;padding:3px 8px;font-size:8px;font-weight:700;white-space:nowrap;cursor:pointer}
+.stage-nav .top-nav-btn{padding:3px 6px;font-size:7.8px}
+.top-nav-btn:hover{border-color:#E65100;color:#C2410C;background:#FFF8EF}
+.top-nav-btn.active{background:#E65100;border-color:#E65100;color:#fff}
+.wrap{display:grid;grid-template-columns:580px minmax(0,1fr);gap:10px;padding:12px 12px;align-items:stretch;width:100%;height:calc(100% - var(--hdr-h));overflow:hidden}
+.flow-col{grid-column:1;height:100%;min-height:0;overflow:auto;overscroll-behavior:contain}
+.flow-col svg{display:block;width:568px;height:auto}
+.flow-col svg *{pointer-events:none!important;cursor:default!important}
+.flow-col svg [onclick]{pointer-events:all!important;cursor:pointer!important}
+.flow-col svg .type-hotspot{pointer-events:all!important;cursor:pointer!important}
+.type-flow-panel{display:none;width:568px}
+.type-flow-panel.active{display:block}
+.track-flow-panel{background:#fff;border:1px solid #E8E6DE;border-radius:10px;padding:10px;box-shadow:0 3px 12px rgba(44,44,42,.05)}
+.track-flow-panel.urgent{border-left:4px solid #E65100}
+.track-flow-panel.minor{border-left:4px solid #D4A017}
+.left-track-head{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;border-bottom:1px solid #EDEAE2;padding-bottom:7px;margin-bottom:8px}
+.left-track-title{font-size:12px;font-weight:800;color:#2C2C2A}
+.left-track-sub{font-size:8px;color:#888780;line-height:1.35;text-align:right}
+.left-track-note{margin-top:8px;border:1px solid #F0EEE8;border-radius:7px;background:#FAFAF8;padding:7px 8px;font-size:8px;line-height:1.45;color:#3D3D3A}
+.left-track-note strong{color:#E65100}
+.left-system-flow{display:grid;gap:6px;border:1px solid #EDEAE2;border-radius:8px;background:#fff;padding:10px}
+.left-flow-row{display:grid;grid-template-columns:1fr 22px 1fr;gap:6px;align-items:center}
+.left-flow-row.single{grid-template-columns:1fr}
+.left-flow-step{border:1px solid #D8D5CC;border-radius:8px;background:#FAFAF8;padding:8px 10px;text-align:center;min-height:54px;display:flex;flex-direction:column;justify-content:center}
+.left-flow-step strong{font-size:10px;line-height:1.25;color:#2C2C2A}
+.left-flow-step span{font-size:8px;line-height:1.35;color:#5F5E5A;margin-top:3px}
+.left-flow-step.s{background:#E6F1FB;border-color:#185FA5}
+.left-flow-step.g{background:#EAF3DE;border-color:#639922}
+.left-flow-step.p{background:#EEF2FF;border-color:#4F46E5}
+.left-flow-step.o{background:#FFF3E0;border-color:#E65100}
+.left-flow-step.y{background:#FEF9E7;border-color:#D4A017}
+.left-flow-step.r{background:#FCEBEB;border-color:#A32D2D}
+.left-flow-arrow{text-align:center;color:#888780;font-size:12px;font-weight:900}
+.left-flow-v{height:14px;display:flex;align-items:center;justify-content:center;color:#888780;font-size:12px;font-weight:900}
+.left-flow-branch{border:1px dashed #F1B4B4;border-radius:7px;background:#FFF8F8;color:#8A1F1F;padding:7px 8px;font-size:8px;line-height:1.45}
+.doc-col{flex:0 0 260px;padding-left:16px}
+.doc-col-left{display:none!important}
+.system-col{display:none!important}
+.detail-col{grid-column:2;height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-top:0;scrollbar-gutter:stable}
+.detail-panel{background:#fff;border:1px solid #E8E6DE;border-left:3px solid #E65100;border-radius:9px;box-shadow:0 8px 22px rgba(44,44,42,.06);overflow:hidden}
+.detail-head{padding:10px 12px 8px;border-bottom:1px solid #E8E6DE;background:#fff}
+.detail-title{font-size:13px;font-weight:800;color:#2C2C2A}
+.detail-sub{font-size:9px;color:#888780;margin-top:3px;line-height:1.45}
+.detail-body{padding:10px 12px 12px;display:grid;gap:8px}
+.detail-body .mbody{padding:0}
+.detail-body svg{display:block;width:100%;height:auto}
+.detail-body .step-strip{display:none}
+.detail-body .modal-only{display:none}
+.detail-empty{padding:18px 14px;color:#888780;font-size:10px;line-height:1.5}
+.detail-doc-block{border:1px solid #E8E6DE;border-radius:8px;background:#fff;overflow:hidden}
+.detail-doc-head{display:flex;align-items:center;gap:5px;background:#FAFAF8;border-bottom:1px solid #E8E6DE;padding:6px 8px}
+.detail-doc-name{font-size:9px;font-weight:800;color:#2C2C2A}
+.detail-doc-owner{font-size:7.5px;color:#888780;margin-left:auto}
+.detail-doc-list{padding:4px 8px}
+.detail-doc-list .dr{padding:2px 0}
+.stage-grid.with-docs{grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.stage-grid.with-docs .step-strip{grid-column:1 / -1}
+.stage-grid.with-docs .detail-doc-block{grid-column:1}
+.stage-grid.with-docs .gui-flow{grid-column:2}
+.stage-grid.with-docs .gui-flow-grid{grid-template-columns:1fr 1fr}
+.stage-grid.with-docs .gui-mock{grid-column:1 / -1}
+.doc-pair{display:grid;grid-template-columns:210px 280px;gap:4px 8px;align-items:stretch}
+.doc-pair .doc-group,.doc-pair .local-apply{display:contents}
+.doc-pair .dg-title{grid-column:1;grid-row:1;background:#fff;border:1px solid #E8E6DE;border-radius:8px 8px 0 0;padding:7px 8px;margin:0}
+.doc-pair .local-apply>.sys-title{grid-column:2;grid-row:1;background:#fff;border:1px solid #E8E6DE;border-left:3px solid #E65100;border-radius:8px 8px 0 0;padding:7px 8px;margin:0}
+.doc-pair .dc{margin-top:0}
+.doc-pair .doc-group .dc:nth-child(2),.doc-pair .local-apply .sys-block:nth-child(2){grid-row:2}
+.doc-pair .doc-group .dc:nth-child(3),.doc-pair .local-apply .sys-block:nth-child(3){grid-row:3}
+.doc-pair .doc-group .dc:nth-child(4),.doc-pair .local-apply .sys-block:nth-child(4){grid-row:4}
+.doc-pair .doc-group .dc:nth-child(5),.doc-pair .local-apply .sys-block:nth-child(5){grid-row:5}
+.doc-pair .doc-group .dc{grid-column:1}
+.doc-pair .local-apply .sys-block{grid-column:2;margin-top:0}
+.doc-pair .sys-head::after{content:'상세'}
+
+/* 서류 구간 */
+.doc-group{background:#fff;border:1px solid #E8E6DE;border-radius:8px;padding:8px}
+.dg-sil{border-left:3px solid #185FA5}
+.dg-des{border-left:3px solid #4F46E5}
+.dg-title{font-size:9.5px;font-weight:700;color:#5F5E5A;margin-bottom:6px}
+
+/* 서류 카드 — 최소 여백 */
+.dc{background:#FAFAF8;border:1px solid #F0EEE8;border-radius:5px;padding:4px 7px;margin-top:4px}
+.dc:first-of-type{margin-top:0}
+.dh{display:flex;align-items:center;gap:4px;margin-bottom:2px;padding-bottom:2px;border-bottom:1px solid #EDEAE2}
+.db{font-size:6.5px;font-weight:700;padding:1px 4px;border-radius:3px;white-space:nowrap}
+.dn{font-size:8.5px;font-weight:600}
+.da{font-size:7.5px;color:#888780;margin-left:auto;white-space:nowrap}
+.dr{display:flex;align-items:baseline;gap:3px;padding:1px 0;line-height:1.25}
+.dr:not(:last-child){border-bottom:1px solid #F4F3EF}
+.dd{flex:1;font-size:8.5px;color:#2C2C2A}
+.dw{font-size:6.5px;white-space:nowrap}
+.tg{display:inline-block;font-size:6.5px;font-weight:600;padding:1px 3px;border-radius:2px}
+.tg-s{background:#E6F1FB;color:#0C447C}.tg-g{background:#EAF3DE;color:#3B6D11}.tg-p{background:#EEF2FF;color:#3730A3}
+.b-bl{background:#E6F1FB;color:#185FA5}.b-gn{background:#EAF3DE;color:#639922}.b-in{background:#EEF2FF;color:#4F46E5}.b-in{background:#FAEEDA;color:#4F46E5}
+
+/* BCMF 처리 항목 */
+.sys-panel{background:#fff;border:1px solid #E8E6DE;border-left:3px solid #E65100;border-radius:8px;padding:8px;margin-top:0}
+.sys-title{font-size:9.5px;font-weight:700;color:#5F5E5A;margin-bottom:6px}
+.sys-block{background:#FAFAF8;border:1px solid #F0EEE8;border-radius:5px;padding:5px 7px;margin-top:5px;cursor:pointer;transition:.15s ease}
+.sys-block:hover{background:#fff;border-color:#E65100;box-shadow:0 2px 8px rgba(230,81,0,.12)}
+.sys-block:first-of-type{margin-top:0}
+.sys-head{display:flex;align-items:center;gap:4px;margin-bottom:3px;padding-bottom:2px;border-bottom:1px solid #EDEAE2}
+.sys-head::after{content:'상세';font-size:6.5px;font-weight:700;color:#E65100;margin-left:auto}
+.sys-block.no-detail{cursor:default}
+.sys-block.no-detail:hover{background:#FAFAF8;border-color:#F0EEE8;box-shadow:none}
+.sys-block.no-detail .sys-head::after{content:''}
+.sys-step{font-size:6.5px;font-weight:700;padding:1px 4px;border-radius:3px;background:#FFF3E0;color:#E65100;white-space:nowrap}
+.sys-name{font-size:8.5px;font-weight:700;color:#2C2C2A}
+.sys-role{display:inline-block;font-size:7.3px;font-weight:800;color:#185FA5;margin:2px 3px 0 0;vertical-align:baseline}
+.sys-list{list-style:none;margin:0;padding:0;display:inline}
+.sys-role::before{content:'['}
+.sys-role::after{content:']'}
+.sys-list::after{content:'';display:block;height:2px}
+.sys-list li{position:relative;display:inline;font-size:8px;line-height:1.35;color:#3D3D3A;padding:0;border-bottom:0}
+.sys-list li::before{content:''}
+.sys-list li:last-child{border-bottom:0}
+.sys-note{font-size:7.5px;line-height:1.35;color:#888780;margin-top:5px}
+.sys-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.sys-tag{font-size:7.5px;font-weight:700;border-radius:10px;padding:2px 6px;background:#F1EFE8;color:#5F5E5A;border:1px solid #D8D5CC}
+.sys-tag.todo{background:#E6F1FB;border-color:#B7D5EE;color:#0C447C}
+.sys-tag.warn{background:#FCEBEB;border-color:#F1B4B4;color:#8A1F1F}
+.sys-tag.done{background:#EAF3DE;border-color:#CFE3B8;color:#3B6D11}
+.sys-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.sys-action{font-size:7.5px;font-weight:700;border-radius:4px;padding:3px 5px;border:1px solid #E0DED6;background:#fff;color:#3D3D3A}
+.sys-action.primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.stage-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.role-card{border:1px solid #F0EEE8;border-radius:7px;background:#FAFAF8;padding:8px 10px}
+.role-card.s{border-left:3px solid #185FA5}.role-card.g{border-left:3px solid #639922}.role-card.p{border-left:3px solid #4F46E5}.role-card.x{border-left:3px solid #E65100}
+.role-title{font-size:11px;font-weight:700;margin-bottom:5px;color:#2C2C2A}
+.role-list{margin:0;padding-left:14px;color:#3D3D3A}
+.role-list li{font-size:10px;line-height:1.5;margin:1px 0}
+.type-picker{display:flex;justify-content:flex-start;gap:18px;border:1px solid #EDEAE2;border-radius:8px;background:#FAFAF8;padding:8px 12px;align-items:center}
+.type-title{font-size:10.5px;font-weight:800;color:#2C2C2A}
+.type-options{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-start}
+.type-option{min-width:76px;border:1px solid #D8D5CC;border-radius:8px;background:#fff;color:#5F5E5A;padding:5px 7px;cursor:pointer;text-align:left;transition:.15s ease}
+.type-option strong{display:block;font-size:9px;color:inherit}.type-option span{display:block;font-size:7.5px;color:inherit;margin-top:1px;opacity:.82}
+.type-option.selected{background:#2C2C2A;border-color:#2C2C2A;color:#fff;box-shadow:0 2px 8px rgba(44,44,42,.18)}
+#detailPanel[data-route-type] .type-option{background:#fff;border-color:#D8D5CC;color:#5F5E5A;box-shadow:none}
+#detailPanel[data-route-type="normal"] [data-type-btn="normal"],
+#detailPanel[data-route-type="urgent"] [data-type-btn="urgent"],
+#detailPanel[data-route-type="minor"] [data-type-btn="minor"]{background:#2C2C2A;border-color:#2C2C2A;color:#fff;box-shadow:0 2px 8px rgba(44,44,42,.18)}
+#detailPanel[data-route-type] .type-picker{display:none}
+#detailPanel[data-route-type] .route-legend,
+#detailPanel[data-route-type] .route-steps{display:none}
+.route-card{border:1px solid #EDEAE2;border-radius:8px;background:#FAFAF8;padding:8px;transition:.15s ease}
+.route-card.active{border-color:#E65100;background:#FFFDF9;box-shadow:0 2px 10px rgba(230,81,0,.12)}
+.route-card.dim{display:none!important}
+#detailPanel[data-route-type="normal"] [data-route]:not([data-route="normal"]),
+#detailPanel[data-route-type="urgent"] [data-route]:not([data-route="urgent"]),
+#detailPanel[data-route-type="minor"] [data-route]:not([data-route="minor"]){display:none!important}
+#detailPanel[data-route-type="normal"] [data-route="normal"],
+#detailPanel[data-route-type="urgent"] [data-route="urgent"],
+#detailPanel[data-route-type="minor"] [data-route="minor"]{display:block;border-color:#E65100;background:#FFFDF9;box-shadow:0 2px 10px rgba(230,81,0,.12)}
+.route-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.route-title{font-size:10.5px;font-weight:800;color:#2C2C2A}
+.route-desc{font-size:8px;color:#888780}
+.route-steps{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.route-step{font-size:8px;font-weight:700;line-height:1.2;border:1px solid #D8D5CC;background:#fff;color:#3D3D3A;border-radius:12px;padding:4px 7px;white-space:nowrap}
+.route-step.s,.route-step.g,.route-step.p,.route-step.y{background:#E6F1FB;border-color:#B7D5EE;color:#0C447C}
+.route-step.o{background:#FFF3E0;border-color:#FDBA74;color:#C2410C}
+.route-step.r{background:#FCEBEB;border-color:#F1B4B4;color:#8A1F1F}
+.route-step.ext{background:#F1EFE8;border-color:#C9C5BA;color:#5F5E5A}
+.route-arrow{font-size:9px;color:#AAA89E;font-weight:800}
+.route-legend{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:-2px}
+.route-lg{font-size:7.5px;font-weight:700;border-radius:10px;padding:2px 6px;border:1px solid}
+.route-lg.bcmf{background:#E6F1FB;border-color:#B7D5EE;color:#0C447C}
+.route-lg.ext{background:#F1EFE8;border-color:#C9C5BA;color:#5F5E5A}
+.route-lg.stop{background:#FCEBEB;border-color:#F1B4B4;color:#8A1F1F}
+.route-detail{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.route-detail .simple-plan{grid-column:1 / -1}
+.route-detail .gui-flow{padding:6px;background:#fff}
+.route-detail .gui-flow-title{font-size:8.5px}
+.route-detail .gui-flow-grid{gap:4px}
+.route-detail .gui-flow-item{font-size:7.6px}
+.step-strip{display:flex;align-items:center;gap:4px;flex-wrap:wrap;border:1px solid #EDEAE2;border-radius:6px;background:#FAFAF8;padding:5px 6px}
+.step-chip{font-size:7px;font-weight:700;border:1px solid #D8D5CC;background:#F1EFE8;color:#888780;border-radius:10px;padding:2px 6px;white-space:nowrap}
+.modal .step-chip{cursor:pointer}
+.modal .step-chip:hover{background:#FFF3E0;border-color:#FDBA74;color:#C2410C}
+.step-chip.on{background:#E65100;border-color:#E65100;color:#fff}
+.step-sep{font-size:7px;color:#AAA89E;font-weight:800}
+.gui-mock{border:1px solid #E0DED6;border-radius:8px;background:#fff;overflow:hidden}
+.gui-bar{display:flex;align-items:center;justify-content:space-between;background:#F4F3EF;border-bottom:1px solid #E0DED6;padding:6px 8px}
+.gui-title{font-size:9px;font-weight:700;color:#2C2C2A}
+.gui-state{font-size:8px;font-weight:700;color:#185FA5;background:#E6F1FB;border:1px solid #B7D5EE;border-radius:10px;padding:2px 6px}
+.gui-inline-actions{display:flex;gap:5px;align-items:center}
+.gui-body{padding:8px;display:grid;gap:6px}
+.gui-form{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gui-field{border:1px solid #EDEAE2;border-radius:6px;background:#FAFAF8;padding:5px}
+.gui-field.full{grid-column:1 / -1}
+.gui-label{display:block;font-size:7.3px;color:#888780;margin-bottom:2px}
+.gui-value{font-size:8px;font-weight:600;color:#2C2C2A}
+.type-mini{display:flex;gap:3px;flex-wrap:wrap}
+.type-mini span{font-size:7.5px;font-weight:700;border:1px solid #D8D5CC;border-radius:10px;padding:2px 7px;background:#fff;color:#5F5E5A}
+.type-mini .on{background:#2C2C2A;border-color:#2C2C2A;color:#fff}
+.gui-docs{border:1px solid #EDEAE2;border-radius:6px;overflow:hidden}
+.gui-doc{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;padding:5px 7px;border-bottom:1px solid #F4F3EF;background:#fff}
+.gui-doc:last-child{border-bottom:0}
+.gui-doc-name{font-size:8px;font-weight:600;color:#2C2C2A}
+.gui-doc-meta{font-size:6.8px;color:#888780;margin-top:1px}
+.gui-doc-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.gui-btn{font-size:6.8px;font-weight:700;border:1px solid #E0DED6;border-radius:4px;background:#FAFAF8;color:#5F5E5A;padding:2px 5px}
+.gui-btn.primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.gui-actions{display:flex;justify-content:flex-end;gap:5px;border-top:1px solid #EDEAE2;padding-top:6px}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.plan-card{border:1px solid #EDEAE2;border-radius:6px;background:#FAFAF8;padding:6px 7px;min-height:0}
+.plan-card.full{grid-column:1 / -1}
+.plan-card-title{font-size:8px;font-weight:800;color:#185FA5;margin-bottom:3px}
+.plan-card-text{font-size:8px;line-height:1.35;color:#2C2C2A}
+.plan-list{list-style:none;margin:0;padding:0}
+.plan-list li{font-size:8px;line-height:1.38;color:#2C2C2A;margin:1px 0}
+.plan-list li strong{color:#185FA5;margin-right:3px}
+.plan-buttons{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.plan-button{font-size:7px;font-weight:800;border:1px solid #D8D5CC;border-radius:10px;background:#fff;color:#5F5E5A;padding:2px 7px}
+.plan-button.primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.simple-plan{display:grid;gap:10px}
+.simple-title{font-size:11px;font-weight:800;color:#2C2C2A}
+.simple-table{width:100%;border-collapse:collapse;background:#fff;border-top:1px solid #E0DED6}
+.simple-table th{font-size:8px;text-align:left;color:#2C2C2A;padding:7px 8px;border-bottom:1px solid #E0DED6;background:#FAFAF8}
+.simple-table td{font-size:8.2px;line-height:1.35;color:#2C2C2A;padding:7px 8px;border-bottom:1px solid #EDEAE2;vertical-align:top}
+.simple-table td:first-child{width:105px;color:#5F5E5A;font-weight:700}
+.text-pill{display:inline-block;border:1px solid #D8D5CC;border-radius:10px;background:#FAFAF8;padding:1px 6px;font-size:7.5px;font-weight:700;line-height:1.2}
+.simple-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.simple-box{border:1px solid #E8E6DE;border-radius:7px;background:#fff;padding:8px 10px}
+.simple-box-title{font-size:9px;font-weight:800;color:#2C2C2A;margin-bottom:6px}
+.simple-box ul{margin:0;padding-left:14px}
+.simple-box li{font-size:8.2px;line-height:1.55;color:#2C2C2A;margin:1px 0}
+.simple-actions{border:1px solid #E8E6DE;border-radius:7px;background:#FFFDF9;padding:8px 10px;display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center}
+.simple-actions-title{font-size:8.5px;font-weight:800;color:#2C2C2A}
+.simple-actions-list{display:flex;flex-wrap:wrap;gap:5px}
+.simple-action-btn{display:inline-flex;align-items:center;min-height:20px;border:1px solid #D8D5CC;border-radius:11px;background:#fff;padding:2px 8px;font-size:7.8px;font-weight:800;color:#3D3D3A;line-height:1.2}
+.simple-action-btn.primary{border-color:#0B63B6;background:#0B63B6;color:#fff}
+.simple-action-btn.danger{border-color:#E06A5F;background:#FFF1EF;color:#B33128}
+.gui-flow{border:1px solid #EDEAE2;border-radius:6px;background:#FFFDF9;padding:6px}
+.gui-flow-title{font-size:8.5px;font-weight:700;color:#2C2C2A;margin-bottom:5px}
+.gui-flow-grid{display:grid;grid-template-columns:1fr;gap:4px}
+.gui-flow-item{border:1px solid #F0EEE8;border-radius:5px;background:#fff;padding:4px 5px;font-size:7.8px;line-height:1.25;color:#3D3D3A}
+.gui-flow-item strong{color:#185FA5}
+
+.mbk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:12px;overflow-y:auto}
+.mbk.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:min(88vw,560px);max-height:60vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.2);animation:su .18s ease}
+@keyframes su{from{transform:translateY(16px);opacity:0}}
+.mhd{padding:10px 12px 8px;border-bottom:1px solid #E0DED6;display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0}
+.mtitle{font-size:12px;font-weight:700}.msub{font-size:9px;color:#888780;margin-top:2px}
+.mclose{width:22px;height:22px;border-radius:50%;background:#F1EFE8;border:none;cursor:pointer;font-size:13px;color:#5F5E5A;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mbody{padding:10px 12px 12px}.mbody svg{display:block;width:100%;height:auto}
+.badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-bottom:4px}
+.b-ug{background:#FFF3E0;color:#E65100}.b-mn{background:#EAF3DE;color:#639922}
+
+.yellow { fill: #FEF9E7; stroke: #D4A017; stroke-width: 1.2; } .t-yellow { fill: #6B5300; }</style>
+</head>
+<body>
+<div class="hdr"><div><div class="htitle">설계변경 업무 흐름도</div></div>
+<nav class="top-nav" aria-label="처리유형 선택">
+<button class="top-nav-btn flow-type-btn active" data-flow-type-btn="normal" onclick="selectFlowType('normal')">일반</button>
+<button class="top-nav-btn flow-type-btn" data-flow-type-btn="urgent" onclick="selectFlowType('urgent')">긴급</button>
+<button class="top-nav-btn flow-type-btn" data-flow-type-btn="minor" onclick="selectFlowType('minor')">경미</button>
+</nav>
+</div>
+
+<div class="wrap">
+<div class="doc-col doc-col-left">
+<div class="doc-pair" style="margin-top:285px">
+<div class="doc-group dg-sil">
+<div class="dg-title">📋 실정보고 구간 서류</div>
+<div class="dc">
+<div class="dh"><span class="db b-bl">1단계</span><span class="dn">실정보고 접수</span><span class="da">시공자 제출</span></div>
+<div class="dr"><span class="dd">서류 제출 공문</span><span class="dw"><span class="tg tg-s">시공자</span></span></div>
+<div class="dr"><span class="dd">실정보고서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">설계변경사유서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">설계변경도면</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">개략수량증감내역</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">개략공사비증감내역</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">현황사진·위치도 등</span><span class="dw"><span class="tg tg-s">시공자</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">2단계</span><span class="dn">실정보고 검토</span><span class="da">공사감독원 검토</span></div>
+<div class="dr"><span class="dd">검토의견</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">기술검토의견서(필요 시)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">반려 사유</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">3단계</span><span class="dn">실정보고 승인요청</span><span class="da">발주청 상신</span></div>
+<div class="dr"><span class="dd">실정보고 승인요청 공문</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">실정보고 첨부서류</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">기술검토의견서(최종)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-in">4단계</span><span class="dn">실정보고 결과등록</span><span class="da">공문등록 대기</span></div>
+<div class="dr"><span class="dd">실정보고 승인공문</span><span class="dw"><span class="tg tg-p">발주청</span></span></div><div class="dr"><span class="dd">미승인 통보</span><span class="dw"><span class="tg tg-p">발주청</span></span></div><div class="dr"><span class="dd">기타 승인·방침 관련 문서</span><span class="dw"><span class="tg tg-p">발주청</span></span></div></div>
+
+</div>
+<div class="local-apply sys-panel">
+<div class="sys-title">bCMF 적용 정리</div>
+<div class="sys-block" onclick="openM('s1')">
+<div class="sys-head"><span class="sys-step">1단계</span><span class="sys-name">실정보고 접수</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>시공자: 처리유형(일반/긴급/경미) 선택, 공구/위치/시설, 변경사유 요약, 개략 수량·공사비 영향 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>서류 제출 공문, 실정보고서, 설계변경사유서, 설계변경도면, 개략수량증감내역, 개략공사비증감내역, 현황사진·위치도 등</li></ul>
+<span class="sys-role">작성중</span>
+<ul class="sys-list"><li>시공자만 입력·첨부·미리보기 가능</li></ul>
+<span class="sys-role">제출 시</span>
+<ul class="sys-list"><li>공사감독원에게 제출, 2단계 실정보고 검토로 전환</li></ul>
+<span class="sys-role">제출 후</span>
+<ul class="sys-list"><li>제출 당시 첨부파일 기록 보관, 시공자·공사감독원 미리보기·다운로드 가능</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s2')">
+<div class="sys-head"><span class="sys-step">2단계</span><span class="sys-name">실정보고 검토</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>공사감독원: 검토의견 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>기술검토의견서, 필요 시 첨부</li></ul>
+<span class="sys-role">검토 처리</span>
+<ul class="sys-list"><li>공사감독원이 제출파일 미리보기·다운로드 가능</li></ul>
+<span class="sys-role">반려 시</span>
+<ul class="sys-list"><li>반려사유 입력 후 1단계 실정보고 접수로 되돌림</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>검토완료 처리 시 3단계 실정보고 승인요청으로 전환</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s34')">
+<div class="sys-head"><span class="sys-step">3단계</span><span class="sys-name">실정보고 승인요청</span></div>
+<span class="sys-role">승인요청 처리</span>
+<ul class="sys-list"><li>공사감독원이 실정보고 승인요청 공문을 첨부해 실정보고 건에 기록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>실정보고 승인요청 공문, 실정보고 첨부서류, 기술검토의견서 최종본 필요 시 첨부</li></ul>
+<span class="sys-role">결과등록 대기</span>
+<ul class="sys-list"><li>승인요청 후 시공자 공문등록 대기 상태로 전환</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s4')">
+<div class="sys-head"><span class="sys-step">4단계</span><span class="sys-name">실정보고 결과등록</span></div>
+<span class="sys-role">결과문서 등록</span>
+<ul class="sys-list"><li>시공자: 발주청 승인공문 또는 미승인 통보 등록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>발주청 발행 승인공문 또는 미승인 통보 첨부</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>승인공문 등록 시 5단계 설계변경 접수 가능, 미승인 통보 등록 시 종결</li></ul>
+</div>
+</div>
+</div>
+<div class="doc-pair doc-pair-des" style="margin-top:120px">
+<div class="doc-group dg-des">
+<div class="dg-title">📋 설계변경 구간 서류</div>
+<div class="dc">
+<div class="dh"><span class="db b-bl">5단계</span><span class="dn">설계변경 접수</span><span class="da">시공자 제출</span></div>
+<div class="dr"><span class="dd">서류 제출 공문</span><span class="dw"><span class="tg tg-s">시공자</span></span></div>
+<div class="dr"><span class="dd">변경설계서: 변경도면·시방서·계산서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">수량산출조서, 변경공사비 내역서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">계약금액조정요청서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">기타</span><span class="dw"><span class="tg tg-s">시공자</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">6단계</span><span class="dn">설계변경 검토</span><span class="da">공사감독원 작성</span></div>
+<div class="dr"><span class="dd">기술검토의견서</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">검토자료(필요 시)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-gn">7단계</span><span class="dn">설계변경 승인요청</span><span class="da">작성주체별 제출</span></div>
+<div class="dr"><span class="dd">설계변경 승인요청 공문</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">설계변경 첨부서류</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">기술검토의견서(최종)</span><span class="dw"><span class="tg tg-g">공사감독원</span></span></div><div class="dr"><span class="dd">계약금액조정요청서</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">기타</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">변경설계서 등</span><span class="dw"><span class="tg tg-s">시공자</span></span></div><div class="dr"><span class="dd">산출수량/적용단가</span><span class="dw"><span class="tg tg-s">시공자</span></span></div></div>
+<div class="dc">
+<div class="dh"><span class="db b-in">8단계</span><span class="dn">설계변경 결과문서</span><span class="da">시공자 등록</span></div>
+<div class="dr"><span class="dd">설계변경 승인공문</span><span class="dw"><span class="tg tg-p">사업단장/건설처</span></span></div><div class="dr"><span class="dd">계약변경 통보 공문</span><span class="dw"><span class="tg tg-p">발주청</span></span></div><div class="dr"><span class="dd">보완지시 공문</span><span class="dw"><span class="tg tg-p">발주청</span></span></div></div>
+
+</div>
+<div class="local-apply sys-panel">
+<div class="sys-title">bCMF 적용 정리</div>
+<div class="sys-block" onclick="openM('s5')">
+<div class="sys-head"><span class="sys-step">5단계</span><span class="sys-name">설계변경 접수</span></div>
+<span class="sys-role">연결</span>
+<ul class="sys-list"><li>승인된 실정보고 건과 연결하고 기존 정보 자동 승계</li></ul>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>시공자: 변경금액·계약조정 여부 등 보완정보만 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>변경설계서: 변경도면·시방서·계산서, 수량산출조서, 변경공사비 내역서, 계약금액조정요청서 등</li></ul>
+<span class="sys-role">작성중</span>
+<ul class="sys-list"><li>승인된 실정보고 정보 자동 승계, 시공자만 첨부·미리보기 가능</li></ul>
+<span class="sys-role">제출 시</span>
+<ul class="sys-list"><li>공사감독원에게 제출, 6단계 설계변경 검토로 전환</li></ul>
+<span class="sys-role">제출 후</span>
+<ul class="sys-list"><li>제출 당시 첨부파일 기록 보관, 시공자·공사감독원 미리보기·다운로드 가능</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s6')">
+<div class="sys-head"><span class="sys-step">6단계</span><span class="sys-name">설계변경 검토</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>공사감독원: 검토의견 입력</li></ul>
+<span class="sys-role">검토 처리</span>
+<ul class="sys-list"><li>제출자료 미리보기·다운로드, 수량·공사비·계약금액 조정 내용 검토</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>기술검토의견서, 검토자료(필요 시)</li></ul>
+<span class="sys-role">반려 시</span>
+<ul class="sys-list"><li>반려사유 입력 후 5단계 설계변경 접수로 되돌림</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>검토완료 처리 시 7단계 설계변경 승인요청으로 전환</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s78')">
+<div class="sys-head"><span class="sys-step">7단계</span><span class="sys-name">설계변경 승인요청</span></div>
+<span class="sys-role">승인요청 처리</span>
+<ul class="sys-list"><li>공사감독원이 설계변경 승인요청 공문을 첨부해 설계변경 건에 기록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>설계변경 승인요청 공문, 설계변경 첨부서류, 기술검토의견서 최종본, 계약금액조정요청서 등</li></ul>
+<span class="sys-role">설계변경 방침결정 대기</span>
+<ul class="sys-list"><li>발주청 설계변경 방침결정 후 8단계에서 결과문서 등록</li></ul>
+</div>
+<div class="sys-block" onclick="openM('s8')">
+<div class="sys-head"><span class="sys-step">8단계</span><span class="sys-name">설계변경 완료</span></div>
+<span class="sys-role">결과문서 등록</span>
+<ul class="sys-list"><li>시공자: 설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문 등록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>설계변경 승인공문, 계약변경 통보 공문, 보완지시 공문</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>승인공문 등록 시 완료, 보완지시 공문 등록 시 5단계 접수로 되돌림</li></ul>
+</div>
+</div>
+</div>
+</div>
+<div class="flow-col">
+<section class="type-flow-panel active" data-flow-panel="normal" aria-label="일반 전체 업무 흐름">
+<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 810 1960" role="img" aria-labelledby="title desc">
+<title id="title">BCMF 설계변경 업무 흐름 r5</title>
+<desc id="desc">처리유형(긴급/경미/일반) 진입 분기 + 실정보고 1~4단계 + 설계변경 5~8단계</desc>
+<defs>
+<marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.box { fill: #fff; stroke-width: 0.5; }
+.blue    { fill: #E6F1FB; stroke: #185FA5; } .t-blue   { fill: #042C53; }
+.green   { fill: #EAF3DE; stroke: #639922; } .t-green  { fill: #173404; }
+.mint    { fill: #CCFBF1; stroke: #639922; } .t-mint   { fill: #042C27; }
+.indigo  { fill: #EEF2FF; stroke: #4F46E5; } .t-indigo { fill: #1E1B6E; }
+.amber   { fill: #FAEEDA; stroke: #4F46E5; stroke-width: 1.2; } .t-indigo  { fill: #1E1B6E; }
+.gray    { fill: #F1EFE8; stroke: #888780; } .t-gray   { fill: #5F5E5A; }
+.red     { fill: #FCEBEB; stroke: #A32D2D; } .t-red    { fill: #501313; }
+.orange  { fill: #FFF3E0; stroke: #E65100; } .t-orange { fill: #4E1700; }
+.dia-gray   { fill: #FFFFFF; stroke: #888780;  stroke-width: 1.2; }
+.dia-green  { fill: #FFFFFF; stroke: #639922;  stroke-width: 1.2; }
+.dia-indigo { fill: #FFFFFF; stroke: #4F46E5;  stroke-width: 1.2; }
+.dia-amber  { fill: #FFFFFF; stroke: #4F46E5;  stroke-width: 1.2; }
+text { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 15px; font-weight: 500; }
+.th { font-weight: 700; font-size: 16px; } .ts { font-size: 13.5px; font-weight: 500; }
+
+.yellow { fill: #FEF9E7; stroke: #D4A017; stroke-width: 1.2; } .t-yellow { fill: #6B5300; }
+</style>
+</defs>
+
+<!-- ══════════════════════════════════════
+     처리유형 판단 구역
+     ══════════════════════════════════════ -->
+<rect x="20" y="20" width="720" height="296" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="44">처리유형 판단</text>
+<text class="ts t-gray" x="40" y="62">현장 사유 발생 후 처리유형에 따라 진입 경로 결정</text>
+
+<!-- 현장 사유 발생 -->
+<rect class="box gray" x="310" y="76" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="92" text-anchor="middle" dominant-baseline="central">현장 사유 발생</text>
+<text class="ts t-gray" x="400" y="108" text-anchor="middle" dominant-baseline="central">시공자 · 변경 사유 발견</text>
+<line x1="400" y1="120" x2="400" y2="144" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 처리유형 다이아몬드 -->
+<polygon class="dia-gray" points="400,144 520,184 400,224 280,184" style="cursor:pointer" onclick="openM('s0')"/>
+<text class="th t-gray" x="400" y="176" style="cursor:pointer;pointer-events:all" onclick="openM('s0')" text-anchor="middle" dominant-baseline="central">처리유형</text>
+<text class="ts t-gray" x="400" y="194" style="cursor:pointer;pointer-events:all" onclick="openM('s0')" text-anchor="middle" dominant-baseline="central">긴급 / 경미 / 일반</text>
+
+<!-- 경미 ← 좌측 -->
+<line x1="280" y1="184" x2="226" y2="184" stroke="#639922" stroke-width="1" marker-end="url(#ag)"/>
+<text class="ts" fill="#639922" x="253" y="175" text-anchor="middle">경미</text>
+<rect class="box yellow" x="90" y="148" width="132" height="76" style="cursor:pointer" onclick="selectFlowType('minor')" rx="8"/>
+<text class="th t-yellow" x="156" y="164" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('minor')" text-anchor="middle" dominant-baseline="central">경미한 설계변경</text>
+<text class="ts t-yellow" x="156" y="180" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('minor')" text-anchor="middle" dominant-baseline="central">간소 검토·보고</text>
+<text class="ts t-yellow" x="156" y="196" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('minor')" text-anchor="middle" dominant-baseline="central">미해당 시 일반 전환</text>
+<text class="ts t-yellow" x="156" y="212" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('minor')" text-anchor="middle" dominant-baseline="central">(제67조 ④항)</text>
+<rect class="type-hotspot" x="90" y="148" width="132" height="76" fill="transparent" onclick="selectFlowType('minor')" rx="8"/>
+
+<!-- 긴급 → 우측 -->
+<line x1="520" y1="184" x2="584" y2="184" stroke="#E65100" stroke-width="1" marker-end="url(#ag)"/>
+<text class="ts" fill="#E65100" x="552" y="175" text-anchor="middle">긴급</text>
+<rect class="box orange" x="586" y="148" width="130" height="76" style="cursor:pointer" onclick="selectFlowType('urgent')" rx="8"/>
+<text class="th t-orange" x="651" y="164" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('urgent')" text-anchor="middle" dominant-baseline="central">긴급 실정보고</text>
+<text class="ts t-orange" x="651" y="180" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('urgent')" text-anchor="middle" dominant-baseline="central">기초·주공정 중대 영향</text>
+<text class="ts t-orange" x="651" y="196" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('urgent')" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스 즉시 보고</text>
+<text class="ts t-orange" x="651" y="212" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('urgent')" text-anchor="middle" dominant-baseline="central">(제67조 ⑩항)</text>
+<rect class="type-hotspot" x="586" y="148" width="130" height="76" fill="transparent" onclick="selectFlowType('urgent')" rx="8"/>
+
+<!-- 일반 ↓ 하단 -->
+<line x1="400" y1="224" x2="400" y2="248" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+<text class="ts" fill="#3d3d3a" x="450" y="240" text-anchor="middle">일반</text>
+<rect class="box gray" x="310" y="248" width="180" height="54" rx="8" stroke-dasharray="3 2" fill-opacity="0.55" style="cursor:pointer" onclick="selectFlowType('normal')"/>
+<text class="th t-gray" x="400" y="268" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('normal')" text-anchor="middle" dominant-baseline="central">일반 프로세스</text>
+<text class="ts t-gray" x="400" y="286" style="cursor:pointer;pointer-events:all" onclick="selectFlowType('normal')" text-anchor="middle" dominant-baseline="central">실정보고 접수로 진행</text>
+<rect class="type-hotspot" x="310" y="248" width="180" height="54" fill="transparent" onclick="selectFlowType('normal')" rx="8"/>
+<line x1="400" y1="302" x2="400" y2="394" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- ══════════════════════════════════════
+     실정보고 구간 (1~4단계)
+     ══════════════════════════════════════ -->
+<rect x="20" y="336" width="720" height="648" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="360">실정보고 구간 (1~4단계)</text>
+<text class="ts t-gray" x="40" y="378">현장 실정과 변경 필요성을 보고하고 승인받는 구간</text>
+
+<!-- 1. 실정보고 접수 — 시공자 -->
+<rect class="box blue" x="310" y="396" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s1')"/>
+<text class="th t-blue" x="400" y="414" style="cursor:pointer;pointer-events:all" onclick="openM('s1')" text-anchor="middle" dominant-baseline="central">1. 실정보고 접수</text>
+<text class="ts t-blue" x="400" y="432" style="cursor:pointer;pointer-events:all" onclick="openM('s1')" text-anchor="middle" dominant-baseline="central">시공자</text>
+<line x1="400" y1="444" x2="400" y2="468" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 2. 공사감독원 검토 단계 -->
+<rect class="box green" x="310" y="468" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s2')"/>
+<text class="th t-green" x="400" y="486" style="cursor:pointer;pointer-events:all" onclick="openM('s2')" text-anchor="middle" dominant-baseline="central">2. 실정보고 검토</text>
+<text class="ts t-green" x="400" y="504" style="cursor:pointer;pointer-events:all" onclick="openM('s2')" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line x1="400" y1="516" x2="400" y2="540" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 공사감독원 판단 — 흰색/연두 -->
+<polygon class="dia-green" points="400,540 520,580 400,620 280,580"/>
+<text class="th t-green" x="400" y="568" text-anchor="middle" dominant-baseline="central">서류 적정성 확인</text>
+<text class="ts t-green" x="400" y="586" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+
+<rect class="box red" x="80" y="560" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="576" text-anchor="middle" dominant-baseline="central">반려</text>
+<text class="ts t-red" x="160" y="594" text-anchor="middle" dominant-baseline="central">공사감독원 → 시공자 보완</text>
+<line x1="280" y1="580" x2="242" y2="580" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="572" text-anchor="middle">반려</text>
+<path d="M80 582 L 60 582 L 60 420 L 310 420" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+
+
+
+
+
+
+
+<!-- 확인 → 승인요청 직통 -->
+<text class="ts" fill="#639922" x="420" y="644" text-anchor="middle">확인</text>
+<line x1="400" y1="620" x2="400" y2="662" stroke="#639922" stroke-width="1" marker-end="url(#ag)"/>
+
+<!-- 3. 실정보고 승인요청 단계 -->
+<rect class="box green" x="310" y="664" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s34')"/>
+<text class="th t-green" x="400" y="682" style="cursor:pointer;pointer-events:all" onclick="openM('s34')" text-anchor="middle" dominant-baseline="central">3. 실정보고 승인요청</text>
+<text class="ts t-green" x="400" y="700" style="cursor:pointer;pointer-events:all" onclick="openM('s34')" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line x1="400" y1="712" x2="400" y2="736" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 발주청 판단 — 흰색/인디고 -->
+<polygon class="dia-indigo" points="400,736 520,776 400,816 280,776"/>
+<text class="th t-indigo" x="400" y="764" text-anchor="middle" dominant-baseline="central">설계변경 진행여부 판단</text>
+<text class="ts t-indigo" x="400" y="782" text-anchor="middle" dominant-baseline="central">발주청</text>
+
+<rect class="box red" x="80" y="756" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="772" text-anchor="middle" dominant-baseline="central">미승인 통보</text>
+<text class="ts t-red" x="160" y="790" text-anchor="middle" dominant-baseline="central">검토의견서 첨부 · 종결</text>
+<line x1="280" y1="776" x2="242" y2="776" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="768" text-anchor="middle">미승인</text>
+
+<text class="ts" fill="#4F46E5" x="450" y="832" text-anchor="middle">승인</text>
+<line x1="400" y1="816" x2="400" y2="848" stroke="#4F46E5" stroke-width="1" marker-end="url(#ag)"/>
+
+<!-- 4. 실정보고 결과등록 — 시공자 등록 -->
+<rect class="box indigo" x="310" y="848" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s4')"/>
+<text class="th t-indigo" x="400" y="866" style="cursor:pointer;pointer-events:all" onclick="openM('s4')" text-anchor="middle" dominant-baseline="central">4. 실정보고 결과등록</text>
+<text class="ts t-indigo" x="400" y="884" style="cursor:pointer;pointer-events:all" onclick="openM('s4')" text-anchor="middle" dominant-baseline="central">공문등록 대기</text>
+<line x1="400" y1="896" x2="400" y2="920" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 결과문서 등록 (외부문서 첨부) -->
+<rect class="box gray" x="310" y="920" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="936" text-anchor="middle" dominant-baseline="central">승인 여부 분기</text>
+<text class="ts t-gray" x="400" y="952" text-anchor="middle" dominant-baseline="central">승인 시 5단계 / 미승인 시 종결</text>
+<line x1="400" y1="964" x2="400" y2="1088" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- ══════════════════════════════════════
+     설계변경 구간 (5~8단계)
+     ══════════════════════════════════════ -->
+<rect x="20" y="1040" width="720" height="844" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="1056">설계변경 구간 (5~8단계)</text>
+<text class="ts t-gray" x="40" y="1074">승인된 실정보고를 근거로 설계변경과 계약금액 조정 절차</text>
+
+<!-- 변경설계서 작성 (외부) -->
+<rect class="box gray" x="180" y="1090" width="440" height="48" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="1114" text-anchor="middle" dominant-baseline="central" style="font-size:10px">변경설계서 작성: 시공자 - 변경도면·시방서·계산서</text>
+<line x1="400" y1="1138" x2="400" y2="1158" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 5. 설계변경 접수 — 시공자 -->
+<rect class="box blue" x="310" y="1158" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s5')"/>
+<text class="th t-blue" x="400" y="1176" style="cursor:pointer;pointer-events:all" onclick="openM('s5')" text-anchor="middle" dominant-baseline="central">5. 설계변경 접수</text>
+<text class="ts t-blue" x="400" y="1194" style="cursor:pointer;pointer-events:all" onclick="openM('s5')" text-anchor="middle" dominant-baseline="central">시공자</text>
+<line x1="400" y1="1206" x2="400" y2="1230" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 6. 공사감독원 검토 단계 -->
+<rect class="box green" x="310" y="1230" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s6')"/>
+<text class="th t-green" x="400" y="1248" style="cursor:pointer;pointer-events:all" onclick="openM('s6')" text-anchor="middle" dominant-baseline="central">6. 설계변경 검토</text>
+<text class="ts t-green" x="400" y="1266" style="cursor:pointer;pointer-events:all" onclick="openM('s6')" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line x1="400" y1="1278" x2="400" y2="1302" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 공사감독원 판단 — 흰색/연두 -->
+<polygon class="dia-green" points="400,1302 520,1342 400,1382 280,1342"/>
+<text class="th t-green" x="400" y="1330" text-anchor="middle" dominant-baseline="central">서류 적정성 확인</text>
+<text class="ts t-green" x="400" y="1348" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+
+<rect class="box red" x="80" y="1322" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="1338" text-anchor="middle" dominant-baseline="central">반려</text>
+<text class="ts t-red" x="160" y="1356" text-anchor="middle" dominant-baseline="central">공사감독원 → 시공자 보완</text>
+<line x1="280" y1="1342" x2="242" y2="1342" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="261" y="1334" text-anchor="middle">반려</text>
+<path d="M160 1322 L 160 1182 L 310 1182" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+
+
+
+
+
+
+
+<!-- 확인 → 승인요청 직통 -->
+<text class="ts" fill="#639922" x="420" y="1406" text-anchor="middle">확인</text>
+<line x1="400" y1="1382" x2="400" y2="1424" stroke="#639922" stroke-width="1" marker-end="url(#ag)"/>
+
+<!-- 7. 설계변경 승인요청 단계 -->
+<rect class="box green" x="310" y="1426" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s78')"/>
+<text class="th t-green" x="400" y="1444" style="cursor:pointer;pointer-events:all" onclick="openM('s78')" text-anchor="middle" dominant-baseline="central">7. 설계변경 승인요청</text>
+<text class="ts t-green" x="400" y="1462" style="cursor:pointer;pointer-events:all" onclick="openM('s78')" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<!-- 7단계 → 양갈래 분기 (5억 기준) -->
+<line x1="400" y1="1474" x2="400" y2="1510" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 분기점 (작은 원) -->
+<circle cx="400" cy="1510" r="4" fill="#3d3d3a"/>
+
+<!-- 좌: 5억 이상 → 건설처 승인 -->
+<path d="M400 1510 L 160 1510 L 160 1540" stroke="#3d3d3a" stroke-width="1" fill="none" marker-end="url(#ag)"/>
+<text class="ts tgy" x="280" y="1502" text-anchor="middle">5억원 이상</text>
+<rect class="box gray" x="80" y="1540" width="160" height="56" rx="6" stroke-dasharray="3 2"/>
+<text class="th t-gray" x="160" y="1552" text-anchor="middle" dominant-baseline="central">건설처 승인</text>
+<text class="ts t-gray" x="160" y="1568" text-anchor="middle" dominant-baseline="central">5~10억 건설처장 전결</text>
+<text class="ts t-gray" x="160" y="1582" text-anchor="middle" dominant-baseline="central">10억 초과 본부장 전결</text>
+
+<!-- 우: 5억 미만 → 사업단장 전결 -->
+<path d="M400 1510 L 626 1510 L 626 1540" stroke="#3d3d3a" stroke-width="1" fill="none" marker-end="url(#ag)"/>
+<text class="ts tgy" x="520" y="1502" text-anchor="middle">5억원 미만</text>
+<rect class="box gray" x="562" y="1540" width="128" height="56" rx="6" stroke-dasharray="3 2"/>
+<text class="th t-gray" x="626" y="1562" text-anchor="middle" dominant-baseline="central">사업단장 전결</text>
+
+<!-- 양쪽 합류 → 설계변경 방침 결정 -->
+<path d="M160 1596 L 160 1620 L 400 1620" stroke="#3d3d3a" stroke-width="1" fill="none"/>
+<path d="M626 1596 L 626 1620 L 400 1620" stroke="#3d3d3a" stroke-width="1" fill="none"/>
+<line x1="400" y1="1620" x2="400" y2="1640" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 설계변경 방침 결정 다이아몬드 -->
+<polygon class="dia-indigo" points="400,1640 500,1672 400,1704 300,1672"/>
+<text class="th t-indigo" x="400" y="1666" text-anchor="middle" dominant-baseline="central">설계변경 방침 결정</text>
+<text class="ts t-indigo" x="400" y="1680" text-anchor="middle" dominant-baseline="central">발주청</text>
+
+<!-- 반려 경로 → 공사감독원 경유 시공자 보완 -->
+<line x1="300" y1="1672" x2="242" y2="1672" stroke="#A32D2D" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+<text class="ts" fill="#A32D2D" x="271" y="1662" text-anchor="middle">반려</text>
+<rect class="box red" x="80" y="1650" width="160" height="44" rx="6"/>
+<text class="th t-red" x="160" y="1666" text-anchor="middle" dominant-baseline="central">보완 지시</text>
+<text class="ts t-red" x="160" y="1682" text-anchor="middle" dominant-baseline="central">발주청 → 공사감독원 → 시공자</text>
+<path d="M80 1672 L 70 1672 L 70 1164 L 310 1164" stroke="#A32D2D" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+<!-- 승인 → 8단계 -->
+<text class="ts" fill="#4F46E5" x="420" y="1722" text-anchor="middle">승인</text>
+<line x1="400" y1="1704" x2="400" y2="1746" stroke="#4F46E5" stroke-width="1" marker-end="url(#ag)"/>
+
+<rect class="box indigo" x="310" y="1746" width="180" height="48" rx="8" style="cursor:pointer" onclick="openM('s8')"/>
+<text class="th t-indigo" x="400" y="1764" style="cursor:pointer;pointer-events:all" onclick="openM('s8')" text-anchor="middle" dominant-baseline="central">8. 설계변경 완료</text>
+<text class="ts t-indigo" x="400" y="1782" style="cursor:pointer;pointer-events:all" onclick="openM('s8')" text-anchor="middle" dominant-baseline="central">완료 상태</text>
+<line x1="400" y1="1794" x2="400" y2="1818" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- 변경 시공·계약변경 (외부) -->
+<rect class="box gray" x="310" y="1818" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="1834" text-anchor="middle" dominant-baseline="central">변경 시공·계약변경</text>
+<text class="ts t-gray" x="400" y="1850" text-anchor="middle" dominant-baseline="central">준공 75일 전까지 완료</text>
+
+<!-- 범례 -->
+<!-- 범례 -->
+<rect x="40" y="1896" width="730" height="66" rx="6" fill="#FAFAF8" stroke="#E0DED6" stroke-width="0.5"/>
+<text class="ts t-gray" x="56" y="1910" dominant-baseline="central" font-weight="600">범례</text>
+
+<rect x="56" y="1920" width="14" height="10" rx="2" fill="#E6F1FB" stroke="#185FA5" stroke-width=".5"/>
+<text class="ts t-gray" x="74" y="1926" dominant-baseline="central">시공자</text>
+
+<rect x="120" y="1920" width="14" height="10" rx="2" fill="#EAF3DE" stroke="#639922" stroke-width=".5"/>
+<text class="ts t-gray" x="138" y="1926" dominant-baseline="central">공사감독원</text>
+
+<rect x="210" y="1920" width="14" height="10" rx="2" fill="#EEF2FF" stroke="#4F46E5" stroke-width=".5"/>
+<text class="ts t-gray" x="228" y="1926" dominant-baseline="central">발주청</text>
+
+<rect x="280" y="1920" width="14" height="10" rx="2" fill="#FCEBEB" stroke="#A32D2D" stroke-width=".5"/>
+<text class="ts t-gray" x="298" y="1926" dominant-baseline="central">보완·미승인</text>
+
+<rect x="390" y="1920" width="14" height="10" rx="2" fill="#FEF9E7" stroke="#D4A017" stroke-width=".5"/>
+<text class="ts t-gray" x="408" y="1926" dominant-baseline="central">경미</text>
+
+<rect x="450" y="1920" width="14" height="10" rx="2" fill="#FFF3E0" stroke="#E65100" stroke-width=".5"/>
+<text class="ts t-gray" x="468" y="1926" dominant-baseline="central">긴급</text>
+
+<polygon points="66,1946 76,1952 66,1958 56,1952" fill="#fff" stroke="#639922" stroke-width=".8"/>
+<text class="ts t-gray" x="82" y="1952" dominant-baseline="central">판단 분기</text>
+
+<line x1="140" y1="1952" x2="164" y2="1952" stroke="#A32D2D" stroke-width="1" stroke-dasharray="3 2"/>
+<text class="ts t-gray" x="170" y="1952" dominant-baseline="central">보완·미승인 경로</text>
+
+<line x1="230" y1="1952" x2="254" y2="1952" stroke="#639922" stroke-width="1"/>
+<text class="ts t-gray" x="260" y="1952" dominant-baseline="central">확인 경로</text>
+
+<line x1="320" y1="1952" x2="344" y2="1952" stroke="#3d3d3a" stroke-width="1"/>
+<text class="ts t-gray" x="350" y="1952" dominant-baseline="central">일반 흐름</text>
+</svg>
+</section>
+
+<section class="type-flow-panel" data-flow-panel="urgent" aria-label="긴급 전체 업무 흐름">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 810 1280" role="img" aria-label="긴급 처리유형 bCMF 업무 흐름">
+<defs>
+<marker id="arrowUrgent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.box { fill: #fff; stroke-width: 0.5; }
+.gray    { fill: #F1EFE8; stroke: #888780; } .t-gray   { fill: #5F5E5A; }
+.blue { fill: #E6F1FB; stroke: #185FA5; } .t-blue { fill: #042C53; }
+.green { fill: #EAF3DE; stroke: #639922; } .t-green { fill: #173404; }
+.indigo { fill: #EEF2FF; stroke: #4F46E5; } .t-indigo { fill: #1E1B6E; }
+.red { fill: #FCEBEB; stroke: #A32D2D; } .t-red { fill: #501313; }
+.orange  { fill: #FFF3E0; stroke: #E65100; } .t-orange { fill: #4E1700; }
+.yellow { fill: #FEF9E7; stroke: #D4A017; stroke-width: 1.2; } .t-yellow { fill: #6B5300; }
+.dia-gray   { fill: #FFFFFF; stroke: #888780;  stroke-width: 1.2; }
+.dia-green { fill: #FFFFFF; stroke: #639922; stroke-width: 1.2; }
+.dia-indigo { fill: #FFFFFF; stroke: #4F46E5; stroke-width: 1.2; }
+.th { font-weight: 700; font-size: 16px; } .ts { font-size: 13.5px; font-weight: 500; }
+.u-sec{fill:none;stroke:#9A9890;stroke-width:1.1;stroke-dasharray:6 5}
+.u-box{fill:#fff;stroke-width:1.1}.u-blue{fill:#E6F1FB;stroke:#185FA5}.u-green{fill:#EAF3DE;stroke:#639922}.u-indigo{fill:#EEF2FF;stroke:#4F46E5}.u-orange{fill:#FFF3E0;stroke:#E65100}.u-yellow{fill:#FEF9E7;stroke:#D4A017}.u-gray{fill:#F8F7F3;stroke:#B8B5AA}.u-red{fill:#FCEBEB;stroke:#A32D2D}.u-dia{fill:#fff;stroke:#888780;stroke-width:1.2}.u-check{fill:#fff;stroke:#639922;stroke-width:1.2}.u-decision{fill:#fff;stroke:#4F46E5;stroke-width:1.2}
+.u-sec-title{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:11.5px;font-weight:700}.u-sec-sub{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500}
+.u-t{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:11.5px;font-weight:700;fill:#2C2C2A}.u-st{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500;fill:#5F5E5A}.u-sm{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500;fill:#888780}.u-lb{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500}.u-o{fill:#E65100}.u-y{fill:#D4A017}.u-g{fill:#639922}.u-b{fill:#185FA5}.u-r{fill:#A32D2D}.u-i{fill:#4F46E5}.u-line{fill:none;stroke:#3D3D3A;stroke-width:1.2;marker-end:url(#arrowUrgent)}.u-dash{fill:none;stroke:#E65100;stroke-width:1.1;stroke-dasharray:5 4;marker-end:url(#arrowUrgent)}.u-redline{fill:none;stroke:#A32D2D;stroke-width:1.1;stroke-dasharray:5 4;marker-end:url(#arrowUrgent)}
+</style>
+</defs>
+
+<rect x="20" y="20" width="720" height="296" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="44">처리유형 판단</text>
+<text class="ts t-gray" x="40" y="62">현장 사유 발생 후 처리유형에 따라 진입 경로 결정</text>
+
+<rect class="box gray" x="310" y="76" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="92" text-anchor="middle" dominant-baseline="central">현장 사유 발생</text>
+<text class="ts t-gray" x="400" y="108" text-anchor="middle" dominant-baseline="central">시공자 · 변경 사유 발견</text>
+<line x1="400" y1="120" x2="400" y2="144" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#arrowUrgent)"/>
+
+<polygon class="dia-gray" points="400,144 520,184 400,224 280,184"/>
+<text class="th t-gray" x="400" y="176" text-anchor="middle" dominant-baseline="central">처리유형</text>
+<text class="ts t-gray" x="400" y="194" text-anchor="middle" dominant-baseline="central">긴급 / 경미 / 일반</text>
+
+<line x1="280" y1="184" x2="226" y2="184" stroke="#639922" stroke-width="1" marker-end="url(#arrowUrgent)"/>
+<text class="ts" fill="#639922" x="253" y="175" text-anchor="middle">경미</text>
+<rect class="box yellow" x="90" y="148" width="132" height="76" rx="8" onclick="selectFlowType('minor')"/>
+<text class="th t-yellow" x="156" y="164" text-anchor="middle" dominant-baseline="central">경미한 설계변경</text>
+<text class="ts t-yellow" x="156" y="180" text-anchor="middle" dominant-baseline="central">간소 검토·보고</text>
+<text class="ts t-yellow" x="156" y="196" text-anchor="middle" dominant-baseline="central">미해당 시 일반 전환</text>
+<text class="ts t-yellow" x="156" y="212" text-anchor="middle" dominant-baseline="central">(제67조 ④항)</text>
+
+<line x1="520" y1="184" x2="584" y2="184" stroke="#E65100" stroke-width="1" marker-end="url(#arrowUrgent)"/>
+<text class="ts" fill="#E65100" x="552" y="175" text-anchor="middle">긴급</text>
+<rect class="box orange" x="586" y="148" width="130" height="76" rx="8" onclick="selectFlowType('urgent')"/>
+<text class="th t-orange" x="651" y="164" text-anchor="middle" dominant-baseline="central">긴급 실정보고</text>
+<text class="ts t-orange" x="651" y="180" text-anchor="middle" dominant-baseline="central">기초·주공정 중대 영향</text>
+<text class="ts t-orange" x="651" y="196" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스 즉시 보고</text>
+<text class="ts t-orange" x="651" y="212" text-anchor="middle" dominant-baseline="central">(제67조 ⑩항)</text>
+
+<line x1="400" y1="224" x2="400" y2="248" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#arrowUrgent)"/>
+<text class="ts" fill="#3d3d3a" x="450" y="240" text-anchor="middle">일반</text>
+<rect class="box gray" x="310" y="248" width="180" height="54" rx="8" stroke-dasharray="3 2" fill-opacity="0.55" onclick="selectFlowType('normal')"/>
+<text class="th t-gray" x="400" y="268" text-anchor="middle" dominant-baseline="central">일반 프로세스</text>
+<text class="ts t-gray" x="400" y="286" text-anchor="middle" dominant-baseline="central">실정보고 접수로 진행</text>
+
+<path class="u-dash" d="M651 224 L651 332 L400 332 L400 410"/>
+<rect class="u-sec" x="20" y="340" width="720" height="920" rx="12"/>
+<text class="u-sec-title t-gray" x="40" y="366">긴급 처리 구간</text>
+<text class="u-sec-sub t-gray" x="40" y="386">시스템 외 행위는 번호 없이 표시하고, bCMF에서 처리하는 단계만 번호로 관리</text>
+
+<rect class="box gray" x="310" y="414" width="180" height="46" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="u-t" x="400" y="431" text-anchor="middle" dominant-baseline="central">즉시보고</text>
+<text class="u-st" x="400" y="448" text-anchor="middle" dominant-baseline="central">시스템 외 · 유선/이메일/팩스</text>
+<line class="u-line" x1="400" y1="460" x2="400" y2="480"/>
+
+<rect class="box gray" x="310" y="480" width="180" height="46" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="u-t" x="400" y="497" text-anchor="middle" dominant-baseline="central">현장 확인·구두지시</text>
+<text class="u-st" x="400" y="514" text-anchor="middle" dominant-baseline="central">공사감독원 · 시스템 외</text>
+<line class="u-line" x1="400" y1="526" x2="400" y2="546"/>
+
+<rect class="box blue" x="310" y="546" width="180" height="46" rx="8" onclick="selectDetail('u1')"/>
+<text class="u-t t-blue" x="400" y="563" text-anchor="middle" dominant-baseline="central">1. 긴급 실정보고 접수</text>
+<text class="u-st" x="400" y="580" text-anchor="middle" dominant-baseline="central">시공자</text>
+<line class="u-line" x1="400" y1="592" x2="400" y2="612"/>
+
+<rect class="box green" x="310" y="612" width="180" height="46" rx="8" onclick="selectDetail('u2')"/>
+<text class="u-t t-green" x="400" y="629" text-anchor="middle" dominant-baseline="central">2. 긴급조치 근거 등록</text>
+<text class="u-st" x="400" y="646" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line class="u-line" x1="400" y1="658" x2="400" y2="678"/>
+
+<rect class="box gray" x="310" y="678" width="180" height="46" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="u-t" x="400" y="695" text-anchor="middle" dominant-baseline="central">우선 시공</text>
+<text class="u-st" x="400" y="712" text-anchor="middle" dominant-baseline="central">시스템 외 · 승인 범위 내 시공</text>
+<line class="u-line" x1="400" y1="724" x2="400" y2="744"/>
+
+<rect class="box blue" x="310" y="744" width="180" height="46" rx="8" onclick="selectDetail('u3')"/>
+<text class="u-t t-blue" x="400" y="761" text-anchor="middle" dominant-baseline="central">3. 설계변경 접수</text>
+<text class="u-st" x="400" y="778" text-anchor="middle" dominant-baseline="central">시공자</text>
+<line class="u-line" x1="400" y1="790" x2="400" y2="810"/>
+
+<rect class="box green" x="310" y="810" width="180" height="46" rx="8" onclick="selectDetail('u4')"/>
+<text class="u-t t-green" x="400" y="827" text-anchor="middle" dominant-baseline="central">4. 설계변경 검토</text>
+<text class="u-st" x="400" y="844" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line class="u-line" x1="400" y1="856" x2="400" y2="876"/>
+
+<polygon class="dia-green" points="400,876 510,909 400,942 290,909"/>
+<text class="u-t t-green" x="400" y="904" text-anchor="middle" dominant-baseline="central">서류 적정성 확인</text>
+<text class="u-st" x="400" y="922" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+
+<path class="u-redline" d="M290 909 L250 909"/>
+<text class="u-lb u-r" x="270" y="897" text-anchor="middle">반려</text>
+<rect class="box red" x="70" y="885" width="180" height="50" rx="6"/>
+<text class="u-t u-r" x="160" y="905" text-anchor="middle" dominant-baseline="central">반려</text>
+<text class="u-st u-r" x="160" y="923" text-anchor="middle" dominant-baseline="central">공사감독원 → 시공자 보완</text>
+<path class="u-redline" d="M70 909 L50 909 L50 767 L310 767"/>
+
+<line class="u-line" x1="400" y1="942" x2="400" y2="964"/>
+<text class="u-lb u-g" x="418" y="956">확인</text>
+
+<rect class="box green" x="310" y="964" width="180" height="46" rx="8" onclick="selectDetail('u5')"/>
+<text class="u-t t-green" x="400" y="981" text-anchor="middle" dominant-baseline="central">5. 설계변경 승인요청</text>
+<text class="u-st" x="400" y="998" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<line class="u-line" x1="400" y1="1010" x2="400" y2="1032"/>
+
+<polygon class="dia-indigo" points="400,1032 510,1065 400,1098 290,1065"/>
+<text class="u-t t-indigo" x="400" y="1060" text-anchor="middle" dominant-baseline="central">설계변경 방침 결정</text>
+<text class="u-st" x="400" y="1078" text-anchor="middle" dominant-baseline="central">발주청</text>
+
+<path class="u-redline" d="M290 1065 L250 1065"/>
+<text class="u-lb u-r" x="270" y="1053" text-anchor="middle">반려</text>
+<rect class="box red" x="70" y="1041" width="180" height="50" rx="6"/>
+<text class="u-t u-r" x="160" y="1061" text-anchor="middle" dominant-baseline="central">보완 지시</text>
+<text class="u-st u-r" x="160" y="1079" text-anchor="middle" dominant-baseline="central">발주청 → 공사감독원 → 시공자</text>
+<path class="u-redline" d="M70 1065 L50 1065 L50 767 L310 767"/>
+
+<line class="u-line" x1="400" y1="1098" x2="400" y2="1120"/>
+<text class="u-lb u-i" x="418" y="1112">승인</text>
+<rect class="box indigo" x="310" y="1120" width="180" height="46" rx="8" onclick="selectDetail('u6')"/>
+<text class="u-t t-indigo" x="400" y="1137" text-anchor="middle" dominant-baseline="central">6. 설계변경 완료</text>
+<text class="u-st" x="400" y="1154" text-anchor="middle" dominant-baseline="central">완료 상태</text>
+
+<rect x="48" y="1190" width="690" height="58" rx="6" fill="#FAFAF8" stroke="#E0DED6" stroke-width="0.5"/>
+<text class="u-st" x="62" y="1206" dominant-baseline="central" font-weight="700">범례</text>
+
+<rect x="62" y="1216" width="14" height="10" rx="2" fill="#E6F1FB" stroke="#185FA5" stroke-width=".5"/>
+<text class="u-st" x="80" y="1222" dominant-baseline="central">시공자</text>
+
+<rect x="126" y="1216" width="14" height="10" rx="2" fill="#EAF3DE" stroke="#639922" stroke-width=".5"/>
+<text class="u-st" x="144" y="1222" dominant-baseline="central">공사감독원</text>
+
+<rect x="216" y="1216" width="14" height="10" rx="2" fill="#EEF2FF" stroke="#4F46E5" stroke-width=".5"/>
+<text class="u-st" x="234" y="1222" dominant-baseline="central">발주청</text>
+
+<rect x="286" y="1216" width="14" height="10" rx="2" fill="#FCEBEB" stroke="#A32D2D" stroke-width=".5"/>
+<text class="u-st" x="304" y="1222" dominant-baseline="central">보완·반려</text>
+
+<rect x="380" y="1216" width="14" height="10" rx="2" fill="#FFF3E0" stroke="#E65100" stroke-width=".5"/>
+<text class="u-st" x="398" y="1222" dominant-baseline="central">긴급</text>
+
+<rect x="444" y="1216" width="14" height="10" rx="2" fill="#F1EFE8" stroke="#888780" stroke-width=".5" stroke-dasharray="3 2"/>
+<text class="u-st" x="462" y="1222" dominant-baseline="central">시스템 외 확인·결정</text>
+
+<polygon points="72,1234 82,1240 72,1246 62,1240" fill="#fff" stroke="#639922" stroke-width=".8"/>
+<text class="u-st" x="88" y="1240" dominant-baseline="central">판단 분기</text>
+
+<line x1="150" y1="1240" x2="174" y2="1240" stroke="#A32D2D" stroke-width="1" stroke-dasharray="3 2"/>
+<text class="u-st" x="180" y="1240" dominant-baseline="central">보완·반려 경로</text>
+
+<line x1="274" y1="1240" x2="298" y2="1240" stroke="#639922" stroke-width="1"/>
+<text class="u-st" x="304" y="1240" dominant-baseline="central">확인 경로</text>
+
+<line x1="372" y1="1240" x2="396" y2="1240" stroke="#3d3d3a" stroke-width="1"/>
+<text class="u-st" x="402" y="1240" dominant-baseline="central">일반 흐름</text>
+</svg>
+</section>
+
+<section class="type-flow-panel" data-flow-panel="minor" aria-label="경미 전체 업무 흐름">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 810 1300" role="img" aria-label="경미 처리유형 bCMF 업무 흐름">
+<defs>
+<marker id="arrowMinor" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.box { fill: #fff; stroke-width: 0.5; }
+.gray    { fill: #F1EFE8; stroke: #888780; } .t-gray   { fill: #5F5E5A; }
+.blue { fill: #E6F1FB; stroke: #185FA5; } .t-blue { fill: #042C53; }
+.green { fill: #EAF3DE; stroke: #639922; } .t-green { fill: #173404; }
+.indigo { fill: #EEF2FF; stroke: #4F46E5; } .t-indigo { fill: #1E1B6E; }
+.red { fill: #FCEBEB; stroke: #A32D2D; } .t-red { fill: #501313; }
+.orange  { fill: #FFF3E0; stroke: #E65100; } .t-orange { fill: #4E1700; }
+.yellow { fill: #FEF9E7; stroke: #D4A017; stroke-width: 1.2; } .t-yellow { fill: #6B5300; }
+.dia-gray   { fill: #FFFFFF; stroke: #888780;  stroke-width: 1.2; }
+.dia-green { fill: #FFFFFF; stroke: #639922; stroke-width: 1.2; }
+.th { font-weight: 700; font-size: 16px; } .ts { font-size: 13.5px; font-weight: 500; }
+.m-sec{fill:none;stroke:#9A9890;stroke-width:1.1;stroke-dasharray:6 5}
+.m-box{fill:#fff;stroke-width:1.1}.m-blue{fill:#E6F1FB;stroke:#185FA5}.m-green{fill:#EAF3DE;stroke:#639922}.m-indigo{fill:#EEF2FF;stroke:#4F46E5}.m-orange{fill:#FFF3E0;stroke:#E65100}.m-yellow{fill:#FEF9E7;stroke:#D4A017}.m-red{fill:#FCEBEB;stroke:#A32D2D}.m-gray{fill:#F8F7F3;stroke:#B8B5AA}.m-dia{fill:#fff;stroke:#888780;stroke-width:1.2}.m-check{fill:#fff;stroke:#639922;stroke-width:1.2}
+.m-sec-title{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:11.5px;font-weight:700}.m-sec-sub{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500}
+.m-t{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:11.5px;font-weight:700;fill:#2C2C2A}.m-st{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500;fill:#5F5E5A}.m-sm{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500;fill:#888780}.m-lb{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:9.5px;font-weight:500}.m-o{fill:#E65100}.m-y{fill:#D4A017}.m-g{fill:#639922}.m-b{fill:#185FA5}.m-r{fill:#A32D2D}.m-i{fill:#4F46E5}.m-line{fill:none;stroke:#3D3D3A;stroke-width:1.2;marker-end:url(#arrowMinor)}.m-dash{fill:none;stroke:#A32D2D;stroke-width:1.1;stroke-dasharray:5 4;marker-end:url(#arrowMinor)}.m-sel{fill:none;stroke:#D4A017;stroke-width:1.1;marker-end:url(#arrowMinor)}
+</style>
+</defs>
+
+<rect x="20" y="20" width="720" height="296" rx="12" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<text class="th t-gray" x="40" y="44">처리유형 판단</text>
+<text class="ts t-gray" x="40" y="62">현장 사유 발생 후 처리유형에 따라 진입 경로 결정</text>
+
+<rect class="box gray" x="310" y="76" width="180" height="44" rx="8" stroke-dasharray="3 2" fill-opacity="0.4"/>
+<text class="th t-gray" x="400" y="92" text-anchor="middle" dominant-baseline="central">현장 사유 발생</text>
+<text class="ts t-gray" x="400" y="108" text-anchor="middle" dominant-baseline="central">시공자 · 변경 사유 발견</text>
+<line x1="400" y1="120" x2="400" y2="144" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#arrowMinor)"/>
+
+<polygon class="dia-gray" points="400,144 520,184 400,224 280,184"/>
+<text class="th t-gray" x="400" y="176" text-anchor="middle" dominant-baseline="central">처리유형</text>
+<text class="ts t-gray" x="400" y="194" text-anchor="middle" dominant-baseline="central">긴급 / 경미 / 일반</text>
+
+<line x1="280" y1="184" x2="226" y2="184" stroke="#639922" stroke-width="1" marker-end="url(#arrowMinor)"/>
+<text class="ts" fill="#639922" x="253" y="175" text-anchor="middle">경미</text>
+<rect class="box yellow" x="90" y="148" width="132" height="76" rx="8" onclick="selectFlowType('minor')"/>
+<text class="th t-yellow" x="156" y="164" text-anchor="middle" dominant-baseline="central">경미한 설계변경</text>
+<text class="ts t-yellow" x="156" y="180" text-anchor="middle" dominant-baseline="central">간소 검토·보고</text>
+<text class="ts t-yellow" x="156" y="196" text-anchor="middle" dominant-baseline="central">미해당 시 일반 전환</text>
+<text class="ts t-yellow" x="156" y="212" text-anchor="middle" dominant-baseline="central">(제67조 ④항)</text>
+
+<line x1="520" y1="184" x2="584" y2="184" stroke="#E65100" stroke-width="1" marker-end="url(#arrowMinor)"/>
+<text class="ts" fill="#E65100" x="552" y="175" text-anchor="middle">긴급</text>
+<rect class="box orange" x="586" y="148" width="130" height="76" rx="8" onclick="selectFlowType('urgent')"/>
+<text class="th t-orange" x="651" y="164" text-anchor="middle" dominant-baseline="central">긴급 실정보고</text>
+<text class="ts t-orange" x="651" y="180" text-anchor="middle" dominant-baseline="central">기초·주공정 중대 영향</text>
+<text class="ts t-orange" x="651" y="196" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스 즉시 보고</text>
+<text class="ts t-orange" x="651" y="212" text-anchor="middle" dominant-baseline="central">(제67조 ⑩항)</text>
+
+<line x1="400" y1="224" x2="400" y2="248" stroke="#3d3d3a" stroke-width="1.5" marker-end="url(#arrowMinor)"/>
+<text class="ts" fill="#3d3d3a" x="450" y="240" text-anchor="middle">일반</text>
+<rect class="box gray" x="310" y="248" width="180" height="54" rx="8" stroke-dasharray="3 2" fill-opacity="0.55" onclick="selectFlowType('normal')"/>
+<text class="th t-gray" x="400" y="268" text-anchor="middle" dominant-baseline="central">일반 프로세스</text>
+<text class="ts t-gray" x="400" y="286" text-anchor="middle" dominant-baseline="central">실정보고 접수로 진행</text>
+
+<path class="m-sel" d="M156 224 L156 332 L400 332 L400 410"/>
+<rect class="m-sec" x="20" y="340" width="720" height="960" rx="12"/>
+<text class="m-sec-title t-gray" x="40" y="366">경미 처리 구간</text>
+<text class="m-sec-sub t-gray" x="40" y="386">현장 간이확인과 증빙 누적 후 bCMF에 경미자료를 접수·검토·기록</text>
+
+<rect class="box gray" x="310" y="414" width="180" height="50" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="m-t" x="400" y="432" text-anchor="middle" dominant-baseline="central">현장 간이확인·구두지시</text>
+<text class="m-st" x="400" y="450" text-anchor="middle" dominant-baseline="central">시스템 외: 시공자↔공사감독원</text>
+<line class="m-line" x1="400" y1="464" x2="400" y2="488"/>
+
+<rect class="box gray" x="310" y="488" width="180" height="50" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="m-t" x="400" y="506" text-anchor="middle" dominant-baseline="central">선시공·증빙 누적</text>
+<text class="m-st" x="400" y="524" text-anchor="middle" dominant-baseline="central">시스템 외: 사진·수량·도면 정리</text>
+<line class="m-line" x1="400" y1="538" x2="400" y2="562"/>
+
+<rect class="box blue" x="310" y="562" width="180" height="50" rx="8" onclick="selectDetail('m1')"/>
+<text class="m-t t-blue" x="400" y="580" text-anchor="middle" dominant-baseline="central">1. 경미자료 접수</text>
+<text class="m-st" x="400" y="598" text-anchor="middle" dominant-baseline="central">시공자: 누적자료 제출</text>
+<line class="m-line" x1="400" y1="612" x2="400" y2="636"/>
+
+<rect class="box green" x="310" y="636" width="180" height="50" rx="8" onclick="selectDetail('m2')"/>
+<text class="m-t t-green" x="400" y="654" text-anchor="middle" dominant-baseline="central">2. 경미 여부 검토</text>
+<text class="m-st" x="400" y="672" text-anchor="middle" dominant-baseline="central">공사감독원: 경미 여부 검토</text>
+<line class="m-line" x1="400" y1="686" x2="400" y2="712"/>
+
+<polygon class="dia-green" points="400,712 520,754 400,796 280,754"/>
+<text class="m-t t-green" x="400" y="750" text-anchor="middle" dominant-baseline="central">경미 해당?</text>
+<text class="m-st" x="400" y="770" text-anchor="middle" dominant-baseline="central">제67조 ④항 기준</text>
+
+<path class="m-dash" d="M280 754 L244 754"/>
+<text class="m-lb m-r" x="252" y="746" text-anchor="middle">아니오</text>
+<rect class="box red" x="92" y="730" width="150" height="50" rx="6"/>
+<text class="m-t m-r" x="167" y="750" text-anchor="middle" dominant-baseline="central">일반 전환</text>
+<text class="m-st" x="167" y="768" text-anchor="middle" dominant-baseline="central">1단계 접수로 전환</text>
+
+<line class="m-line" x1="400" y1="796" x2="400" y2="822"/>
+<text class="m-lb m-g" x="418" y="814">예</text>
+
+<rect class="box green" x="310" y="822" width="180" height="50" rx="8" onclick="selectDetail('m3')"/>
+<text class="m-t t-green" x="400" y="840" text-anchor="middle" dominant-baseline="central">3. 경미 처리 확정</text>
+<text class="m-st" x="400" y="858" text-anchor="middle" dominant-baseline="central">공사감독원: 검토결과 기록</text>
+<line class="m-line" x1="400" y1="872" x2="400" y2="896"/>
+
+<rect class="box gray" x="310" y="896" width="180" height="50" rx="8" stroke-dasharray="3 2" fill-opacity="0.55" onclick="selectDetail('m4')"/>
+<text class="m-t" x="400" y="914" text-anchor="middle" dominant-baseline="central">보고·통보/시행</text>
+<text class="m-st" x="400" y="932" text-anchor="middle" dominant-baseline="central">시스템 외: 발주청 보고</text>
+<line class="m-line" x1="400" y1="946" x2="400" y2="970"/>
+
+<rect class="box indigo" x="310" y="970" width="180" height="50" rx="8" onclick="selectDetail('m5')"/>
+<text class="m-t t-indigo" x="400" y="988" text-anchor="middle" dominant-baseline="central">4. 정산자료 등록</text>
+<text class="m-st" x="400" y="1006" text-anchor="middle" dominant-baseline="central">시공자: 반영자료 등록</text>
+<line class="m-line" x1="400" y1="1020" x2="400" y2="1044"/>
+
+<rect class="box gray" x="310" y="1044" width="180" height="50" rx="8" stroke-dasharray="3 2" fill-opacity="0.55"/>
+<text class="m-t" x="400" y="1062" text-anchor="middle" dominant-baseline="central">준공 전 일괄 제출</text>
+<text class="m-st" x="400" y="1080" text-anchor="middle" dominant-baseline="central">시스템 외: 공문·전자결재</text>
+<line class="m-line" x1="400" y1="1094" x2="400" y2="1118"/>
+
+<rect class="box indigo" x="310" y="1118" width="180" height="50" rx="8" onclick="selectDetail('m6')"/>
+<text class="m-t t-indigo" x="400" y="1136" text-anchor="middle" dominant-baseline="central">5. 제출결과 등록</text>
+<text class="m-st" x="400" y="1154" text-anchor="middle" dominant-baseline="central">시공자: 제출결과 기록</text>
+
+<rect x="48" y="1212" width="690" height="58" rx="6" fill="#FAFAF8" stroke="#E0DED6" stroke-width="0.5"/>
+<text class="m-st" x="62" y="1228" dominant-baseline="central" font-weight="700">범례</text>
+
+<rect x="62" y="1238" width="14" height="10" rx="2" fill="#E6F1FB" stroke="#185FA5" stroke-width=".5"/>
+<text class="m-st" x="80" y="1244" dominant-baseline="central">시공자</text>
+
+<rect x="126" y="1238" width="14" height="10" rx="2" fill="#EAF3DE" stroke="#639922" stroke-width=".5"/>
+<text class="m-st" x="144" y="1244" dominant-baseline="central">공사감독원</text>
+
+<rect x="216" y="1238" width="14" height="10" rx="2" fill="#EEF2FF" stroke="#4F46E5" stroke-width=".5"/>
+<text class="m-st" x="234" y="1244" dominant-baseline="central">발주청</text>
+
+<rect x="286" y="1238" width="14" height="10" rx="2" fill="#FCEBEB" stroke="#A32D2D" stroke-width=".5"/>
+<text class="m-st" x="304" y="1244" dominant-baseline="central">전환·보완</text>
+
+<rect x="380" y="1238" width="14" height="10" rx="2" fill="#FEF9E7" stroke="#D4A017" stroke-width=".5"/>
+<text class="m-st" x="398" y="1244" dominant-baseline="central">경미</text>
+
+<rect x="444" y="1238" width="14" height="10" rx="2" fill="#F1EFE8" stroke="#888780" stroke-width=".5" stroke-dasharray="3 2"/>
+<text class="m-st" x="462" y="1244" dominant-baseline="central">시스템 외 보고·시행</text>
+
+<polygon points="72,1256 82,1262 72,1268 62,1262" fill="#fff" stroke="#639922" stroke-width=".8"/>
+<text class="m-st" x="88" y="1262" dominant-baseline="central">판단 분기</text>
+
+<line x1="150" y1="1262" x2="174" y2="1262" stroke="#A32D2D" stroke-width="1" stroke-dasharray="3 2"/>
+<text class="m-st" x="180" y="1262" dominant-baseline="central">전환·보완 경로</text>
+
+<line x1="274" y1="1262" x2="298" y2="1262" stroke="#639922" stroke-width="1"/>
+<text class="m-st" x="304" y="1262" dominant-baseline="central">확인 경로</text>
+
+<line x1="372" y1="1262" x2="396" y2="1262" stroke="#3d3d3a" stroke-width="1"/>
+<text class="m-st" x="402" y="1262" dominant-baseline="central">일반 흐름</text>
+</svg>
+</section>
+
+</div>
+<aside class="detail-col" aria-label="선택 단계 상세">
+<nav class="stage-nav" aria-label="단계별 상세 이동">
+<button class="top-nav-btn" data-detail-nav="s0" onclick="selectDetail('s0')">0 처리유형</button>
+<button class="top-nav-btn" data-detail-nav="s1" onclick="selectDetail('s1')">1 실정보고 접수</button>
+<button class="top-nav-btn" data-detail-nav="s2" onclick="selectDetail('s2')">2 실정보고 검토</button>
+<button class="top-nav-btn" data-detail-nav="s34" onclick="selectDetail('s34')">3 실정보고 승인요청</button>
+<button class="top-nav-btn" data-detail-nav="s4" onclick="selectDetail('s4')">4 결과등록</button>
+<button class="top-nav-btn" data-detail-nav="s5" onclick="selectDetail('s5')">5 설계변경 접수</button>
+<button class="top-nav-btn" data-detail-nav="s6" onclick="selectDetail('s6')">6 설계변경 검토</button>
+<button class="top-nav-btn" data-detail-nav="s78" onclick="selectDetail('s78')">7 설계변경 승인요청</button>
+<button class="top-nav-btn" data-detail-nav="s8" onclick="selectDetail('s8')">8 설계변경 완료</button>
+</nav>
+<div class="detail-panel" id="detailPanel">
+<div class="detail-empty">상단 네비게이션 또는 좌측 플로우차트에서 단계를 선택하면 이 영역에 상세가 표시됩니다.</div>
+</div>
+</aside>
+<div class="system-col">
+<div class="sys-panel">
+<div class="sys-title">bCMF 적용 정리</div>
+
+<div class="sys-block no-detail">
+<div class="sys-head"><span class="sys-step">기준</span><span class="sys-name">전체 기준</span></div>
+<ul class="sys-list">
+<li>1~4단계는 하나의 실정보고 건이 상태만 바뀌면서 진행</li>
+<li>5~8단계는 승인된 실정보고 건에 연결된 설계변경 건으로 진행</li>
+<li>bCMF는 기본정보 입력 + 외부 작성 문서 첨부 + 상태/이력 관리 중심</li>
+<li>발주청은 bCMF에 직접 승인결과를 등록하지 않고, 시공자가 발주청 발행 승인공문 또는 미승인 통보를 등록</li>
+</ul>
+</div>
+
+<div class="sys-block" onclick="openM('s1')">
+<div class="sys-head"><span class="sys-step">1단계</span><span class="sys-name">실정보고 접수</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>시공자: 처리유형(일반/긴급/경미) 선택, 공구/위치/시설, 변경사유 요약, 개략 수량·공사비 영향 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>서류 제출 공문, 실정보고서, 설계변경사유서, 설계변경도면, 개략수량증감내역, 개략공사비증감내역, 현황사진·위치도 등</li></ul>
+<span class="sys-role">상태</span>
+<ul class="sys-list"><li>작성중 → 제출 시 2단계 실정보고 검토로 전환</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s2')">
+<div class="sys-head"><span class="sys-step">2단계</span><span class="sys-name">실정보고 검토</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>공사감독원: 검토의견 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>기술검토의견서, 필요 시 첨부</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>반려 시 1단계 실정보고 접수로 되돌림, 검토완료 처리 시 3단계 실정보고 승인요청으로 전환</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s34')">
+<div class="sys-head"><span class="sys-step">3단계</span><span class="sys-name">실정보고 승인요청</span></div>
+<span class="sys-role">승인요청 처리</span>
+<ul class="sys-list"><li>공사감독원이 실정보고 승인요청 공문을 첨부해 실정보고 건에 기록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>실정보고 승인요청 공문, 실정보고 첨부서류, 기술검토의견서 최종본 필요 시 첨부</li></ul>
+<span class="sys-role">결과등록 대기</span>
+<ul class="sys-list"><li>승인요청 후 시공자 공문등록 대기 상태로 전환</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s4')">
+<div class="sys-head"><span class="sys-step">4단계</span><span class="sys-name">실정보고 결과등록</span></div>
+<span class="sys-role">결과문서 등록</span>
+<ul class="sys-list"><li>시공자: 발주청 승인공문 또는 미승인 통보 등록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>발주청 발행 승인공문 또는 미승인 통보 첨부</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>승인공문 등록 시 5단계 설계변경 접수 가능, 미승인 통보 등록 시 종결</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s5')">
+<div class="sys-head"><span class="sys-step">5단계</span><span class="sys-name">설계변경 접수</span></div>
+<span class="sys-role">연결</span>
+<ul class="sys-list"><li>승인된 실정보고 건과 연결하고 기존 정보 자동 승계</li></ul>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>시공자: 변경금액·계약조정 여부 등 보완정보만 입력</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>변경설계서: 변경도면·시방서·계산서, 수량산출조서, 변경공사비 내역서, 계약금액조정요청서 등</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>제출 시 6단계 설계변경 검토로 전환</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s6')">
+<div class="sys-head"><span class="sys-step">6단계</span><span class="sys-name">설계변경 검토</span></div>
+<span class="sys-role">bCMF 입력</span>
+<ul class="sys-list"><li>공사감독원: 검토의견 입력</li></ul>
+<span class="sys-role">검토 처리</span>
+<ul class="sys-list"><li>제출자료 미리보기·다운로드, 수량·공사비·계약금액 조정 내용 검토</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>기술검토의견서, 검토자료(필요 시)</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>반려 시 5단계 설계변경 접수로 되돌림, 검토완료 처리 시 7단계 설계변경 승인요청으로 전환</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s78')">
+<div class="sys-head"><span class="sys-step">7단계</span><span class="sys-name">설계변경 승인요청</span></div>
+<span class="sys-role">승인요청 처리</span>
+<ul class="sys-list"><li>공사감독원이 설계변경 승인요청 공문을 첨부해 설계변경 건에 기록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>설계변경 승인요청 공문, 설계변경 첨부서류, 기술검토의견서 최종본, 계약금액조정요청서 등</li></ul>
+<span class="sys-role">설계변경 방침결정 대기</span>
+<ul class="sys-list"><li>발주청 설계변경 방침결정 후 8단계에서 결과문서 등록</li></ul>
+</div>
+
+<div class="sys-block" onclick="openM('s8')">
+<div class="sys-head"><span class="sys-step">8단계</span><span class="sys-name">설계변경 완료</span></div>
+<span class="sys-role">결과문서 등록</span>
+<ul class="sys-list"><li>시공자: 설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문 등록</li></ul>
+<span class="sys-role">외부 첨부</span>
+<ul class="sys-list"><li>설계변경 승인공문, 계약변경 통보 공문, 보완지시 공문</li></ul>
+<span class="sys-role">처리 후</span>
+<ul class="sys-list"><li>승인공문 등록 시 완료, 보완지시 공문 등록 시 5단계 접수로 되돌림</li></ul>
+</div>
+
+<div class="sys-note">오른쪽 요약은 전체 기준이고, 각 단계 카드를 누르면 해당 bCMF 처리 화면 예시를 확인한다.</div>
+</div>
+</div>
+</div>
+
+<!-- 단계별 BCMF 처리 모달 -->
+<div class="mbk" id="mb-s0" onclick="closeM('s0',event)"><div class="modal"><div class="mhd"><div><span class="badge b-ug">유형선택</span><div class="mtitle">bCMF 처리: 처리유형 선택</div><div class="msub">시공자가 신규등록 화면에서 처리유형을 선택하고, 선택값에 따라 일반·긴급·경미 경로로 진입한다.</div></div><button class="mclose" onclick="closeM('s0')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="simple-plan">
+<table class="simple-table" aria-label="처리유형 선택 정리">
+<thead><tr><th>구분</th><th>내용</th></tr></thead>
+<tbody>
+<tr><td>진입</td><td>시공자 <span class="text-pill">신규등록</span> 클릭</td></tr>
+<tr><td>선택 주체</td><td>시공자</td></tr>
+<tr><td>후속 주체</td><td>시공자 접수·결과등록, 공사감독원 검토·승인요청, 발주청 승인/미승인 판단</td></tr>
+<tr><td>선택 전</td><td>접수 전 상태, 처리유형 미선택</td></tr>
+<tr><td>저장 전</td><td>접수 건 미생성, 내 업무 대기열 미표시</td></tr>
+<tr><td>임시저장 시</td><td>작성중 상태, 선택한 처리유형 기준으로 시공자 내 업무 대기열 표시</td></tr>
+<tr><td>제출 후</td><td>선택한 처리유형 기준으로 다음 단계 전환</td></tr>
+</tbody>
+</table>
+</div>
+<div class="type-picker" aria-label="처리유형 선택">
+<div><div class="type-title">처리 유형</div></div>
+<div class="type-options">
+<button class="type-option selected" type="button" data-type-btn="normal" onclick="selectRouteType('normal')"><strong>일반</strong><span>정식 절차</span></button>
+<button class="type-option" type="button" data-type-btn="urgent" onclick="selectRouteType('urgent')"><strong>긴급</strong><span>우선 처리</span></button>
+<button class="type-option" type="button" data-type-btn="minor" onclick="selectRouteType('minor')"><strong>경미</strong><span>간소 처리</span></button>
+</div>
+</div>
+<div class="route-legend"><span class="route-lg bcmf">BCMF 내부</span><span class="route-lg ext">시스템 외</span><span class="route-lg stop">전환/종결</span></div>
+<div class="route-card active" data-route="normal">
+<div class="route-head"><span class="route-title">일반</span><span class="route-desc">정식 실정보고 + 설계변경 절차</span></div>
+<div class="route-steps">
+<span class="route-step s">1. 실정보고 접수</span><span class="route-arrow">→</span>
+<span class="route-step g">2. 실정보고 검토</span><span class="route-arrow">→</span>
+<span class="route-step g">3. 실정보고 승인요청</span><span class="route-arrow">→</span>
+<span class="route-step p">4. 결과등록</span><span class="route-arrow">→</span>
+<span class="route-step s">5. 설계변경 접수</span><span class="route-arrow">→</span>
+<span class="route-step g">6. 설계변경 검토</span><span class="route-arrow">→</span>
+<span class="route-step g">7. 설계변경 승인요청</span><span class="route-arrow">→</span>
+<span class="route-step p">8. 설계변경 완료</span>
+</div>
+<div class="simple-actions"><div class="simple-actions-title">화면 버튼</div><div class="simple-actions-list"><span class="simple-action-btn neutral">신규등록</span><span class="simple-action-btn primary">일반 선택</span><span class="simple-action-btn primary">임시저장</span><span class="simple-action-btn primary">1단계 실정보고 접수</span></div></div>
+<div class="route-detail">
+<div class="simple-plan">
+<div class="simple-split">
+<div class="simple-box">
+<div class="simple-box-title">bCMF 입력</div>
+<ul>
+<li>처리유형: 일반</li>
+<li>검토 담당자: 공사감독원 선택</li>
+<li>위치정보, 변경사유</li>
+<li>개략 수량·공사비 영향</li>
+<li>승인된 실정보고 건과 설계변경 연결 정보</li>
+</ul>
+</div>
+<div class="simple-box">
+<div class="simple-box-title">선택 후 화면 전환 <span class="text-pill">일반 절차</span></div>
+<ul>
+<li>일반 선택 시 1단계 실정보고 접수 화면으로 진입</li>
+<li>실정보고 승인 결과등록 후 5단계 설계변경 접수로 연결</li>
+<li>5~8단계는 승인된 실정보고 건을 기준으로 진행</li>
+<li>첨부문서 상세는 각 단계 화면에서 확인</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="route-card dim" data-route="urgent">
+<div class="route-head"><span class="route-title">긴급</span><span class="route-desc">별도 작성 박스 없이 설계변경 접수 단계에서 정식 서류 작성·첨부</span></div>
+<div class="route-steps">
+<span class="route-step ext">즉시보고</span><span class="route-arrow">→</span>
+<span class="route-step ext">현장 확인·구두지시</span><span class="route-arrow">→</span>
+<span class="route-step s">1. 긴급 실정보고 접수</span><span class="route-arrow">→</span>
+<span class="route-step g">2. 긴급조치 근거 등록</span><span class="route-arrow">→</span>
+<span class="route-step ext">우선 시공</span><span class="route-arrow">→</span>
+<span class="route-step s">3. 설계변경 접수</span><span class="route-arrow">→</span>
+<span class="route-step g">4. 설계변경 검토</span><span class="route-arrow">→</span>
+<span class="route-step g">서류 적정성 확인</span><span class="route-arrow">→</span>
+<span class="route-step g">5. 설계변경 승인요청</span><span class="route-arrow">→</span>
+<span class="route-step ext">방침결정</span><span class="route-arrow">→</span>
+<span class="route-step p">6. 설계변경 완료</span>
+</div>
+<div class="simple-actions"><div class="simple-actions-title">화면 버튼</div><div class="simple-actions-list"><span class="simple-action-btn neutral">신규등록</span><span class="simple-action-btn primary">긴급 선택</span><span class="simple-action-btn primary">긴급 실정보고 접수</span><span class="simple-action-btn primary">긴급조치 근거 등록</span><span class="simple-action-btn primary">설계변경 접수</span></div></div>
+<div class="route-detail">
+<div class="simple-plan">
+<div class="simple-split">
+<div class="simple-box">
+<div class="simple-box-title">bCMF 입력</div>
+<ul>
+<li>처리유형: 긴급</li>
+<li>긴급 사유, 위치정보, 개략 수량·공사비 영향</li>
+<li>즉시보고 정보와 현장 확인·구두지시 내용</li>
+<li>방침구분, 우선시공 허용 범위</li>
+<li>연결 긴급 실정보고와 설계변경 연결 정보</li>
+</ul>
+</div>
+<div class="simple-box">
+<div class="simple-box-title">선택 후 화면 전환 <span class="text-pill">긴급 흐름</span></div>
+<ul>
+<li>긴급 선택 시 긴급 실정보고 접수 화면으로 진입</li>
+<li>시스템 외 즉시보고·현장확인 근거를 긴급 건에 연결</li>
+<li>공사감독원 방침 등록 후 설계변경 접수 화면으로 전환</li>
+<li>정식 첨부문서는 설계변경 접수·검토 단계에서 관리</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="route-card dim" data-route="minor">
+<div class="route-head"><span class="route-title">경미</span><span class="route-desc">간소 검토·보고 또는 일반 전환</span></div>
+<div class="route-steps">
+<span class="route-step ext">현장 간이확인·구두지시</span><span class="route-arrow">→</span>
+<span class="route-step ext">선시공·증빙누적</span><span class="route-arrow">→</span>
+<span class="route-step y">1. 경미자료 접수</span><span class="route-arrow">→</span>
+<span class="route-step g">2. 경미 여부 검토</span><span class="route-arrow">→</span>
+<span class="route-step y">3. 경미 처리 확정</span><span class="route-arrow">→</span>
+<span class="route-step ext">발주청 보고·시공자 통보/시행</span><span class="route-arrow">→</span>
+<span class="route-step p">4. 정산자료 등록</span><span class="route-arrow">→</span>
+<span class="route-step ext">준공 전 일괄 제출</span><span class="route-arrow">→</span>
+<span class="route-step p">5. 제출결과 등록</span>
+</div>
+<div class="route-steps" style="margin-top:6px">
+<span class="route-step r">경미 미해당</span><span class="route-arrow">→</span>
+<span class="route-step s">1. 실정보고 접수로 전환</span>
+</div>
+<div class="simple-actions"><div class="simple-actions-title">화면 버튼</div><div class="simple-actions-list"><span class="simple-action-btn neutral">신규등록</span><span class="simple-action-btn primary">경미 선택</span><span class="simple-action-btn primary">경미자료 제출</span><span class="simple-action-btn primary">정산자료 등록</span><span class="simple-action-btn primary">제출결과 등록</span><span class="simple-action-btn danger">일반 전환</span></div></div>
+<div class="route-detail">
+<div class="simple-plan">
+<div class="simple-split">
+<div class="simple-box">
+<div class="simple-box-title">bCMF 입력</div>
+<ul>
+<li>처리유형: 경미</li>
+<li>경미 판단근거</li>
+<li>현장 간이확인·구두지시 내용</li>
+<li>위치정보, 변경사유</li>
+<li>수량·공사비 영향</li>
+<li>보고·통보 이력, 정산·계약변경 자료</li>
+</ul>
+</div>
+<div class="simple-box">
+<div class="simple-box-title">선택 후 화면 전환 <span class="text-pill">경미 흐름</span></div>
+<ul>
+<li>현장 구두협의와 선시공 증빙은 시스템 외로 진행</li>
+<li>시공자가 사진·도면·수량·공사비 자료를 bCMF에 경미자료로 접수</li>
+<li>공사감독원이 제출자료와 현장 협의 내용을 대조해 경미 여부 검토</li>
+<li>경미 확정 후 정산자료를 등록하고, 준공 전 시스템 외 일괄 제출 뒤 제출결과를 기록</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s1" onclick="closeM('s1',event)"><div class="modal"><div class="mhd"><div><span class="badge b-ug">1단계</span><div class="mtitle">bCMF 처리: 실정보고 접수</div><div class="msub">시공자가 신규등록 화면에서 실정보고 내용을 작성하고, 임시저장 또는 제출 시 건을 생성한다.</div></div><button class="mclose" onclick="closeM('s1')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip on">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="simple-plan">
+<table class="simple-table" aria-label="1단계 실정보고 접수 정리">
+<thead><tr><th>구분</th><th>내용</th></tr></thead>
+<tbody>
+<tr><td>진입</td><td>시공자 <span class="text-pill">신규등록</span> 클릭</td></tr>
+<tr><td>선택 주체</td><td>시공자</td></tr>
+<tr><td>후속 주체</td><td>시공자 접수·결과등록, 공사감독원 검토·승인요청, 발주청 승인/미승인 판단</td></tr>
+<tr><td>신규등록 중</td><td>저장 전 상태로 접수 건 미생성, 내 업무 대기열 미표시</td></tr>
+<tr><td>임시저장 시</td><td>작성중 상태, 시공자 내 업무 대기열의 작성중 탭 표시</td></tr>
+<tr><td>제출 시</td><td>지정 공사감독원에게 제출, 2단계 실정보고 검토로 전환</td></tr>
+<tr><td>제출 후</td><td>제출 당시 첨부파일 기록 보관, 시공자·공사감독원 미리보기/다운로드 가능</td></tr>
+</tbody>
+</table>
+<div class="simple-split">
+<div class="simple-box">
+<div class="simple-box-title">bCMF 입력</div>
+<ul>
+<li>처리유형: 일반 / 긴급 / 경미</li>
+<li>검토 담당자: 공사감독원 선택</li>
+<li>공종</li>
+<li>조정항목: K~H</li>
+<li>상세코드</li>
+<li>위치정보</li>
+<li>변경사유</li>
+<li>개략 수량·공사비 영향</li>
+</ul>
+</div>
+<div class="simple-box">
+<div class="simple-box-title">첨부 문서 <span class="text-pill">시공자 작성</span></div>
+<ul>
+<li>서류 제출 공문</li>
+<li>실정보고서</li>
+<li>설계변경사유서</li>
+<li>설계변경도면</li>
+<li>개략수량증감내역</li>
+<li>개략공사비증감내역</li>
+<li>현황사진·위치도 등</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s2" onclick="closeM('s2',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">2단계</span><div class="mtitle">bCMF 처리: 실정보고 검토</div><div class="msub">공사감독원이 제출자료를 검토하고 반려 또는 승인요청으로 분기한다.</div></div><button class="mclose" onclick="closeM('s2')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip on">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">2단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>검토 처리</strong><br>공사감독원이 제출파일 미리보기·다운로드 가능<br>검토의견 입력<br>기술검토의견서 필요 시 첨부</div>
+<div class="gui-flow-item"><strong>반려 시</strong><br>반려사유 입력 후 1단계 실정보고 접수로 되돌림<br>기존 제출파일과 반려 이력 기록</div>
+<div class="gui-flow-item"><strong>처리 후</strong><br>검토완료 처리 시<br>3단계 실정보고 승인요청으로 전환</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">제출자료 검토</span><span class="gui-inline-actions"><span class="gui-btn">반려</span><span class="gui-btn primary">검토 완료</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">제출 서류 묶음</div><div class="gui-doc-meta">시공자 제출 당시 첨부파일</div></div><div class="gui-doc-actions"><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">검토의견</div><div class="gui-doc-meta">공사감독원 bCMF 입력</div></div><div class="gui-doc-actions"><span class="gui-btn">입력</span><span class="gui-btn">저장</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기술검토의견서</div><div class="gui-doc-meta">필요 시 외부 작성 후 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">반려 사유</div><div class="gui-doc-meta">반려 시 입력</div></div><div class="gui-doc-actions"><span class="gui-btn">입력</span><span class="gui-btn">저장</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s34" onclick="closeM('s34',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">3단계</span><div class="mtitle">bCMF 처리: 실정보고 승인요청</div><div class="msub">공사감독원이 승인요청 공문을 등록하고, 시공자 공문등록 대기 상태로 전환한다.</div></div><button class="mclose" onclick="closeM('s34')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip on">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">3단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>승인요청 처리</strong><br>실정보고 승인요청 공문·첨부서류·기술검토의견서 최종본 첨부<br>실정보고 건에 승인요청 이력 기록</div>
+<div class="gui-flow-item"><strong>결과등록 대기</strong><br>승인요청 후 시공자 공문등록 대기 상태로 전환<br>결과문서는 4단계에서 시공자가 등록</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">실정보고 승인요청</span><span class="gui-inline-actions"><span class="gui-btn">임시저장</span><span class="gui-btn primary">승인요청</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">실정보고 승인요청 공문</div><div class="gui-doc-meta">공사감독원 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">실정보고 첨부서류</div><div class="gui-doc-meta">실정보고서·사유서·도면·개략내역 등</div></div><div class="gui-doc-actions"><span class="gui-btn">목록</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기술검토의견서(최종)</div><div class="gui-doc-meta">공사감독원 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s4" onclick="closeM('s4',event)"><div class="modal"><div class="mhd"><div><span class="badge b-in">4단계</span><div class="mtitle">bCMF 처리: 실정보고 결과등록</div><div class="msub">시공자가 발주청 승인공문 또는 미승인 통보를 등록해 실정보고 건을 완료 또는 종결 처리한다.</div></div><button class="mclose" onclick="closeM('s4')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip on">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">4단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>결과문서 등록</strong><br>시공자가 발주청 승인공문 또는 미승인 통보 등록<br>결과문서와 처리이력 보관</div>
+<div class="gui-flow-item"><strong>승인공문 등록 시</strong><br>실정보고 완료 처리<br>5단계 설계변경 접수 가능</div>
+<div class="gui-flow-item"><strong>미승인 통보 등록 시</strong><br>실정보고 종결 처리<br>설계변경 구간으로 전환하지 않음</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">실정보고 결과문서 등록</span><span class="gui-inline-actions"><span class="gui-btn">미승인 등록</span><span class="gui-btn primary">승인공문 등록</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">실정보고 승인공문</div><div class="gui-doc-meta">승인 시 · 발주청 발행 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">미승인 통보</div><div class="gui-doc-meta">미승인 시 · 발주청 발행 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기타 승인·방침 관련 문서</div><div class="gui-doc-meta">필요 시 · 관련 근거문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s5" onclick="closeM('s5',event)"><div class="modal"><div class="mhd"><div><span class="badge b-ug">5단계</span><div class="mtitle">bCMF 처리: 설계변경 접수</div><div class="msub">승인된 실정보고 건에 연결해 시공자가 설계변경 서류를 제출한다.</div></div><button class="mclose" onclick="closeM('s5')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip on">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">5단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>작성중</strong><br>승인된 실정보고 정보 자동 승계<br>시공자는 변경설계서와 조정자료 첨부<br>변경금액 등 설계변경 제출에 필요한 보완정보만 입력</div>
+<div class="gui-flow-item"><strong>제출 시</strong><br>시공자가 공사감독원에게 제출<br>6단계 설계변경 검토로 전환</div>
+<div class="gui-flow-item"><strong>제출 후</strong><br>제출 당시 첨부파일 기록 보관<br>시공자·공사감독원 미리보기·다운로드 가능</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">서류 작성·첨부</span><span class="gui-inline-actions"><span class="gui-btn">임시저장</span><span class="gui-btn primary">공사감독원 제출</span></span></div>
+<div class="gui-body">
+<div class="gui-form">
+<div class="gui-field"><span class="gui-label">연결 실정보고</span><div class="gui-value">승인된 실정보고 건 자동 연결</div></div>
+<div class="gui-field"><span class="gui-label">제출대상</span><div class="gui-value">공사감독원</div></div>
+<div class="gui-field"><span class="gui-label">보완정보</span><div class="gui-value">변경금액·계약조정 여부</div></div>
+<div class="gui-field"><span class="gui-label">첨부방식</span><div class="gui-value">외부 작성 문서 첨부</div></div>
+</div>
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">서류 제출 공문</div><div class="gui-doc-meta">필수 · 제출 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">변경설계서: 변경도면·시방서·계산서</div><div class="gui-doc-meta">필수 · 지침 기준</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">수량산출조서, 변경공사비 내역서</div><div class="gui-doc-meta">필수 · 수량 및 금액 산정</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">계약금액조정요청서</div><div class="gui-doc-meta">필요 시 · 계약금액 조정 요청</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기타</div><div class="gui-doc-meta">선택 · 필요 시 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s6" onclick="closeM('s6',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">6단계</span><div class="mtitle">bCMF 처리: 설계변경 검토</div><div class="msub">공사감독원이 변경설계서, 수량, 공사비, 계약금액 조정 내용을 검토한다.</div></div><button class="mclose" onclick="closeM('s6')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip on">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">6단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>검토 처리</strong><br>공사감독원이 제출파일 미리보기·다운로드 가능<br>수량·공사비·계약금액 조정 내용 검토<br>검토의견 입력 또는 기술검토의견서 첨부</div>
+<div class="gui-flow-item"><strong>반려 시</strong><br>반려사유 입력 후 5단계 설계변경 접수로 되돌림<br>보완 전후 파일과 반려 이력 기록</div>
+<div class="gui-flow-item"><strong>처리 후</strong><br>검토완료 처리 시<br>7단계 설계변경 승인요청으로 전환</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">제출자료 검토</span><span class="gui-inline-actions"><span class="gui-btn">반려</span><span class="gui-btn primary">검토 완료</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">제출 서류 묶음</div><div class="gui-doc-meta">시공자 제출 당시 첨부파일</div></div><div class="gui-doc-actions"><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기술검토의견서</div><div class="gui-doc-meta">필요 시 외부 작성 후 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">검토자료</div><div class="gui-doc-meta">필요 시 · 수량·공사비 또는 계약금액 조정 근거</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">반려 사유</div><div class="gui-doc-meta">반려 시 입력</div></div><div class="gui-doc-actions"><span class="gui-btn">입력</span><span class="gui-btn">저장</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s78" onclick="closeM('s78',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">7단계</span><div class="mtitle">bCMF 처리: 설계변경 승인요청</div><div class="msub">공사감독원이 설계변경 승인요청 공문을 등록하고 설계변경 방침결정 결과를 대기한다.</div></div><button class="mclose" onclick="closeM('s78')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip on">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">7단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>승인요청 처리</strong><br>설계변경 승인요청 공문·첨부서류·기술검토의견서 최종본 첨부<br>설계변경 건에 승인요청 이력 기록<br>금액 기준에 따른 결재 경로 표시</div>
+<div class="gui-flow-item"><strong>설계변경 방침결정 대기</strong><br>발주청 설계변경 방침결정 결과 대기<br>결과문서는 8단계에서 시공자가 등록</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">설계변경 승인요청</span><span class="gui-inline-actions"><span class="gui-btn">임시저장</span><span class="gui-btn primary">승인요청</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">설계변경 승인요청 공문</div><div class="gui-doc-meta">공사감독원 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">설계변경 첨부서류</div><div class="gui-doc-meta">변경설계서·수량산출조서·계약금액조정요청서 등</div></div><div class="gui-doc-actions"><span class="gui-btn">목록</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">기술검토의견서(최종)</div><div class="gui-doc-meta">공사감독원 첨부</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span><span class="gui-btn">다운로드</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<div class="mbk" id="mb-s8" onclick="closeM('s8',event)"><div class="modal"><div class="mhd"><div><span class="badge b-in">8단계</span><div class="mtitle">bCMF 처리: 설계변경 완료</div><div class="msub">시공자가 설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문을 등록해 설계변경 건을 완료 또는 보완 처리한다.</div></div><button class="mclose" onclick="closeM('s8')">✕</button></div><div class="mbody"><div class="stage-grid">
+<div class="step-strip" aria-label="업무 단계">
+<span class="step-chip">1. 실정보고 접수</span><span class="step-sep">→</span>
+<span class="step-chip">2. 실정보고 검토</span><span class="step-sep">→</span>
+<span class="step-chip">3. 실정보고 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip">4. 결과등록</span><span class="step-sep">→</span>
+<span class="step-chip">5. 설계변경 접수</span><span class="step-sep">→</span>
+<span class="step-chip">6. 설계변경 검토</span><span class="step-sep">→</span>
+<span class="step-chip">7. 설계변경 승인요청</span><span class="step-sep">→</span>
+<span class="step-chip on">8. 설계변경 완료</span>
+</div>
+<div class="gui-flow">
+<div class="gui-flow-title">8단계 처리현황</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>결과문서 등록</strong><br>시공자가 승인공문·계약변경 통보 공문 또는 보완지시 공문 등록<br>결과문서와 처리이력 보관</div>
+<div class="gui-flow-item"><strong>승인공문 등록 시</strong><br>설계변경 완료 처리<br>계약변경 통보 공문 필요 시 함께 보관</div>
+<div class="gui-flow-item"><strong>보완지시 등록 시</strong><br>5단계 설계변경 접수로 되돌림<br>시공자 보완 후 재제출</div>
+</div>
+</div>
+<div class="gui-mock">
+<div class="gui-bar"><span class="gui-title">설계변경 결과문서 등록</span><span class="gui-inline-actions"><span class="gui-btn">보완지시 등록</span><span class="gui-btn primary">완료 등록</span></span></div>
+<div class="gui-body">
+<div class="gui-docs">
+<div class="gui-doc"><div><div class="gui-doc-name">설계변경 승인공문</div><div class="gui-doc-meta">승인 시 · 발주청 발행 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">계약변경 통보 공문</div><div class="gui-doc-meta">계약변경 시 · 발주청 발행 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+<div class="gui-doc"><div><div class="gui-doc-name">보완지시 공문</div><div class="gui-doc-meta">보완 지시 시 · 발주청 발행 문서</div></div><div class="gui-doc-actions"><span class="gui-btn">첨부</span><span class="gui-btn">미리보기</span></div></div>
+</div>
+</div>
+</div>
+</div></div></div></div>
+
+<!-- 긴급 모달 -->
+<div class="mbk" id="mb-u" onclick="closeM('u',event)"><div class="modal"><div class="mhd"><div><span class="badge b-ug">제67조 ⑩항</span><div class="mtitle">긴급 트랙</div><div class="msub">시스템 외 즉시보고 후 긴급 실정보고를 접수하고, 긴급조치 근거와 우선시공 내용을 설계변경에 연결한다.</div></div><button class="mclose" onclick="closeM('u')">✕</button></div><div class="mbody">
+<svg width="100%" viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg"><defs><marker id="au" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><style>.bx{stroke-width:.8}.bl{fill:#E6F1FB;stroke:#185FA5}.tbl{fill:#042C53}.gn{fill:#EAF3DE;stroke:#639922}.tgn{fill:#173404}.in{fill:#EEF2FF;stroke:#4F46E5}.tin{fill:#1E1B6E}.am{fill:#EEF2FF;stroke:#4F46E5;stroke-width:1.1}.tam{fill:#1E1B6E}.gy{fill:#F1EFE8;stroke:#888780}.tgy{fill:#5F5E5A}.og{fill:#FFF3E0;stroke:#E65100}.tog{fill:#4E1700}text{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:10px}.th{font-weight:600;font-size:11px}.ts{font-size:9px}</style>
+<rect class="bx gy" x="6" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="86" y="18" text-anchor="middle" dominant-baseline="central">시공자</text><rect class="bx gy" x="200" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="280" y="18" text-anchor="middle" dominant-baseline="central">공사감독원</text><rect class="bx gy" x="394" y="6" width="160" height="24" rx="4"/><text class="th tgy" x="474" y="18" text-anchor="middle" dominant-baseline="central">발주청</text>
+<rect class="bx og" x="6" y="42" width="160" height="60" rx="6"/><text class="th tog" x="86" y="58" text-anchor="middle" dominant-baseline="central">즉시보고</text><text class="ts tog" x="86" y="72" text-anchor="middle" dominant-baseline="central">시스템 외</text><text class="ts tog" x="86" y="86" text-anchor="middle" dominant-baseline="central">유선·이메일·팩스</text><line x1="166" y1="72" x2="198" y2="72" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx og" x="200" y="42" width="160" height="60" rx="6"/><text class="th tog" x="280" y="58" text-anchor="middle" dominant-baseline="central">방침·허가 확인</text><text class="ts tog" x="280" y="72" text-anchor="middle" dominant-baseline="central">시스템 외</text><text class="ts tog" x="280" y="86" text-anchor="middle" dominant-baseline="central">긴급조치 근거</text><line x1="360" y1="72" x2="392" y2="72" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx bl" x="394" y="42" width="160" height="60" rx="6"/><text class="th tbl" x="474" y="58" text-anchor="middle" dominant-baseline="central">1. 긴급 실정보고 접수</text><text class="ts tbl" x="474" y="72" text-anchor="middle" dominant-baseline="central">시공자</text><text class="ts tbl" x="474" y="86" text-anchor="middle" dominant-baseline="central">긴급근거 첨부</text><line x1="474" y1="102" x2="474" y2="118" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx gn" x="6" y="118" width="160" height="60" rx="6"/><text class="th tgn" x="86" y="134" text-anchor="middle" dominant-baseline="central">2. 긴급조치 근거 등록</text><text class="ts tgn" x="86" y="150" text-anchor="middle" dominant-baseline="central">공사감독원</text><text class="ts tgn" x="86" y="164" text-anchor="middle" dominant-baseline="central">선시공·후정산 근거</text><line x1="198" y1="148" x2="168" y2="148" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx og" x="200" y="118" width="160" height="60" rx="6"/><text class="th tog" x="280" y="134" text-anchor="middle" dominant-baseline="central">우선 시공</text><text class="ts tog" x="280" y="150" text-anchor="middle" dominant-baseline="central">시스템 외</text><text class="ts tog" x="280" y="164" text-anchor="middle" dominant-baseline="central">승인 범위 내 시공</text><line x1="360" y1="148" x2="392" y2="148" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx bl" x="394" y="118" width="160" height="60" rx="6"/><text class="th tbl" x="474" y="134" text-anchor="middle" dominant-baseline="central">3. 설계변경 접수</text><text class="ts tbl" x="474" y="150" text-anchor="middle" dominant-baseline="central">시공자</text><text class="ts tbl" x="474" y="164" text-anchor="middle" dominant-baseline="central">정식 서류 작성·첨부</text><line x1="474" y1="178" x2="474" y2="194" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx gn" x="6" y="194" width="160" height="60" rx="6"/><text class="th tgn" x="86" y="210" text-anchor="middle" dominant-baseline="central">4. 설계변경 검토</text><text class="ts tgn" x="86" y="226" text-anchor="middle" dominant-baseline="central">공사감독원</text><text class="ts tgn" x="86" y="240" text-anchor="middle" dominant-baseline="central">긴급근거·변경서류 검토</text><line x1="166" y1="224" x2="198" y2="224" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx gn" x="200" y="194" width="160" height="60" rx="6"/><text class="th tgn" x="280" y="210" text-anchor="middle" dominant-baseline="central">5. 승인요청</text><text class="ts tgn" x="280" y="226" text-anchor="middle" dominant-baseline="central">공사감독원</text><text class="ts tgn" x="280" y="240" text-anchor="middle" dominant-baseline="central">승인요청 공문 작성</text><line x1="360" y1="224" x2="392" y2="224" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/><rect class="bx in" x="394" y="194" width="160" height="60" rx="6"/><text class="th tin" x="474" y="210" text-anchor="middle" dominant-baseline="central" style="font-size:10px">설계변경 방침 결정</text><text class="ts tin" x="474" y="226" text-anchor="middle" dominant-baseline="central">발주청</text><text class="ts tin" x="474" y="240" text-anchor="middle" dominant-baseline="central">승인 또는 반려</text><line x1="474" y1="254" x2="474" y2="270" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#au)"/>
+<rect class="bx in" x="6" y="270" width="548" height="38" rx="6"/><text class="th tin" x="280" y="283" text-anchor="middle" dominant-baseline="central">6. 설계변경 완료</text><text class="ts tin" x="280" y="299" text-anchor="middle" dominant-baseline="central">시공자: 결과문서 등록, 보완지시 시 설계변경 접수로 되돌림</text>
+</svg>
+<div class="gui-flow" style="margin-top:8px">
+<div class="gui-flow-title">긴급 트랙 bCMF 적용 정리</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>bCMF 입력</strong><br>긴급 유형 선택<br>시스템 외 즉시보고 근거, 승인·지시, 우선시공 범위를 단계별로 기록</div>
+<div class="gui-flow-item"><strong>작성·첨부</strong><br>즉시보고 근거, 긴급 실정보고 서류, 승인·지시 근거, 설계변경 접수서류 작성·첨부</div>
+<div class="gui-flow-item"><strong>제출 시</strong><br>긴급 실정보고 접수 후 승인·지시 기록과 우선시공 이력을 연결<br>설계변경 접수로 전환</div>
+<div class="gui-flow-item"><strong>처리 후</strong><br>승인공문·계약변경 통보 공문 등록 시 설계변경 완료<br>보완지시 시 설계변경 접수로 되돌림</div>
+</div>
+</div></div></div></div>
+
+<!-- 경미 모달 -->
+<div class="mbk" id="mb-m" onclick="closeM('m',event)"><div class="modal"><div class="mhd"><div><span class="badge b-mn">제67조 ④항</span><div class="mtitle">경미 트랙</div><div class="msub">간소 검토·보고로 처리하고, 경미 미해당 시 일반 실정보고로 전환한다.</div></div><button class="mclose" onclick="closeM('m')">✕</button></div><div class="mbody">
+<svg width="100%" viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="am" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+.bx{stroke-width:.8}
+.bl{fill:#E6F1FB;stroke:#185FA5}.tbl{fill:#042C53}
+.gn{fill:#EAF3DE;stroke:#639922}.tgn{fill:#173404}
+.in{fill:#EEF2FF;stroke:#4F46E5}.tin{fill:#1E1B6E}
+.gy{fill:#F1EFE8;stroke:#888780}.tgy{fill:#5F5E5A}
+.dgn{fill:#fff;stroke:#639922;stroke-width:.9}
+text{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:10px}
+.th{font-weight:600;font-size:11px}.ts{font-size:9px}
+</style>
+
+<!-- 열 헤더 -->
+<rect class="bx gy" x="6" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="86" y="18" text-anchor="middle" dominant-baseline="central">시공자</text>
+<rect class="bx gy" x="200" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="280" y="18" text-anchor="middle" dominant-baseline="central">공사감독원</text>
+<rect class="bx gy" x="394" y="6" width="160" height="24" rx="4"/>
+<text class="th tgy" x="474" y="18" text-anchor="middle" dominant-baseline="central">발주청</text>
+
+<rect class="bx bl" x="6" y="46" width="160" height="64" rx="6"/>
+<text class="th tbl" x="86" y="62" text-anchor="middle" dominant-baseline="central">경미 변경자료 제출</text>
+<text class="ts tbl" x="86" y="78" text-anchor="middle" dominant-baseline="central">변경도면·수량증감</text>
+<text class="ts tbl" x="86" y="92" text-anchor="middle" dominant-baseline="central">증감공사비 자료</text>
+
+<line x1="166" y1="78" x2="198" y2="78" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx gn" x="200" y="46" width="160" height="64" rx="6"/>
+<text class="th tgn" x="280" y="62" text-anchor="middle" dominant-baseline="central">접수·검토</text>
+<text class="ts tgn" x="280" y="78" text-anchor="middle" dominant-baseline="central">경미 해당여부 판단</text>
+<text class="ts tgn" x="280" y="92" text-anchor="middle" dominant-baseline="central">수량·공사비 적정성</text>
+
+<!-- 공사감독원 → 판단 다이아몬드 -->
+<line x1="280" y1="110" x2="280" y2="126" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+<polygon class="dgn" points="280,126 344,152 280,178 216,152"/>
+<text class="th tgn" x="280" y="146" text-anchor="middle" dominant-baseline="central">경미 해당?</text>
+<text class="ts tgn" x="280" y="162" text-anchor="middle" dominant-baseline="central">④항 기준</text>
+
+<!-- 아니오 → 시공자 쪽으로 (← 방향, 점선) -->
+<line x1="216" y1="152" x2="168" y2="152" stroke="#A32D2D" stroke-width=".8" stroke-dasharray="3 2" marker-end="url(#am)"/>
+<text class="ts" fill="#A32D2D" x="192" y="145" text-anchor="middle">아니오</text>
+<rect class="bx gy" x="6" y="134" width="160" height="38" rx="6" stroke-dasharray="3 2" fill-opacity=".5"/>
+<text class="ts tgy" x="86" y="148" text-anchor="middle" dominant-baseline="central">경미 미해당</text>
+<text class="ts tgy" x="86" y="162" text-anchor="middle" dominant-baseline="central">→ 1. 실정보고 접수로 전환</text>
+
+<!-- 예 → 아래로 -->
+<text class="ts" fill="#639922" x="248" y="196" text-anchor="middle">예</text>
+<line x1="280" y1="178" x2="280" y2="210" stroke="#639922" stroke-width="1" marker-end="url(#am)"/>
+
+<rect class="bx gn" x="200" y="210" width="160" height="52" rx="6"/>
+<text class="th tgn" x="280" y="226" text-anchor="middle" dominant-baseline="central">보고·통보</text>
+<text class="ts tgn" x="280" y="242" text-anchor="middle" dominant-baseline="central">발주청 보고</text>
+<text class="ts tgn" x="280" y="256" text-anchor="middle" dominant-baseline="central">시공자 통보</text>
+
+<line x1="360" y1="236" x2="392" y2="236" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx in" x="394" y="210" width="160" height="52" rx="6"/>
+<text class="th tin" x="474" y="226" text-anchor="middle" dominant-baseline="central">발주청 보고 접수</text>
+<text class="ts tin" x="474" y="242" text-anchor="middle" dominant-baseline="central">정식 승인절차 생략</text>
+<text class="ts tin" x="474" y="256" text-anchor="middle" dominant-baseline="central">보고로 종결</text>
+
+<!-- 공사감독원 → 시공자 (변경 통보, ← 방향) -->
+<line x1="198" y1="236" x2="168" y2="236" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+
+<rect class="bx bl" x="6" y="210" width="160" height="52" rx="6"/>
+<text class="th tbl" x="86" y="226" text-anchor="middle" dominant-baseline="central">시공자 통보·시행</text>
+<text class="ts tbl" x="86" y="242" text-anchor="middle" dominant-baseline="central">변경 통보 접수</text>
+<text class="ts tbl" x="86" y="256" text-anchor="middle" dominant-baseline="central">경미 변경 시행</text>
+
+<!-- 계약금액 조정 -->
+<line x1="280" y1="262" x2="280" y2="280" stroke="#3d3d3a" stroke-width="1.2" marker-end="url(#am)"/>
+<rect class="bx in" x="6" y="280" width="548" height="36" rx="6"/>
+<text class="th tin" x="280" y="292" text-anchor="middle" dominant-baseline="central">정산자료 등록</text>
+<text class="ts tin" x="280" y="306" text-anchor="middle" dominant-baseline="central">수량·금액은 정산 또는 계약변경 시 합산 반영</text>
+
+<!-- 근거 -->
+<text class="ts tgy" x="6" y="334">경미 해당: 공사감독원이 발주청 보고와 시공자 통보를 같은 단계에서 처리</text>
+<text class="ts tgy" x="6" y="350">경미 미해당: 일반 1단계(실정보고 접수)로 전환</text>
+</svg>
+<div class="gui-flow" style="margin-top:8px">
+<div class="gui-flow-title">경미 트랙 bCMF 적용 정리</div>
+<div class="gui-flow-grid">
+<div class="gui-flow-item"><strong>bCMF 입력</strong><br>경미 유형 선택<br>변경 위치, 변경사유, 수량·공사비 영향 입력</div>
+<div class="gui-flow-item"><strong>외부 첨부</strong><br>경미 변경자료: 변경도면, 수량증감, 증감공사비 자료, 현황사진·위치도 등</div>
+<div class="gui-flow-item"><strong>검토 시</strong><br>공사감독원이 경미 해당 여부와 수량·공사비 적정성 입력<br>필요 시 검토자료 첨부</div>
+<div class="gui-flow-item"><strong>경미 해당 시</strong><br>발주청 보고와 시공자 통보 이력 등록<br>정산자료 등록 후 경미 건 완료</div>
+<div class="gui-flow-item"><strong>경미 미해당 시</strong><br>일반 1단계 실정보고 접수로 전환<br>기존 입력값과 첨부파일 승계</div>
+</div>
+</div>
+</div></div></div>
+
+<script>
+function openM(id){selectDetail(id)}
+function closeM(){}
+function switchStepModal(id){selectDetail(id)}
+let currentFlowType='normal'
+const detailNavByType={
+normal:[
+{id:'s0',label:'0 처리유형'},
+{id:'s1',label:'1 실정보고 접수'},
+{id:'s2',label:'2 실정보고 검토'},
+{id:'s34',label:'3 실정보고 승인요청'},
+{id:'s4',label:'4 결과등록'},
+{id:'s5',label:'5 설계변경 접수'},
+{id:'s6',label:'6 설계변경 검토'},
+{id:'s78',label:'7 설계변경 승인요청'},
+{id:'s8',label:'8 설계변경 완료'}
+],
+urgent:[
+{id:'s0',label:'0 처리유형'},
+{id:'u1',label:'1 긴급 실정보고 접수'},
+{id:'u2',label:'2 긴급조치 근거 등록'},
+{id:'u3',label:'3 설계변경 접수'},
+{id:'u4',label:'4 설계변경 검토'},
+{id:'u5',label:'5 설계변경 승인요청'},
+{id:'u6',label:'6 설계변경 완료'}
+],
+minor:[
+{id:'s0',label:'0 처리유형'},
+{id:'m1',label:'1 경미자료 접수'},
+{id:'m2',label:'2 경미 여부 검토'},
+{id:'m3',label:'3 경미 처리 확정'},
+{id:'m4',label:'보고·통보'},
+{id:'m5',label:'4 정산자료 등록'},
+{id:'m6',label:'5 제출결과 등록'}
+]
+}
+function firstDetailForType(type){
+const navItems=detailNavByType[type]||detailNavByType.normal
+return navItems[0].id
+}
+function renderStageNav(type){
+const nav=document.querySelector('.stage-nav')
+if(!nav)return
+nav.innerHTML=(detailNavByType[type]||detailNavByType.normal).map(item=>`<button class="top-nav-btn" data-detail-nav="${item.id}" onclick="selectDetail('${item.id}')">${item.label}</button>`).join('')
+}
+function modalIdFromStep(text){
+if(text.startsWith('1.'))return 's1'
+if(text.startsWith('2.'))return 's2'
+if(text.startsWith('3.'))return 's34'
+if(text.startsWith('4.'))return 's4'
+if(text.startsWith('5.'))return 's5'
+if(text.startsWith('6.'))return 's6'
+if(text.startsWith('7.'))return 's78'
+if(text.startsWith('8.'))return 's8'
+return ''
+}
+function setFlowPanel(type){
+currentFlowType=type||'normal'
+renderStageNav(currentFlowType)
+document.querySelectorAll('[data-flow-panel]').forEach(panel=>{
+panel.classList.toggle('active',panel.dataset.flowPanel===currentFlowType)
+})
+document.querySelectorAll('[data-flow-type-btn]').forEach(btn=>{
+btn.classList.toggle('active',btn.dataset.flowTypeBtn===currentFlowType)
+})
+const flowCol=document.querySelector('.flow-col')
+if(flowCol)flowCol.scrollTop=0
+}
+function selectFlowType(type){
+currentFlowType=type||'normal'
+setFlowPanel(currentFlowType)
+selectDetail('s0')
+}
+
+const routeIntroMeta={
+normal:{
+badge:'유형선택',
+badgeClass:'b-ug',
+title:'bCMF 처리: 일반 선택',
+sub:'일반 선택 시 실정보고 접수부터 설계변경 완료까지 정식 절차로 진행한다.',
+rows:[
+['진입','시공자 <span class="text-pill">신규등록</span> 클릭 후 처리유형에서 <b>일반</b> 선택'],
+['선택 주체','시공자'],
+['후속 주체','시공자 접수·결과등록, 공사감독원 검토·승인요청, 발주청 승인/미승인 판단'],
+['선택 의미','현장 실정과 변경 필요성을 실정보고로 승인받고, 승인 후 설계변경 절차로 진행'],
+['임시저장 시','작성중 상태, 일반 유형으로 시공자 내 업무 대기열 표시'],
+['제출 시','1단계 실정보고 접수 건 생성 후 공사감독원 검토로 전환'],
+['후속 흐름','1 실정보고 접수 → 2 실정보고 검토 → 3 실정보고 승인요청 → 4 결과등록 → 5 설계변경 접수']
+]
+},
+urgent:{
+badge:'긴급 선택',
+badgeClass:'b-ug',
+title:'bCMF 처리: 긴급 선택',
+sub:'긴급 선택 시 시스템 외 즉시보고와 현장 확인·구두지시 후, bCMF에서 긴급 실정보고와 긴급조치 근거를 기록하고 설계변경 접수 단계에서 정식 서류를 작성·첨부한다.',
+rows:[
+['진입','시공자 <span class="text-pill">신규등록</span> 클릭 후 처리유형에서 <b>긴급</b> 선택'],
+['선택 주체','시공자'],
+['후속 주체','시공자 접수·설계변경 제출·결과등록, 공사감독원 방침등록·검토·승인요청, 발주청 방침결정'],
+['선택 의미','시스템 외 즉시보고·현장 확인 후 긴급 경로로 생성하고, 정식 설계변경 서류는 설계변경 접수에서 작성·첨부'],
+['임시저장 시','긴급 작성중 상태, 시공자 내 업무 대기열 표시'],
+['제출 시','1단계 긴급 실정보고 접수 건 생성 후 공사감독원 긴급조치 근거 등록으로 전환'],
+['후속 흐름','1 긴급 실정보고 접수 → 2 긴급조치 근거 등록 → 3 설계변경 접수 → 4 설계변경 검토 → 5 설계변경 승인요청 → 6 설계변경 완료']
+]
+},
+minor:{
+badge:'경미 선택',
+badgeClass:'b-mn',
+title:'bCMF 처리: 경미 선택',
+sub:'현장 간이확인·구두지시와 선시공 증빙 누적 후, bCMF에 경미자료를 접수해 검토·확정한다.',
+rows:[
+['진입','시공자 <span class="text-pill">신규등록</span> 클릭 후 처리유형에서 <b>경미</b> 선택'],
+['선택 주체','시공자'],
+['후속 주체','시공자 자료 제출, 공사감독원 경미 여부 검토·확정, 발주청 보고·통보는 시스템 외 이력으로 관리'],
+['선택 의미','경미 판단자료를 bCMF에 접수해 간소 처리 가능 여부를 검토하고, 미해당 시 일반 실정보고 접수로 전환'],
+['시스템 외 선행','현장 간이확인·구두지시, 선시공·증빙 누적은 시스템 외로 진행'],
+['bCMF 접수','시공자가 사진·도면·수량·공사비 자료를 경미자료로 제출'],
+['임시저장 시','경미 작성중 상태, 시공자 내 업무 대기열 표시'],
+['제출 시','1단계 경미자료 접수 건 생성 후 공사감독원 경미 여부 검토로 전환'],
+['후속 흐름','현장 간이확인·구두지시(시스템 외) → 선시공·증빙누적(시스템 외) → 1 경미자료 접수 → 2 경미 여부 검토 → 3 경미 처리 확정 → 보고·통보/시행(시스템 외) → 4 정산자료 등록 → 준공 전 일괄 제출(시스템 외) → 5 제출결과 등록 / 미해당 시 1 실정보고 접수로 전환']
+]
+}
+}
+function updateRouteIntro(scope,type){
+const meta=routeIntroMeta[type]||routeIntroMeta.normal
+const badge=scope.querySelector('.detail-head .badge')
+const title=scope.querySelector('.detail-title')
+const sub=scope.querySelector('.detail-sub')
+const tbody=scope.querySelector('.simple-table tbody')
+if(badge){badge.textContent=meta.badge;badge.className=`badge ${meta.badgeClass}`}
+if(title)title.textContent=meta.title
+if(sub)sub.textContent=meta.sub
+if(tbody)tbody.innerHTML=meta.rows.map(([label,value])=>`<tr><td>${label}</td><td>${value}</td></tr>`).join('')
+}
+function selectRouteType(type){
+currentFlowType=type||'normal'
+setFlowPanel(currentFlowType)
+const scope=document.getElementById('detailPanel')||document
+if(scope.id==='detailPanel')scope.dataset.routeType=currentFlowType
+if(scope.id==='detailPanel')updateRouteIntro(scope,currentFlowType)
+const picker=scope.querySelector('.type-picker')
+if(picker)picker.dataset.selected=currentFlowType
+scope.querySelectorAll('[data-type-btn]').forEach(btn=>{
+const active=btn.getAttribute('data-type-btn')===currentFlowType
+btn.classList.toggle('selected',active)
+btn.style.background=active?'#2C2C2A':'#fff'
+btn.style.borderColor=active?'#2C2C2A':'#D8D5CC'
+btn.style.color=active?'#fff':'#5F5E5A'
+btn.style.boxShadow=active?'0 2px 8px rgba(44,44,42,.18)':'none'
+})
+scope.querySelectorAll('[data-route]').forEach(card=>{
+const active=card.getAttribute('data-route')===currentFlowType
+card.classList.toggle('active',active)
+card.classList.toggle('dim',!active)
+})
+syncRouteTrackFlow(scope,currentFlowType)
+if(scope.id==='detailPanel'&&scope.dataset.current==='s0'){
+document.querySelectorAll('[data-detail-nav]').forEach(btn=>btn.classList.toggle('active',btn.dataset.detailNav==='s0'))
+}
+}
+
+function syncRouteTrackFlow(scope,type){
+scope.querySelectorAll('.embedded-track-flow').forEach(el=>el.remove())
+}
+
+const detailDocs={
+s1:{step:'1단계',name:'실정보고 접수 서류',owner:'시공자 제출',items:[['서류 제출 공문','시공자'],['실정보고서','시공자'],['설계변경사유서','시공자'],['설계변경도면','시공자'],['개략수량증감내역','시공자'],['개략공사비증감내역','시공자'],['현황사진·위치도 등','시공자']]},
+s2:{step:'2단계',name:'실정보고 검토 서류',owner:'공사감독원 검토',items:[['검토의견','공사감독원'],['기술검토의견서(필요 시)','공사감독원'],['반려 사유','공사감독원']]},
+s34:{step:'3단계',name:'실정보고 승인요청 서류',owner:'공사감독원 제출',items:[['실정보고 승인요청 공문','공사감독원'],['실정보고 첨부서류','공사감독원'],['기술검토의견서(최종)','공사감독원']]},
+s4:{step:'4단계',name:'실정보고 결과등록 서류',owner:'시공자 등록',items:[['실정보고 승인공문','발주청'],['미승인 통보','발주청'],['기타 승인·방침 관련 문서','발주청']]},
+s5:{step:'5단계',name:'설계변경 접수 서류',owner:'시공자 제출',items:[['서류 제출 공문','시공자'],['변경설계서: 변경도면·시방서·계산서','시공자'],['수량산출조서, 변경공사비 내역서','시공자'],['계약금액조정요청서','시공자'],['기타','시공자']]},
+s6:{step:'6단계',name:'설계변경 검토 서류',owner:'공사감독원 검토',items:[['기술검토의견서','공사감독원'],['검토자료(필요 시)','공사감독원']]},
+s78:{step:'7단계',name:'설계변경 승인요청 서류',owner:'작성주체별 제출',items:[['설계변경 승인요청 공문','공사감독원'],['설계변경 첨부서류','공사감독원'],['기술검토의견서(최종)','공사감독원'],['계약금액조정요청서','시공자'],['기타','시공자'],['변경설계서 등','시공자'],['산출수량/적용단가','시공자']]},
+s8:{step:'8단계',name:'설계변경 결과문서',owner:'시공자 등록',items:[['설계변경 승인공문','사업단장/건설처'],['계약변경 통보 공문','발주청'],['보완지시 공문','발주청']]}
+}
+
+const detailPlans={
+s1:{table:[['진입조건','시공자 <span class="text-pill">신규등록</span> 클릭'],['처리 주체','시공자'],['화면상태','저장 전: 접수 건 미생성 / 임시저장: 작성중'],['입력·첨부','실정보고 기본정보 입력, 실정보고 접수 서류 첨부'],['주요 버튼 결과','임시저장 → 작성중 유지 / 공사감독원 제출 → 2단계 실정보고 검토'],['내 업무대기열','임시저장 시 시공자 작성중 표시, 제출 후 공사감독원 검토대기 표시'],['조회·기록','제출 당시 첨부파일 기록 보관, 시공자·공사감독원 미리보기/다운로드 가능']],inputTitle:'bCMF 입력',input:['처리유형: 일반 / 긴급 / 경미','검토 담당자: 공사감독원 선택','공종','조정항목: K~H','상세코드','위치정보','변경사유','개략 수량·공사비 영향'],docTitle:'첨부 문서 <span class="text-pill">시공자 작성</span>',docs:['서류 제출 공문','실정보고서','설계변경사유서','설계변경도면','개략수량증감내역','개략공사비증감내역','현황사진·위치도 등']},
+s2:{table:[['진입조건','1단계 실정보고 접수 완료 건'],['처리 주체','공사감독원'],['화면상태','검토대기 또는 검토중'],['입력·첨부','제출자료 미리보기/다운로드, 검토의견 입력, 필요 시 기술검토의견서 첨부'],['주요 버튼 결과','반려 → 1단계 실정보고 접수로 보완 / 검토완료 → 3단계 실정보고 승인요청'],['내 업무대기열','공사감독원 검토대기 표시, 반려 시 시공자 보완 표시'],['조회·기록','검토의견·첨부파일·반려/검토완료 이력 보관']],inputTitle:'bCMF 입력',input:['검토의견 입력','반려사유 입력','반려 또는 검토완료 처리','검토 이력 확인'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['제출 서류 묶음: 시공자 제출자료','기술검토의견서(필요 시)','검토자료(필요 시)','반려 사유']},
+s34:{table:[['진입조건','2단계 검토완료 건'],['처리 주체','공사감독원'],['화면상태','승인요청 작성중'],['입력·첨부','실정보고 승인요청 공문, 실정보고 첨부서류, 기술검토의견서 최종본 첨부'],['주요 버튼 결과','승인요청 → 4단계 결과등록 대기'],['내 업무대기열','승인요청 후 시공자 공문등록 대기 표시'],['조회·기록','실정보고 건에 승인요청 이력과 첨부파일 보관']],inputTitle:'bCMF 입력',input:['실정보고 승인요청 공문 첨부','승인요청 버튼 처리','승인요청 이력 기록','상태 배지: 결과등록 대기','시공자 내 업무대기열: 공문등록 대기'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['실정보고 승인요청 공문','실정보고 첨부서류','기술검토의견서(최종)']},
+s4:{table:[['진입조건','3단계 승인요청 후 공문등록 대기 건'],['처리 주체','시공자'],['화면상태','결과등록 대기'],['입력·첨부','발주청 승인공문 또는 미승인 통보 등록'],['주요 버튼 결과','승인공문 등록 → 실정보고 완료 / 미승인 통보 등록 → 실정보고 종결'],['내 업무대기열','시공자 공문등록 대기 표시, 등록 후 대기열에서 제외'],['조회·기록','결과문서 기록 보관, 관련자 미리보기/다운로드 가능']],inputTitle:'bCMF 입력',input:['결과유형 선택: 승인 / 미승인','승인공문 등록 시 완료 처리','미승인 통보 등록 시 종결 처리','처리이력 확인'],docTitle:'첨부 문서 <span class="text-pill">시공자 등록</span>',docs:['실정보고 승인공문','미승인 통보','기타 승인·방침 관련 문서']},
+s5:{table:[['진입조건','실정보고 승인공문이 등록된 완료 건'],['처리 주체','시공자'],['화면상태','설계변경 접수 작성중'],['입력·첨부','승인된 실정보고 정보 자동 승계, 변경금액·계약조정 여부 입력, 설계변경 서류 첨부'],['주요 버튼 결과','임시저장 → 작성중 유지 / 공사감독원 제출 → 6단계 설계변경 검토'],['내 업무대기열','임시저장 시 시공자 작성중 표시, 제출 후 공사감독원 검토대기 표시'],['조회·기록','제출 당시 첨부파일 기록 보관, 시공자·공사감독원 미리보기/다운로드 가능']],inputTitle:'bCMF 입력',input:['승인된 실정보고 건 자동 연결','변경금액·계약조정 여부','제출대상: 공사감독원','첨부방식: 외부 작성 문서 첨부','보완정보 입력'],docTitle:'첨부 문서 <span class="text-pill">시공자 작성</span>',docs:['서류 제출 공문','변경설계서: 변경도면·시방서·계산서','수량산출조서, 변경공사비 내역서','계약금액조정요청서','기타']},
+s6:{table:[['진입조건','5단계 설계변경 접수 완료 건'],['처리 주체','공사감독원'],['화면상태','검토대기 또는 검토중'],['입력·첨부','제출자료 미리보기/다운로드, 수량·공사비·계약금액 조정 내용 검토, 검토의견 입력'],['주요 버튼 결과','반려 → 5단계 설계변경 접수로 보완 / 검토완료 → 7단계 설계변경 승인요청'],['내 업무대기열','공사감독원 검토대기 표시, 반려 시 시공자 보완 표시'],['조회·기록','검토의견·첨부파일·반려/검토완료 이력 보관']],inputTitle:'bCMF 입력',input:['검토의견 입력','수량·공사비·계약금액 조정 내용 검토','반려사유 입력','반려 또는 검토완료 처리','검토 이력 확인'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['제출 서류 묶음: 시공자 제출자료','기술검토의견서','검토자료(필요 시)','반려 사유']},
+s78:{table:[['진입조건','6단계 검토완료 건'],['처리 주체','공사감독원'],['화면상태','승인요청 작성중'],['입력·첨부','설계변경 승인요청 공문, 설계변경 첨부서류, 기술검토의견서 최종본 첨부'],['주요 버튼 결과','승인요청 → 8단계 설계변경 결과문서 등록 대기'],['내 업무대기열','승인요청 후 시공자 결과문서 등록 대기 표시'],['조회·기록','금액 기준에 따른 결재경로와 승인요청 이력 보관']],inputTitle:'bCMF 입력',input:['승인요청 처리','금액 기준 및 결재경로 확인','설계변경 건 승인요청 상태 변경','승인요청 이력 기록'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['설계변경 승인요청 공문','설계변경 첨부서류: 변경설계서·수량산출조서·계약금액조정요청서 등','기술검토의견서(최종)','기타']},
+s8:{table:[['진입조건','7단계 승인요청 후 결과문서 등록 대기 건'],['처리 주체','시공자'],['화면상태','설계변경 결과등록 대기'],['입력·첨부','설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문 등록'],['주요 버튼 결과','완료 등록 → 설계변경 완료 / 보완지시 등록 → 5단계 설계변경 접수로 되돌림'],['내 업무대기열','시공자 결과문서 등록 대기 표시, 완료 등록 후 대기열에서 제외'],['조회·기록','설계변경·계약변경 결과문서 기록 보관, 관련자 미리보기/다운로드 가능']],inputTitle:'bCMF 입력',input:['결과유형 선택: 완료 / 보완','완료등록 또는 보완지시 등록','설계변경 완료 또는 보완 처리','처리이력 확인'],docTitle:'첨부 문서 <span class="text-pill">시공자 등록</span>',docs:['설계변경 승인공문','계약변경 통보 공문','보완지시 공문']},
+u1:{table:[['진입조건','시스템 외 즉시보고 및 현장 확인·구두지시 후 시공자 <span class="text-pill">신규등록</span>에서 긴급 선택'],['처리 주체','시공자'],['화면상태','긴급 실정보고 작성중'],['입력·첨부','긴급 사유, 개략 영향, 약식 실정보고 서류, 즉시보고 근거, 현장 증빙 첨부'],['주요 버튼 결과','임시저장 → 작성중 유지 / 공사감독원 제출 → 2단계 긴급조치 근거 등록'],['내 업무대기열','임시저장 시 시공자 작성중 표시, 제출 후 공사감독원 긴급조치 근거 등록 대기 표시'],['조회·기록','긴급 실정보고 접수 이력과 제출 당시 증빙파일 보관']],inputTitle:'bCMF 입력',input:['처리유형: 긴급','공구/위치/시설','긴급 사유','개략 수량·공사비 영향','즉시보고 정보','현장 확인·구두지시 내용','제출대상 공사감독원'],docTitle:'첨부 문서 <span class="text-pill">시공자 작성</span>',docs:['약식 실정보고서','서류 제출 공문','즉시보고 근거','현장 증빙: 사진·문자·위치도 등','개략수량증감내역','개략공사비증감내역']},
+u2:{table:[['진입조건','긴급 실정보고 접수 후 선시공·후정산 근거를 등록하는 단계'],['처리 주체','공사감독원'],['화면상태','긴급조치 근거 등록중'],['입력·첨부','발주청 지시·승인 근거, 선시공·후정산 방침서, 긴급조치 허가 근거 등록'],['주요 버튼 결과','임시저장 → 등록중 유지 / 긴급조치 근거 등록 → 우선시공 이력 보관 후 3단계 설계변경 접수'],['내 업무대기열','공사감독원 긴급조치 근거 등록 대기 표시, 등록 후 시공자 설계변경 접수 대기 표시'],['조회·기록','시스템 외 지시·방침 근거와 긴급 실정보고를 한 건으로 연결 보관']],inputTitle:'bCMF 입력',input:['방침구분: 선시공 / 후정산 / 긴급조치 허가','방침 또는 지시 일자','발신/수신자','발주청 지시·승인 근거','우선시공 허용 범위','시공자 설계변경 접수 안내'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 등록</span>',docs:['선시공·후정산 방침서','긴급조치 허가 또는 지시 근거','발주청 승인 또는 지시 공문','이메일·팩스 근거','현장 확인 메모 또는 회의록']},
+u3:{table:[['진입조건','공사감독원이 긴급조치 근거를 등록한 긴급 실정보고 건'],['처리 주체','시공자'],['화면상태','설계변경 접수 작성중'],['입력·첨부','긴급 실정보고와 긴급조치 근거 자동 연결, 접수 화면에서 정식 설계변경 서류 작성·첨부'],['주요 버튼 결과','임시저장 → 작성중 유지 / 공사감독원 제출 → 4단계 설계변경 검토'],['내 업무대기열','시공자 설계변경 접수 대기 또는 작성중 표시, 제출 후 공사감독원 검토대기 표시'],['조회·기록','긴급 실정보고·긴급조치 근거·설계변경 제출자료 연결 보관']],inputTitle:'bCMF 입력',input:['연결 긴급 실정보고','연결 긴급조치 근거','변경금액·계약조정 여부','제출대상: 공사감독원','보완정보 입력'],docTitle:'첨부 문서 <span class="text-pill">시공자 작성</span>',docs:['서류 제출 공문','변경설계서 작성·첨부: 변경도면·시방서·계산서','수량산출조서, 변경공사비 내역서 작성·첨부','계약금액조정요청서','기타 긴급조치 관련 문서']},
+u4:{table:[['진입조건','3단계 설계변경 접수 완료 건'],['처리 주체','공사감독원'],['화면상태','설계변경 검토대기 또는 검토중'],['입력·첨부','제출자료 미리보기/다운로드, 긴급조치 근거·우선시공 범위·수량·공사비·계약금액 조정 내용 검토, 서류 적정성 확인'],['주요 버튼 결과','반려 → 시공자 보완 / 적정성 확인 → 5단계 설계변경 승인요청'],['내 업무대기열','공사감독원 검토대기 표시, 반려 시 시공자 보완 표시'],['조회·기록','검토의견·첨부파일·반려/적정성 확인 이력 보관']],inputTitle:'bCMF 입력',input:['검토의견 입력','긴급조치 근거 및 우선시공 범위 확인','수량·공사비·계약금액 조정 내용 검토','서류 적정성 확인','반려사유 입력','반려 또는 적정성 확인 처리'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['제출 서류 묶음: 설계변경 제출자료','기술검토의견서','검토자료(필요 시)','반려 사유']},
+u5:{table:[['진입조건','4단계 서류 적정성 확인 완료 건'],['처리 주체','공사감독원'],['화면상태','승인요청 작성중'],['입력·첨부','설계변경 승인요청 공문, 설계변경 첨부서류, 기술검토의견서 최종본 첨부'],['주요 버튼 결과','승인요청 → 방침결정 결과문서 등록 대기'],['내 업무대기열','승인요청 후 시공자 결과문서 등록 대기 표시'],['조회·기록','금액 기준에 따른 결재경로와 승인요청 이력 보관']],inputTitle:'bCMF 입력',input:['승인요청 처리','금액 기준 및 결재경로 확인','설계변경 건 승인요청 상태 변경','승인요청 이력 기록'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['설계변경 승인요청 공문','설계변경 첨부서류: 변경설계서·수량산출조서·계약금액조정요청서 등','기술검토의견서(최종)','기타']},
+u6:{table:[['진입조건','발주청 방침결정 결과문서 수령 후 등록 단계'],['처리 주체','시공자'],['화면상태','긴급 설계변경 결과등록 대기'],['입력·첨부','설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문 등록'],['주요 버튼 결과','완료 등록 → 긴급 설계변경 완료 / 보완지시 등록 → 3단계 설계변경 접수로 되돌림'],['내 업무대기열','시공자 결과문서 등록 대기, 완료 후 대기열 제외'],['조회·기록','긴급 실정보고, 긴급조치 이력, 설계변경, 최종 결과문서 연결 보관']],inputTitle:'bCMF 입력',input:['결과유형 선택: 완료 / 보완','완료등록 또는 보완지시 등록','긴급 설계변경 완료 처리','처리이력 확인'],docTitle:'첨부 문서 <span class="text-pill">시공자 등록</span>',docs:['설계변경 승인공문','계약변경 통보 공문','보완지시 공문','긴급조치 최종 정리자료']},
+m1:{table:[['진입조건','현장 간이확인·구두지시와 선시공 증빙을 누적한 경미 건'],['처리 주체','시공자'],['화면상태','경미자료 작성중'],['입력·첨부','경미 판단근거, 변경 위치, 수량·공사비 영향, 현장사진·수량·도면 등 누적자료 첨부'],['주요 버튼 결과','임시저장 → 작성중 유지 / 공사감독원 제출 → 2단계 경미 여부 검토'],['내 업무대기열','시공자 작성중 표시, 제출 후 공사감독원 검토대기 표시'],['조회·기록','제출 당시 첨부파일과 누적 증빙 기록 보관']],inputTitle:'bCMF 입력',input:['처리유형: 경미','경미 판단근거','현장 간이확인·구두지시 내용','위치정보','변경사유','수량·공사비 영향','검토 담당자 선택'],docTitle:'첨부 문서 <span class="text-pill">시공자 작성</span>',docs:['경미 변경자료','현장사진·위치도','수량 산출 야장·측량자료','변경도면·적색표시','증감공사비 자료','구두협의·구두지시 기록']},
+m2:{table:[['진입조건','1단계 경미자료 접수 완료 건'],['처리 주체','공사감독원'],['화면상태','경미 여부 검토중'],['입력·첨부','시공자가 제출한 누적자료를 확인하고 경미 해당 여부와 수량·공사비 적정성 검토'],['주요 버튼 결과','경미 해당 → 3단계 경미 처리 확정 / 경미 미해당 → 일반 실정보고 접수로 전환'],['내 업무대기열','공사감독원 검토대기 표시, 전환 시 시공자 보완 또는 일반 접수 표시'],['조회·기록','경미 판단결과, 검토의견, 제출자료 대조 이력 보관']],inputTitle:'bCMF 입력',input:['경미 해당 여부 선택','제출자료 대조 확인','검토의견 입력','수량·공사비 적정성 확인','일반 전환 사유 입력','검토 이력 확인'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['검토의견','경미 판단 검토자료','일반 전환 사유','필요 시 보완자료']},
+m3:{table:[['진입조건','2단계에서 경미 해당으로 판단된 건'],['처리 주체','공사감독원'],['화면상태','경미 처리 확정'],['입력·첨부','경미 해당 결과와 발주청 보고·시공자 통보 대상 정보를 기록'],['주요 버튼 결과','보고·통보 처리 → 보고·통보/시행 이력 기록'],['내 업무대기열','보고·통보 처리 대기 표시'],['조회·기록','경미 해당 판단 결과 보관']],inputTitle:'bCMF 입력',input:['경미 처리 확정','발주청 보고 대상 표시','시공자 통보 대상 표시','정산자료 등록 대상 여부'],docTitle:'첨부 문서 <span class="text-pill">공사감독원 작성</span>',docs:['경미 해당 검토의견','경미 변경자료 묶음','발주청 보고자료','시공자 통보자료']},
+m4:{table:[['진입조건','경미 처리 확정 후 보고·통보 단계'],['처리 주체','공사감독원 / 시공자'],['화면상태','시스템 외 보고·통보 또는 시행 기록'],['입력·첨부','발주청 보고 이력, 시공자 통보 이력, 시행 여부를 기록'],['주요 버튼 결과','보고·통보 완료 → 4단계 정산자료 등록으로 전환'],['내 업무대기열','보고·통보 완료 전 담당자 대기열 표시'],['조회·기록','보고·통보 이력과 첨부문서 보관']],inputTitle:'bCMF 입력',input:['발주청 보고일자','시공자 통보일자','시행 여부','보고·통보 이력','후속 반영 대상 표시'],docTitle:'첨부 문서 <span class="text-pill">보고·통보</span>',docs:['발주청 보고자료','시공자 통보자료','시행 근거자료','현장 확인자료']},
+m5:{table:[['진입조건','경미 처리 확정 및 보고·통보/시행 이력 기록 완료 건'],['처리 주체','시공자'],['화면상태','정산자료 작성중 또는 등록완료'],['입력·첨부','수량·금액 산출근거, 정산내역, 계약변경 반영자료, 보고·통보 결과자료 등록'],['주요 버튼 결과','임시저장 → 작성중 유지 / 정산자료 등록 → 준공 전 일괄 제출 준비'],['내 업무대기열','시공자 정산자료 등록 대기 또는 작성중 표시, 등록 후 제출결과 등록 대기로 전환'],['조회·기록','경미 처리 이력과 정산·계약변경 반영자료 연결 보관']],inputTitle:'bCMF 입력',input:['정산 반영 여부','계약변경 반영 여부','수량·금액 변경분','반영 기준일 또는 차수','제출 준비 여부','일반 전환 필요 여부'],docTitle:'첨부 문서 <span class="text-pill">시공자 등록</span>',docs:['정산 반영 내역서','계약변경 반영자료','수량·금액 산출근거','발주청 보고·시공자 통보 결과자료','기타 경미 처리 관련 문서']},
+m6:{table:[['진입조건','정산자료 등록 후 준공 전 시스템 외 일괄 제출이 필요한 경미 건'],['처리 주체','시공자'],['화면상태','제출결과 등록 대기 또는 완료'],['입력·첨부','제출일자, 제출처, 제출방식, 문서번호, 처리결과와 결과문서 등록'],['주요 버튼 결과','임시저장 → 작성중 유지 / 결과등록 → 경미 건 완료 / 보완 필요 시 4단계 정산자료 등록으로 되돌림'],['내 업무대기열','시공자 제출결과 등록 대기 표시, 등록 후 대기열에서 제외'],['조회·기록','경미자료, 정산자료, 시스템 외 제출결과와 결과문서 연결 보관']],inputTitle:'bCMF 입력',input:['제출방식: 공문 / 전자결재 / CALS 등','제출일자','문서번호','제출처','처리결과: 승인 / 미승인 / 보완','결과 메모'],docTitle:'첨부 문서 <span class="text-pill">시공자 등록</span>',docs:['일괄 제출 공문','제출서류 묶음','승인공문 또는 미승인 통보','보완요청 문서','기타 제출 결과자료']}
+}
+
+const detailButtons={
+s1:[['neutral','신규등록'],['neutral','첨부'],['neutral','미리보기'],['primary','임시저장'],['primary','공사감독원 제출'],['neutral','다운로드(제출 후)']],
+s2:[['neutral','미리보기'],['neutral','다운로드'],['neutral','첨부'],['danger','반려'],['primary','검토완료'],['neutral','저장']],
+s34:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','승인요청']],
+s4:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','승인공문 등록 → 완료'],['danger','미승인 통보 등록 → 종결']],
+s5:[['neutral','첨부'],['neutral','미리보기'],['primary','임시저장'],['primary','공사감독원 제출'],['neutral','다운로드(제출 후)']],
+s6:[['neutral','미리보기'],['neutral','다운로드'],['neutral','첨부'],['danger','반려'],['primary','검토완료'],['neutral','저장']],
+s78:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','승인요청']],
+s8:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','완료 등록'],['danger','보완지시 등록']],
+u1:[['neutral','신규등록'],['neutral','첨부'],['neutral','미리보기'],['primary','임시저장'],['primary','공사감독원 제출'],['neutral','다운로드(제출 후)']],
+u2:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','긴급조치 근거 등록'],['primary','설계변경 접수 안내']],
+u3:[['neutral','첨부'],['neutral','미리보기'],['primary','임시저장'],['primary','공사감독원 제출'],['neutral','다운로드(제출 후)']],
+u4:[['neutral','미리보기'],['neutral','다운로드'],['neutral','첨부'],['danger','반려'],['primary','적정성 확인'],['neutral','저장']],
+u5:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','승인요청']],
+u6:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','완료 등록'],['danger','보완지시 등록']],
+m1:[['neutral','첨부'],['neutral','미리보기'],['primary','임시저장'],['primary','공사감독원 제출'],['neutral','다운로드(제출 후)']],
+m2:[['neutral','미리보기'],['neutral','다운로드'],['neutral','첨부'],['primary','경미 해당'],['danger','일반 전환'],['neutral','저장']],
+m3:[['neutral','첨부'],['neutral','미리보기'],['primary','보고·통보 처리']],
+m4:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','보고·통보 완료']],
+m5:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','정산자료 등록'],['danger','일반 전환']],
+m6:[['neutral','첨부'],['neutral','미리보기'],['neutral','다운로드'],['primary','임시저장'],['primary','결과등록'],['neutral','정산자료 보완']]
+}
+
+const detailMeta={
+s1:{badge:'1단계',badgeClass:'b-ug',title:'bCMF 처리: 실정보고 접수',sub:'시공자가 신규등록 화면에서 실정보고 내용을 작성하고, 임시저장 또는 제출 시 건을 생성한다.'},
+s2:{badge:'2단계',badgeClass:'b-mn',title:'bCMF 처리: 실정보고 검토',sub:'공사감독원이 제출자료를 검토하고 반려 또는 승인요청으로 분기한다.'},
+s34:{badge:'3단계',badgeClass:'b-mn',title:'bCMF 처리: 실정보고 승인요청',sub:'공사감독원이 승인요청 공문을 등록하고, 결과문서는 다음 단계에서 시공자가 등록한다.'},
+s4:{badge:'4단계',badgeClass:'b-in',title:'bCMF 처리: 실정보고 결과등록',sub:'시공자가 발주청 승인공문 또는 미승인 통보를 등록해 실정보고 결과를 확정한다.'},
+s5:{badge:'5단계',badgeClass:'b-ug',title:'bCMF 처리: 설계변경 접수',sub:'승인된 실정보고 건에 연결해 시공자가 설계변경 서류를 제출한다.'},
+s6:{badge:'6단계',badgeClass:'b-mn',title:'bCMF 처리: 설계변경 검토',sub:'공사감독원이 변경설계서, 수량, 공사비, 계약금액 조정 내용을 검토한다.'},
+s78:{badge:'7단계',badgeClass:'b-mn',title:'bCMF 처리: 설계변경 승인요청',sub:'공사감독원이 승인요청 공문을 등록하고 금액 기준 결재 경로를 확인한다.'},
+s8:{badge:'8단계',badgeClass:'b-in',title:'bCMF 처리: 설계변경 완료',sub:'시공자가 설계변경 승인공문, 계약변경 통보 공문 또는 보완지시 공문을 등록한다.'},
+u1:{badge:'긴급 1단계',badgeClass:'b-ug',title:'bCMF 처리: 긴급 실정보고 접수',sub:'시공자가 약식 실정보고 서류와 현장 증빙을 첨부해 긴급 실정보고 건을 생성한다.'},
+u2:{badge:'긴급 2단계',badgeClass:'b-ug',title:'bCMF 처리: 긴급조치 근거 등록',sub:'공사감독원이 선시공·후정산 방침서 또는 발주청 지시·승인 근거를 등록한다.'},
+u3:{badge:'긴급 3단계',badgeClass:'b-ug',title:'bCMF 처리: 설계변경 접수',sub:'승인된 긴급 실정보고와 긴급조치 근거에 연결해 시공자가 접수 화면에서 정식 설계변경 서류를 작성·첨부한다.'},
+u4:{badge:'긴급 4단계',badgeClass:'b-mn',title:'bCMF 처리: 설계변경 검토',sub:'공사감독원이 긴급조치 근거, 변경설계서, 수량, 공사비, 계약금액 조정 내용과 서류 적정성을 검토한다.'},
+u5:{badge:'긴급 5단계',badgeClass:'b-mn',title:'bCMF 처리: 설계변경 승인요청',sub:'공사감독원이 승인요청 공문을 등록하고 금액 기준 결재 경로를 확인한다.'},
+u6:{badge:'긴급 6단계',badgeClass:'b-in',title:'bCMF 처리: 설계변경 완료',sub:'시공자가 방침결정 결과문서를 등록해 긴급 설계변경을 완료 또는 보완 처리한다.'},
+m1:{badge:'경미 1단계',badgeClass:'b-ug',title:'bCMF 처리: 경미자료 접수',sub:'시공자가 현장 간이확인·구두지시 후 누적한 경미 변경자료와 증빙을 bCMF에 제출한다.'},
+m2:{badge:'경미 2단계',badgeClass:'b-mn',title:'bCMF 처리: 경미 여부 검토',sub:'공사감독원이 경미 해당 여부를 판단하고, 미해당 시 일반 실정보고 접수로 전환한다.'},
+m3:{badge:'경미 3단계',badgeClass:'b-mn',title:'bCMF 처리: 경미 처리 확정',sub:'경미 해당으로 판단된 건을 발주청 보고와 시공자 통보 대상으로 확정한다.'},
+m4:{badge:'시스템 외',badgeClass:'b-mn',title:'보고·통보/시행 기록',sub:'발주청 보고와 시공자 통보·시행은 시스템 외로 진행하고, bCMF에는 이력을 보관한다.'},
+m5:{badge:'경미 4단계',badgeClass:'b-in',title:'bCMF 처리: 정산자료 등록',sub:'시공자가 수량·금액 산출근거와 정산·계약변경 반영자료를 등록하고, 시스템 외 일괄 제출 준비자료로 보관한다.'},
+m6:{badge:'경미 5단계',badgeClass:'b-in',title:'bCMF 처리: 제출결과 등록',sub:'시스템 외로 일괄 제출한 결과를 bCMF에 기록하고 관련 결과문서를 보관한다.'}
+}
+
+function listItems(items){
+return items.map(item=>`<li>${item}</li>`).join('')
+}
+
+function renderButtons(id){
+const buttons=detailButtons[id]||[]
+if(!buttons.length)return ''
+const items=buttons.map(([type,label])=>`<span class="simple-action-btn ${type}">${label}</span>`).join('')
+return `<div class="simple-actions"><div class="simple-actions-title">화면 버튼</div><div class="simple-actions-list">${items}</div></div>`
+}
+
+function renderSimpleDetail(id){
+const data=detailPlans[id]
+if(!data)return ''
+const rows=data.table.map(([label,value])=>`<tr><td>${label}</td><td>${value}</td></tr>`).join('')
+return `<div class="simple-plan"><table class="simple-table" aria-label="${id} 단계 정리"><thead><tr><th>구분</th><th>내용</th></tr></thead><tbody>${rows}</tbody></table>${renderButtons(id)}<div class="simple-split"><div class="simple-box"><div class="simple-box-title">${data.inputTitle}</div><ul>${listItems(data.input)}</ul></div><div class="simple-box"><div class="simple-box-title">${data.docTitle}</div><ul>${listItems(data.docs)}</ul></div></div></div>`
+}
+
+function tagClass(owner){
+if(owner.includes('시공자'))return 'tg-s'
+if(owner.includes('공사감독원'))return 'tg-g'
+return 'tg-p'
+}
+
+function detailDocsHtml(id){
+const data=detailDocs[id]
+if(!data)return ''
+const rows=data.items.map(([name,owner])=>`<div class="dr"><span class="dd">${name}</span><span class="dw"><span class="tg ${tagClass(owner)}">${owner}</span></span></div>`).join('')
+return `<section class="detail-doc-block"><div class="detail-doc-head"><span class="db b-bl">${data.step}</span><span class="detail-doc-name">${data.name}</span><span class="detail-doc-owner">${data.owner}</span></div><div class="detail-doc-list">${rows}</div></section>`
+}
+
+function bindDetailStepChips(root){
+root.querySelectorAll('.step-chip').forEach(chip=>{
+const target=modalIdFromStep(chip.textContent.trim())
+if(!target)return
+chip.setAttribute('role','button')
+chip.tabIndex=0
+chip.addEventListener('click',e=>{e.stopPropagation();switchStepModal(target)})
+chip.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();switchStepModal(target)}})
+})
+}
+
+function selectDetail(id){
+const panel=document.getElementById('detailPanel')
+const source=document.querySelector('#mb-'+id+' .modal')
+if(!panel||(!source&&!detailPlans[id]))return
+if(id==='s0')panel.dataset.routeType=currentFlowType||'normal'
+else delete panel.dataset.routeType
+const meta=detailMeta[id]||{}
+const badge=source?.querySelector('.badge')?.outerHTML||`<span class="badge ${meta.badgeClass||'b-ug'}">${meta.badge||''}</span>`
+const title=source?.querySelector('.mtitle')?.textContent||meta.title||''
+const sub=source?.querySelector('.msub')?.textContent||meta.sub||''
+const body=detailPlans[id]?renderSimpleDetail(id):(source?.querySelector('.mbody')?.innerHTML||'')
+panel.innerHTML=`<div class="detail-head">${badge}<div class="detail-title">${title}</div><div class="detail-sub">${sub}</div></div><div class="detail-body">${body}</div>`
+const docs=detailPlans[id]?'':detailDocsHtml(id)
+const bodyEl=panel.querySelector('.detail-body')
+const stage=bodyEl?.querySelector('.stage-grid')
+const flow=stage?.querySelector('.gui-flow')
+if(docs&&stage&&flow){stage.classList.add('with-docs');flow.insertAdjacentHTML('beforebegin',docs)}
+else if(docs&&stage)stage.insertAdjacentHTML('afterend',docs)
+else if(docs&&bodyEl)bodyEl.insertAdjacentHTML('afterbegin',docs)
+panel.dataset.current=id
+document.querySelectorAll('[data-detail-nav]').forEach(btn=>btn.classList.toggle('active',btn.dataset.detailNav===id))
+bindDetailStepChips(panel)
+if(id==='s0')selectRouteType(panel.dataset.routeType||'normal')
+panel.scrollTop=0
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+bindDetailStepChips(document)
+const initialType=new URLSearchParams(location.search).get('type')
+if(['normal','urgent','minor'].includes(initialType))selectFlowType(initialType)
+else selectDetail('s0')
+})
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
