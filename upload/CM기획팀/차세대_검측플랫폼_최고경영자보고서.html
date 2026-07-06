@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>최고경영자 보고: 검측 플랫폼 기획안</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        :root {
+            --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        
+        body { 
+            margin: 0; 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            background: var(--bg-grad); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            line-height: 1.6;
+        }
+        
+        /* Container width expanded to reduce blank space */
+        .container { max-width: 95%; margin: 0 auto; padding: 1.5rem; }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInDown 0.5s ease;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.1); }
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Tab Content */
+        .tab-content-container { width: 100%; min-height: auto; overflow-x: hidden; }
+        .tab-pane {
+            position: absolute;
+            top: 0; left: -9999px;
+            visibility: hidden;
+            opacity: 0;
+            width: 100%;
+        }
+        .tab-pane.active {
+            position: relative;
+            left: 0;
+            visibility: visible;
+            opacity: 1;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .section { 
+            background: var(--glass-bg); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            padding: 1.5rem 2.5rem; 
+            backdrop-filter: blur(12px); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .section-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1.2rem; 
+            border-bottom: 1px solid var(--glass-border); 
+            padding-bottom: 0.8rem; 
+        }
+        
+        h2 { font-size: 1.6rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        h2::before { content: ''; display: block; width: 4px; height: 24px; background: var(--primary); border-radius: 2px; }
+        
+        .btn { 
+            background: rgba(59, 130, 246, 0.2); 
+            color: #93c5fd; 
+            border: 1px solid rgba(59, 130, 246, 0.5); 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+        }
+        .btn:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+        .btn-accent { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.5); }
+        .btn-accent:hover { background: var(--accent); color: #fff; }
+        
+        /* Sub Tabs for Phases */
+        .phase-tabs {
+            display: inline-flex;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.4rem;
+            border-radius: 10px;
+        }
+        .phase-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .phase-btn:hover { color: #fff; }
+        .phase-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* PHASE CONTENT */
+        .phase-content-wrapper { width: 100%; min-height: 500px; overflow-x: hidden; }
+        .phase-content {
+            position: absolute;
+            top: 0; left: -9999px;
+            visibility: hidden;
+            opacity: 0;
+            width: 100%;
+        }
+        .phase-content.active {
+            position: relative;
+            left: 0;
+            visibility: visible;
+            opacity: 1;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* Split View for Workflows */
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        .split-title {
+            text-align: center;
+            color: #fff;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+        .split-title.asis { border-left: 4px solid #9e9e9e; }
+        .split-title.tobe { border-left: 4px solid #3b82f6; }
+
+        /* Two Column Layout for Tab 1 */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: stretch;
+        }
+        .two-column-layout .mermaid-wrapper {
+            margin-bottom: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .cards-side {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .cards-side .card {
+            padding: 1rem 1.5rem;
+        }
+
+        /* Clickable Cards (Used globally) */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; position: relative; z-index: 10; }
+        .card { 
+            background: rgba(0,0,0,0.2); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 16px; 
+            padding: 1.8rem; 
+            position: relative; 
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
+        .card:nth-child(1)::before { background: #3b82f6; }
+        .card:nth-child(2)::before { background: #10b981; }
+        .card:nth-child(3)::before { background: #f59e0b; }
+        .card h3 { font-size: 1.4rem; margin: 0 0 0.5rem 0; color: #fff; }
+        .card h4 { font-size: 1rem; margin: 0 0 1.2rem 0; color: #93c5fd; font-weight: 500; }
+        .card p { margin: 0; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; word-break: keep-all; }
+        .card p:last-child { margin-bottom: 0; }
+        
+        /* Mermaid specific styling */
+        .mermaid-wrapper { 
+            background: #ffffff; 
+            padding: 2rem; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* HARD FIX for text clipping: force nowrap and expand padding */
+        .mermaid .nodeLabel {
+            padding: 12px 20px !important;
+            white-space: nowrap !important;
+            line-height: 1.4 !important;
+        }
+        
+        /* Modals */
+        .modal { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.7); 
+            backdrop-filter: blur(8px); 
+            z-index: 9999; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 1rem;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal.active { 
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content { 
+            background: #1e293b; 
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 1100px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            padding: 2.5rem; 
+            position: relative; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-content.small { max-width: 600px; }
+        .modal.active .modal-content { transform: scale(1); }
+        .modal-title { font-size: 1.5rem; margin: 0 0 1.5rem 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
+        .close-btn { position: absolute; top: 1.5rem; right: 2rem; font-size: 2.5rem; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 0; line-height: 0.5; }
+        .close-btn:hover { color: white; }
+
+        /* Modal Descriptions */
+        .modal-description {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-description h4 {
+            color: #60a5fa;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .modal-description ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .modal-description li { margin-bottom: 0.5rem; }
+        .modal-description strong { color: #e2e8f0; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; font-size: 0.95rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        th { background: rgba(0,0,0,0.3); color: #93c5fd; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MAIN TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab0', this)">0. 요약</button>
+        <button class="tab-btn" onclick="switchTab('tab1', this)">1. 검측시스템 개선 방향</button>
+        <button class="tab-btn" onclick="switchTab('tab2', this)">2. 검측프로세스 기획</button>
+        <button class="tab-btn" onclick="switchTab('tab3', this)">3. 검측시스템 데이터</button>
+    </div>
+
+    <div class="tab-content-container">
+        
+        <!-- TAB 0: 요약 (Executive Summary) -->
+        <div id="tab0" class="tab-pane active">
+            <section class="section" style="padding: 2.5rem; border-radius: 20px;">
+                <div class="section-header" style="margin-bottom: 2rem; border-bottom: none; justify-content: center;">
+                    <h2 style="font-size: 2.2rem; color: #fff; text-align: center; margin: 0;">차세대 검측플랫폼 기획 종합 보고</h2>
+                </div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 100%; min-height: 450px;">
+                    
+                    <!-- Step 1: AS-IS -->
+                    <div style="flex: 1; background: rgba(0,0,0,0.25); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        <h3 style="color: #ef4444; font-size: 1.2rem; margin-top: 0; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid rgba(239,68,68,0.2); padding-bottom: 0.8rem;">🚨 현행 문제점 (AS-IS)</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: center;">
+                            <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fca5a5; display: block; margin-bottom: 0.3rem;">데이터 단절</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">종이/엑셀 수기 반복</span>
+                            </div>
+                            <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fca5a5; display: block; margin-bottom: 0.3rem;">조작 취약</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">사진 도용 및 탁상 감리</span>
+                            </div>
+                            <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fca5a5; display: block; margin-bottom: 0.3rem;">데이터 사장</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">단순 PDF 파일 보관</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plus Sign -->
+                    <div style="font-size: 2.5rem; color: #64748b; font-weight: bold;">+</div>
+
+                    <!-- Step 2: Tech -->
+                    <div style="flex: 1; background: rgba(0,0,0,0.25); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        <h3 style="color: #f59e0b; font-size: 1.2rem; margin-top: 0; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid rgba(245,158,11,0.2); padding-bottom: 0.8rem;">💡 3대 핵심 기술 융합</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: center;">
+                            <div style="background: rgba(245,158,11,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fde68a; display: block; margin-bottom: 0.3rem;">기성객체모델 (OBS)</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">위치/설계기준값 체크리스트 자동 매핑</span>
+                            </div>
+                            <div style="background: rgba(245,158,11,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fde68a; display: block; margin-bottom: 0.3rem;">Sat-Pointer</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">정밀 측위 / 위치 이탈 차단</span>
+                            </div>
+                            <div style="background: rgba(245,158,11,0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <strong style="color: #fde68a; display: block; margin-bottom: 0.3rem;">CUPID 엔진</strong>
+                                <span style="font-size: 0.9rem; color: var(--text-muted); word-break: keep-all;">방위각/시간 기반 과거 사진 도용 차단</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arrow Sign -->
+                    <div style="font-size: 2.5rem; color: #3b82f6; font-weight: bold;">➔</div>
+
+                    <!-- Step 3: TO-BE System -->
+                    <div style="flex: 1.8; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        <h3 style="color: #3b82f6; font-size: 1.2rem; margin-top: 0; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid rgba(59,130,246,0.2); padding-bottom: 0.8rem;">🚀 신규 시스템 구조 (TO-BE)</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem; flex: 1; justify-content: center;">
+                            <div style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 1rem; display: flex; align-items: center;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1.2rem; flex-shrink: 0; font-size: 1.1rem;">1</div>
+                                <div>
+                                    <strong style="color: #93c5fd; display: block; font-size: 1rem; margin-bottom: 0.2rem;">[사무실 PC] 기성객체 의뢰</strong>
+                                    <span style="color: #f8fafc; font-size: 0.9rem;">시스템에서 구조물 선택 시 <strong>의뢰서 생성 및 체크리스트 기준값 자동 매핑</strong></span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 1rem; display: flex; align-items: center;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1.2rem; flex-shrink: 0; font-size: 1.1rem;">2</div>
+                                <div>
+                                    <strong style="color: #6ee7b7; display: block; font-size: 1rem; margin-bottom: 0.2rem;">[현장 모바일] 정밀 실측</strong>
+                                    <span style="color: #f8fafc; font-size: 0.9rem;">정밀 측위 및 3중 사진 검증으로 <strong>조작 원천 차단</strong></span>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 1rem; display: flex; align-items: center;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1.2rem; flex-shrink: 0; font-size: 1.1rem;">3</div>
+                                <div>
+                                    <strong style="color: #fcd34d; display: block; font-size: 1rem; margin-bottom: 0.2rem;">[다단계 서명] 데이터 락킹</strong>
+                                    <span style="color: #f8fafc; font-size: 0.9rem;">결재 완료 즉시 실측치와 사진이 <strong>잠금(Lock) 처리되어 사후 위변조 원천 봉쇄</strong></span>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 1rem; display: flex; align-items: center;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #8b5cf6; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1.2rem; flex-shrink: 0; font-size: 1.1rem;">4</div>
+                                <div>
+                                    <strong style="color: #c4b5fd; display: block; font-size: 1rem; margin-bottom: 0.2rem;">[최고경영진] 실시간 관제</strong>
+                                    <span style="color: #f8fafc; font-size: 0.9rem;">승인 결과가 <strong>3D 트윈 및 GIS 대시보드에 즉시 렌더링</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB 1: 개선 방향 -->
+        <div id="tab1" class="tab-pane">
+            <section class="section">
+                <div class="section-header">
+                    <h2>검측시스템 개선 방향 (AS-IS vs TO-BE)</h2>
+                    <button class="btn" onclick="openModal('modal-mapping')">개선과제 list 상세보기</button>
+                </div>
+                
+                <div class="two-column-layout">
+                    <!-- Left: Diagram -->
+                    <div class="mermaid-wrapper">
+                        <div class="mermaid">
+                        flowchart LR
+                            subgraph AS_IS ["현행 (서류 중심)"]
+                                direction TB
+                                A1["위치 수기 입력<br>⚠️ 오기입 위험"]
+                                A2["사진 단순 첨부<br>⚠️ 도용/조작 위험"]
+                                A3["서류 껍데기 연계<br>⚠️ 중복 타이핑"]
+                                A1 --> A2 --> A3
+                            end
+                        
+                            subgraph TO_BE ["기획안 (데이터 중심)"]
+                                direction TB
+                                B1["[Sat-Pointer]<br>cm급 좌표 자동 연동"]
+                                B2["[CUPID 엔진]<br>사진 3중 교차 검증"]
+                                B3["[기성객체모델]<br>데이터 상속/자동 매핑"]
+                                B1 --> B2 --> B3
+                            end
+                        
+                            AS_IS == "한맥 3대 기술 융합" ==> TO_BE
+                        
+                            classDef asIs fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#333;
+                            classDef toBe fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#333;
+                            class A1,A2,A3 asIs;
+                            class B1,B2,B3 toBe;
+                        </div>
+                    </div>
+
+                    <!-- Right: Stacked Cards -->
+                    <div class="cards-side">
+                        <div class="card">
+                            <div>
+                                <h3>Sat-Pointer</h3>
+                                <h4>✨ 기대 효과: 위치 조작 원천 차단</h4>
+                                <p><strong style="color: #60a5fa;">[작동 원리]</strong> 스마트폰과 연동된 고정밀 RTK 위성 신호를 통해, 현장의 절대 좌표를 시스템으로 실시간 전송합니다.</p>
+                                <p><strong style="color: #60a5fa;">[시스템 적용]</strong> 기존 수기 입력 방식으로 발생하던 '위치 허위 입력'을 차단합니다. 도면상 허가된 오차 반경 내(Geo-fencing)에 진입해야만 검측 데이터 등록이 활성화되도록 시스템을 통제하여, 현장 방문 없는 탁상 감리를 물리적으로 방지합니다.</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div>
+                                <h3>CUPID</h3>
+                                <h4>✨ 기대 효과: 검측 사진 도용 방지</h4>
+                                <p><strong style="color: #34d399;">[작동 원리]</strong> 사진 촬영 즉시 메타데이터(EXIF)에 위경도 좌표, 시간, 그리고 카메라가 바라본 방향각(Compass) 정보를 암호화하여 전송합니다.</p>
+                                <p><strong style="color: #34d399;">[시스템 적용]</strong> 수집된 데이터는 3D 도면 상에 해당 방향을 가리키는 시각적 화살표로 역투영됩니다. '어디서 어느 쪽을 바라보고 찍었는지'가 공간 상에 영구 박제되므로, 과거 타 구역 사진을 파일만 바꿔치기하여 허위로 첨부하는 관행을 100% 차단합니다.</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div>
+                                <h3>기성객체모델</h3>
+                                <h4>✨ 기대 효과: 서류 무인화 및 통합 관제</h4>
+                                <p><strong style="color: #fbbf24;">[작동 원리]</strong> 단순 시각용 3D 도면이 아닌, 도면을 이루는 개별 부품(말뚝, 기둥 등) 자체가 고유 속성 데이터를 품고 있는 데이터베이스로 작동합니다.</p>
+                                <p><strong style="color: #fbbf24;">[시스템 적용]</strong> 현장에서 객체를 클릭하기만 하면 설계 기준값이 검측 서류에 100% 자동 매핑(Auto-Mapping)되어 단순 반복 타이핑 업무가 사라집니다. 최종 승인 즉시 3D 모델의 상태 색상이 변하고 대시보드 통계가 실시간으로 갱신되어 직관적인 통합 관제가 가능해집니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB 2: 프로세스 기획 -->
+        <div id="tab2" class="tab-pane">
+            <section class="section">
+                <div class="section-header" style="margin-bottom: 1rem;">
+                    <h2>검측프로세스 기획 (Phase 1~3)</h2>
+                    <button class="btn btn-accent" onclick="openModal('modal-architecture')">시스템 아키텍처 구상도</button>
+                </div>
+                
+                <!-- Sub Tabs for Phases -->
+                <div class="phase-tabs">
+                    <button class="phase-btn active" onclick="switchPhase('all', this)">전체 워크플로우</button>
+                    <button class="phase-btn" onclick="switchPhase('p1', this)">Phase 1 (의뢰)</button>
+                    <button class="phase-btn" onclick="switchPhase('p2', this)">Phase 2 (검측)</button>
+                    <button class="phase-btn" onclick="switchPhase('p3', this)">Phase 3 (승인 및 관제)</button>
+                </div>
+
+                <div class="phase-content-wrapper">
+                    <!-- Phase ALL -->
+                    <div id="phase-all" class="phase-content active">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">💡 전체 프로세스 혁신 포인트 (현행 vs 기획안)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;"><strong style="color: #fff;">데이터 흐름의 연속성:</strong> <span style="color: #9ca3af;">(현행)</span> 종이 도면 실측 후 사무실로 복귀해 서류를 수기 작성하며 데이터 단절 ➔ <strong style="color: #3b82f6;">(기획안)</strong> 기성객체 클릭(의뢰) ➔ 모바일 정밀 측위(현장) ➔ 대시보드 갱신(승인)으로 끊김 없는(Seamless) 통합 체계 구축</li>
+                                <li><strong style="color: #fff;">결재 결과의 자산화:</strong> <span style="color: #9ca3af;">(현행)</span> 결재 완료 후 PDF 파일이 단순 저장소에 사장되어 현황 파악 불가 ➔ <strong style="color: #3b82f6;">(기획안)</strong> 검측 승인 시 3D 디지털 트윈 및 2D GIS 대시보드에 결과가 실시간 시각화되어 직관적인 원격 관제 가능</li>
+                            </ul>
+                        </div>
+                        <div class="split-view">
+                            <!-- AS-IS -->
+                            <div class="split-left">
+                                <h4 class="split-title asis">AS-IS (현행 ex-SSOC)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph Phase1 ["Phase 1. 의뢰 (사무실)"]
+                                            direction TB
+                                            Start(["[시공사 로그인]<br>검측 의뢰"]) --> Req["시스템 수기 타이핑<br>(도면번호, 위치 등 직접 입력)"]
+                                            Req --> Check{"과거 이력<br>단순 조회"}
+                                        end
+                                        
+                                        subgraph Phase2 ["Phase 2. 현장 검측 (현장)"]
+                                            direction TB
+                                            Check -- "종이 서류 지참" --> Field["[시공/감리 로그인]<br>감리단 입회 현장 실측"]
+                                            Field --> Photo["일반 카메라 사진 촬영<br>(조작 및 도용 가능성 존재)"]
+                                        end
+                                        
+                                        subgraph Phase3 ["Phase 3. 승인 (사무실)"]
+                                            direction TB
+                                            Photo --> Review["사무실 복귀 후<br>사진 수동 분류 및 첨부"]
+                                            Review -- "적합" --> Sign["[감리/발주처 로그인]<br>통보서 서명 및 결재<br>(단순 파일 보관)"]
+                                            Sign --> End(["검측 완료<br>(데이터 파편화 및 사장)"])
+                                        end
+                                        
+                                        Review -. "부적합 (시스템 반려)" .-> Start
+                                    
+                                        classDef asis fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,color:#333;
+                                        class Phase1,Start,Req,Check,Phase2,Field,Photo,Phase3,Review,Sign,End asis;
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TO-BE -->
+                            <div class="split-right">
+                                <h4 class="split-title tobe">TO-BE (기획안)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph Phase1 ["Phase 1. 기획 및 의뢰 (사무실)"]
+                                            direction TB
+                                            Start(["[시공사 로그인]<br>검측 의뢰"]) --> Req["기성객체 클릭 또는 2D 핀 생성<br>(도면번호·위치·기준값 자동 매핑)"]
+                                            Req --> DocCheck["필수 서류 누락 검사 및<br>공정 Interlock 체크(Hard-Lock)"]
+                                        end
+                                        
+                                        subgraph Phase2 ["Phase 2. 현장 실시간 검측 (현장)"]
+                                            direction TB
+                                            Field["[시공/감리 모바일 로그인]<br>현장 실측 (Sat-Pointer+CUPID)<br>및 원천 데이터 동기화"]
+                                        end
+                                        
+                                        subgraph Phase3 ["Phase 3. 승인 및 관제 (사무실)"]
+                                            direction TB
+                                            Review["[감리단 PC 로그인]<br>서류 접수 및 2D/3D 교차 검증"]
+                                            Sign["[감리/발주처 로그인]<br>통보서 다단계 전자서명"]
+                                            
+                                            Review -- "적합" --> Sign
+                                            Sign --> End(["최종 승인 및 관제 완료<br>(Audit Log 저장 및 대시보드/3D 모델 갱신)"])
+                                        end
+                                        
+                                        DocCheck --> Field
+                                        Field --> Review
+                                        Review -. "부적합 (시스템 반려)" .-> Start
+                                    
+                                        classDef p1 fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#333;
+                                        classDef p2 fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#333;
+                                        classDef p3 fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#333;
+                                        class Phase1,Start,Req,DocCheck p1;
+                                        class Phase2,Field p2;
+                                        class Phase3,Review,Sign,End p3;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 1 Detail -->
+                    <div id="phase-p1" class="phase-content">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">💡 Phase 1. 의뢰 혁신 포인트 (현행 vs 기획안)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;"><strong style="color: #fff;">서류 작성 자동화:</strong> <span style="color: #9ca3af;">(현행)</span> 도면번호, 위치(STA), 기준값 등을 매번 엑셀에 수기 타이핑 ➔ <strong style="color: #3b82f6;">(기획안)</strong> 기성객체모델(OBS) 클릭 1번으로 정적 데이터 100% 자동 매핑</li>
+                                <li><strong style="color: #fff;">선행 공정 휴먼에러 차단:</strong> <span style="color: #9ca3af;">(현행)</span> 선행 공정 누락 여부를 감독관이 과거 서류를 뒤져 수동 확인 ➔ <strong style="color: #3b82f6;">(기획안)</strong> 공정 Interlock 모듈이 미완료 건을 자동 차단하며, 긴급 시 Bypass 사유 입력 필수</li>
+                            </ul>
+                        </div>
+                        <div class="split-view">
+                            <!-- AS-IS -->
+                            <div class="split-left">
+                                <h4 class="split-title asis">AS-IS (현행 ex-SSOC)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph Legacy_Process ["현행 (ex-SSOC) 프로세스"]
+                                            direction TB
+                                            C["서류 내용 수동 타이핑<br>(오류/누락 발생)"]
+                                            D{"선행공정 확인<br>(감독관 육안/수동 확인)"}
+                                            
+                                            C --> D
+                                        end
+                                        
+                                        A["[시공사 계정 로그인]<br>시스템 접속"] --> B(["검측 대상 수기 입력"])
+                                        B --> C
+                                        D -- "수동 확인 완료" --> F["[감리단 계정]<br>의뢰 접수 대기함"]
+                                    
+                                        classDef asis fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,color:#333;
+                                        class A,B,C,D,F asis;
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TO-BE -->
+                            <div class="split-right">
+                                <h4 class="split-title tobe">TO-BE (기획안)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph New_Tech ["기획안 추가 프로세스"]
+                                            direction TB
+                                            C["[필수] 객체 속성 자동 기입<br>(위치, 공종, 설계치 매핑)"]
+                                            Doc{"[모듈] 필수 서류 체크<br>(누락 시 Hard-Lock)"}
+                                            D{"[모듈] 공정 Interlock<br>(선행공정 확인)"}
+                                            E["[모듈] Bypass<br>(주감독 임시 승인)"]
+                                            
+                                            C --> Doc
+                                            Doc -- "통과" --> D
+                                            D -. "선행 미완료" .-> E
+                                        end
+                                        
+                                        A["[시공사 계정 로그인]<br>시스템 접속"] --> B(["검측 대상 객체/위치 선택"])
+                                        B --> C
+                                        D -- "완료" --> F["[감리단 계정]<br>의뢰 접수 대기함"]
+                                        E -. "예외 사유 입력" .-> F
+                                    
+                                        classDef old fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#333;
+                                        classDef req fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#333;
+                                        classDef opt fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,stroke-dasharray: 5 5,color:#333;
+                                        
+                                        class A,F,B old;
+                                        class C,Doc req;
+                                        class D,E opt;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 Detail -->
+                    <div id="phase-p2" class="phase-content">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">💡 Phase 2. 검측 혁신 포인트 (현행 vs 기획안)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;"><strong style="color: #fff;">위치 조작 원천 차단:</strong> <span style="color: #9ca3af;">(현행)</span> 종이 도면에 의존하며 사무실 탁상감리 적발 불가 ➔ <strong style="color: #3b82f6;">(기획안)</strong> Sat-Pointer 정밀 좌표 기반으로 가상 울타리(Geo-fencing) 이탈 시 Soft-Lock 경고 발동</li>
+                                <li><strong style="color: #fff;">사진 도용 및 재사용 금지:</strong> <span style="color: #9ca3af;">(현행)</span> 사무실 PC에서 과거 타 구역 사진 파일로 몰래 교체 가능 ➔ <strong style="color: #3b82f6;">(기획안)</strong> CUPID 엔진이 모바일 촬영 즉시 [위치·시간·방향각] 메타데이터를 3중 교차 검증하여 도용 차단</li>
+                            </ul>
+                        </div>
+                        <div class="split-view">
+                            <!-- AS-IS -->
+                            <div class="split-left">
+                                <h4 class="split-title asis">AS-IS (현행 ex-SSOC)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph Legacy_Process ["현행 (ex-SSOC) 프로세스"]
+                                            direction TB
+                                            B["현장 위치 육안 확인"]
+                                            C{"위치 이탈 여부<br>(확인 불가/탁상감리)"}
+                                            E["종이도면/줄자<br>수동 측정"]
+                                            F["일반 스마트폰/카메라 촬영<br>(위치/시간 조작 가능)"]
+                                            
+                                            B --> C
+                                            C -. "사후 확인" .-> E
+                                            E --> F
+                                        end
+                                        
+                                        A["[감리/시공사 로그인]<br>모바일 앱 현장 접속"] --> B
+                                        F --> G["사무실 PC로 사진 파일 수동 이동"]
+                                    
+                                        classDef asis fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,color:#333;
+                                        class A,B,C,E,F,G asis;
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TO-BE -->
+                            <div class="split-right">
+                                <h4 class="split-title tobe">TO-BE (기획안)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph New_Tech ["기획안 추가 프로세스"]
+                                            direction TB
+                                            B["[필수] Sat-Pointer 정밀 측위"]
+                                            C{"[모듈] Geo-fencing 체크<br>(반경 이탈 여부)"}
+                                            D["[모듈] Soft Lock<br>(사유 필수 입력)"]
+                                            E["[모듈] 수치 기반<br>정량 실측 (DB화)"]
+                                            F["[필수] CUPID 사진 촬영<br>(3중 교차 검증)"]
+                                            
+                                            B --> C
+                                            C -. "5m 이상 이탈" .-> D
+                                            C -- "정상 진입" --> E
+                                            D -.-> E
+                                            E --> F
+                                        end
+                                        
+                                        A["[감리/시공사 로그인]<br>모바일 앱 현장 접속"] --> B
+                                        F --> G["데이터 클라우드 실시간 동기화"]
+                                    
+                                        classDef old fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#333;
+                                        classDef req fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#333;
+                                        classDef opt fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,stroke-dasharray: 5 5,color:#333;
+                                        
+                                        class A,G old;
+                                        class B,F req;
+                                        class C,D,E opt;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 Detail -->
+                    <div id="phase-p3" class="phase-content">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">💡 Phase 3. 승인 및 관제 혁신 포인트 (현행 vs 기획안)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;"><strong style="color: #fff;">결재 보안 및 데이터 무결성:</strong> <span style="color: #9ca3af;">(현행)</span> 문서 표지만 전자 결재하여 첨부 파일 임의 교체 위험 존재 ➔ <strong style="color: #3b82f6;">(기획안)</strong> [실측치+사진+서명] 전체를 묶어 해시(Hash) 암호화하여 데이터 위변조 원천 방지</li>
+                                <li style="margin-bottom: 0.5rem;"><strong style="color: #fff;">위치 기반 2D/3D 트윈 관제:</strong> <span style="color: #9ca3af;">(현행)</span> 승인 후 엑셀에 수기로 통계 재입력 ➔ <strong style="color: #3b82f6;">(기획안)</strong> 2D/3D 교차 검증을 통해 적합성을 직관적으로 판단하며, 최종 승인 시 2D GIS 맵과 대시보드가 실시간 갱신되어 관제 완료</li>
+                            </ul>
+                        </div>
+                        <div class="split-view">
+                            <!-- AS-IS -->
+                            <div class="split-left">
+                                <h4 class="split-title asis">AS-IS (현행 ex-SSOC)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph Legacy_Process ["현행 (ex-SSOC) 승인/관제"]
+                                            direction TB
+                                            C{"서류/사진<br>수동 검토"}
+                                            D["시스템 반려 처리"]
+                                            E["결재 완료<br>(PDF 단순 보관)"]
+                                            F["통계 수기 작성<br>(엑셀 이중 작업)"]
+                                            
+                                            C -- 부적합 --> D
+                                            C -- 적합 --> E
+                                            E --> F
+                                        end
+                                        
+                                        A["[감리단] 서류 검토"] --> C
+                                        D -. "보완 및 재시공" .-> Re["[시공사] 재의뢰"]
+                                        F --> G["검측 프로세스 종료"]
+                                    
+                                        classDef asis fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,color:#333;
+                                        class A,C,D,E,F,G,Re asis;
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TO-BE -->
+                            <div class="split-right">
+                                <h4 class="split-title tobe">TO-BE (기획안)</h4>
+                                <div class="mermaid-wrapper">
+                                    <div class="mermaid">
+                                    flowchart TD
+                                        subgraph New_Tech ["기획안 승인 및 관제 프로세스"]
+                                            direction TB
+                                            C{"[필수] 2D/3D 기반<br>적합성 교차 검증"}
+                                            E["[필수] 데이터 종속 다단계 서명<br>(Audit Log 해시 암호화)"]
+                                            F["[필수] 위치 기반<br>대시보드 및 2D/3D 컬러 갱신"]
+                                            
+                                            C -- "적합" --> E
+                                            E --> F
+                                        end
+                                        
+                                        A["[감리단/사업단] 교차 검증"] --> C
+                                        C -. "부적합 (시스템 반려)" .-> Re["[시공사] 재의뢰"]
+                                        F --> G["관제 완료"]
+                                    
+                                        classDef old fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#333;
+                                        classDef req fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#333;
+                                        classDef opt fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,stroke-dasharray: 5 5,color:#333;
+                                        
+                                        class A,G,Re old;
+                                        class C,E,F req;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div> <!-- End of phase-content-wrapper -->
+
+            </section>
+        </div>
+
+        <!-- TAB 3: 검측시스템 데이터 -->
+        <div id="tab3" class="tab-pane">
+            <section class="section">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <h2>검측시스템 데이터 연동 체계 (Auto-Mapping Architecture)</h2>
+                </div>
+
+                <div class="two-column-layout" style="gap: 2rem;">
+                    
+                    <!-- Left Column: 자동 매핑 (Auto-Mapping) -->
+                    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 1.5rem; flex: 1;">
+                        <h3 style="color: #34d399; font-size: 1.3rem; margin-top: 0; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(16, 185, 129, 0.2); padding-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>✅ 시스템 자동 매핑 (Auto-Mapping)</span>
+                            <span style="font-size: 0.85rem; font-weight: normal; color: #a7f3d0; background: rgba(16, 185, 129, 0.2); padding: 0.3rem 0.8rem; border-radius: 20px;">사무실/시스템 자동 생성</span>
+                        </h3>
+                        
+                        <!-- LOIN 기반 -->
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border-left: 4px solid #3b82f6;">
+                            <h4 style="color: #93c5fd; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">1. LOIN 기반 연동 (기성객체모델)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>공종 및 객체명</strong>: A시트(OBS마스터)의 <code>[Process Name]</code>, <code>[Element Object]</code> 열 참조</li>
+                                <li><strong>위치 좌표 (STA)</strong>: E시트(시공단계)의 <code>[Location]</code> 열 참조</li>
+                                <li><strong>설계 치수 및 기준값</strong>: E시트(시공단계)의 <code>[Information]</code> 열 참조</li>
+                            </ul>
+                            <div style="margin-top: 0.8rem; padding: 0.6rem; background: rgba(59,130,246,0.1); border-radius: 6px; font-size: 0.85rem; color: #bfdbfe;">
+                                💡 <strong>적용 조건</strong>: 실측치 연결 규칙은 가설재(거푸집 등)를 제외한 <strong>'영구 잔존 요소객체'</strong>에 한해서만 적용 가능하도록 구조화되어 있습니다.
+                            </div>
+                        </div>
+
+                        <!-- 절차서/QMS 기반 -->
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border-left: 4px solid #f59e0b;">
+                            <h4 style="color: #fcd34d; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">2. 별도 DB 기반 연동 (검측절차서/QMS)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>체크리스트 폼 & CodeNo</strong>: QMS-0085 매뉴얼 매핑 테이블 호출</li>
+                                <li><strong>필수 검측(HP/WP) 등급</strong>: 검측 절차서 DB를 통해 자동 지정</li>
+                                <li><strong>공정 Interlock (선행공정 통제)</strong>: 검측 절차서에 명시된 선후행 작업 과정에 따라 미완료 건 자동 차단</li>
+                            </ul>
+                            <div style="margin-top: 0.8rem; padding: 0.6rem; background: rgba(245,158,11,0.1); border-radius: 6px; font-size: 0.85rem; color: #fcd34d;">
+                                💡 <strong>구축 방향</strong>: 복잡한 WBS나 공정표 연동은 배제하고, 검측절차서 상의 WP/HP 항목만으로 선후행 작업 과정을 1차 단순 분류하여 구축하며, 정밀한 통제 모듈은 추후 필요 시 고도화 과제로 진행합니다.
+                            </div>
+                        </div>
+
+                        <!-- 첨부 서류 자동화 -->
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; border-left: 4px solid #8b5cf6;">
+                            <h4 style="color: #c4b5fd; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">3. 첨부 서류 연계 (문서 자동화)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>표준 문서 (정적)</strong>: ex-SSOC 시스템과 같이 <code>[Process Name]</code> 키워드 기반 태그 매칭을 통해 설계실무지침, 안전가이드 등을 자동 첨부합니다.</li>
+                                <li><strong>필수 서류 누락 체크(Hard-Lock)</strong>: LOIN E시트 <code>[Documentation]</code> 열(측량성과, 다짐시험 등) 기반으로 <strong>필수 서류 팝업 통제</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: 현장 직접 입력 (Manual Input) -->
+                    <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 1.5rem; flex: 1;">
+                        <h3 style="color: #f87171; font-size: 1.3rem; margin-top: 0; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>❌ 현장 직접 입력 (Manual Input)</span>
+                            <span style="font-size: 0.85rem; font-weight: normal; color: #fecaca; background: rgba(239, 68, 68, 0.2); padding: 0.3rem 0.8rem; border-radius: 20px;">자동 매핑 불가</span>
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.2rem; line-height: 1.5;">객체 모델이나 절차서만으로는 알 수 없는, 당일 현장의 실제(As-Is) 상황을 기록하는 동적 데이터입니다.</p>
+
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border-left: 4px solid #64748b;">
+                            <h4 style="color: #cbd5e1; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">1. 실측 데이터 (동적)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>현장 실측치</strong>: 토공량, 다짐도, 규격 편차 등은 작업자가 직접 판단/입력</li>
+                                <li><strong>기상 및 투입 현황</strong>: 당일 기상, 투입 장비·인원 수기 기입</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border-left: 4px solid #64748b;">
+                            <h4 style="color: #cbd5e1; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">2. 증빙 및 인증</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>검측 증빙 사진 (CUPID)</strong>: 갤러리 업로드 불가, 현장 앱 실시간 촬영 및 EXIF 해시 암호화 적용</li>
+                                <li><strong>다단계 서명</strong>: 권한별(시공사/감리단) 전자서명 직접 수행</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1.2rem; border-left: 4px solid #64748b;">
+                            <h4 style="color: #cbd5e1; margin-top: 0; margin-bottom: 0.8rem; font-size: 1.05rem;">3. 동적 첨부 서류 (수동 첨부)</h4>
+                            <ul style="margin: 0; padding-left: 1.2rem; color: #e2e8f0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><strong>현장 발생 문서</strong>: 당일 발급된 품질시험 성적서, 자재 송장, 특이사항 사유서 등은 현장에서 수동 촬영 및 첨부 필수.</li>
+                            </ul>
+                            <div style="margin-top: 0.8rem; padding: 0.6rem; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85rem; color: #94a3b8;">
+                                💡 <strong>추후 고도화 가능성</strong>: LIMS(품질관리시스템) 연동 시, 해당 현장 시험 성적서는 시스템에서 자동으로 호출 가능하도록 확장 가능.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Modals have been removed and content integrated into cards -->
+
+<!-- Modal: Mapping Table 16 Items -->
+<div id="modal-mapping" class="modal" onclick="closeModalOnOutsideClick(event)">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('modal-mapping')">&times;</button>
+        <h3 class="modal-title">개선과제 list 상세보기 (16대 핵심 과제)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>분야</th>
+                    <th>ID</th>
+                    <th>개선 과제 (현행 문제점)</th>
+                    <th>상세 해결 방안 (기획안 로직)</th>
+                    <th>적용</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td rowspan="3"><strong>모바일/공간</strong></td><td>A-01</td><td>모바일 실시간 검측 체계 (사후 작성)</td><td>모바일 앱에서 측정 즉시 클라우드로 동기화</td><td style="color:#6ee7b7">O</td></tr>
+                <tr><td>A-02</td><td>위치 기반 승인 제한 (가상 울타리)</td><td>도면 위치와 실측 위치 이탈 시 강행 사유 필수 (Soft-Lock)</td><td style="color:#fcd34d">△</td></tr>
+                <tr><td>A-03</td><td>GIS 공간 좌표 자동 입력 (수기 입력)</td><td>NMEA 데이터를 파싱해 위경도 절대 좌표 자동 기입</td><td style="color:#6ee7b7">O</td></tr>
+                <tr><td rowspan="3"><strong>데이터 무결성</strong></td><td>B-01</td><td>사진 위변조 방지 (과거/타구역 도용)</td><td>CUPID 엔진 통해 시간/위치/방향 3중 교차 검증 후 봉인</td><td style="color:#6ee7b7">O</td></tr>
+                <tr><td>B-02</td><td>중요 공종 동영상 기록 (매몰 부위)</td><td>서버 부하 방지를 위해 단순 콜드 스토리지 첨부로 제한적 적용</td><td style="color:#fcd34d">△</td></tr>
+                <tr><td>B-03</td><td>데이터 이해충돌 방지 아키텍처</td><td>최종 승인 시 전체 데이터를 조합한 Audit Log(해시) 생성</td><td style="color:#fcd34d">△</td></tr>
+                <tr><td rowspan="4"><strong>플랫폼 연계</strong></td><td>C-01</td><td>공정 선행 검측 Interlock (임의 시공)</td><td>OBS 마일스톤 연동. 긴급 시 주감독 임시 승인(Bypass) 제공</td><td style="color:#fcd34d">△</td></tr>
+                <tr><td>C-02</td><td>검측-BIM 디지털 트윈 (데이터 파편화)</td><td>3D 모델에 실측 속성 기입 및 사진 아이콘 렌더링 동시 수행</td><td style="color:#6ee7b7">O</td></tr>
+                <tr><td>C-03</td><td>수치 기반 정량 DB화 (이분법 통계 불가)</td><td>핵심 3대 지표(다짐도/강도 등) 수치 입력 폼 우선 전환</td><td style="color:#fcd34d">△</td></tr>
+                <tr><td>C-04</td><td>서류 중복 입력 자동화 (반복 타이핑)</td><td>OBS 클릭 1회로 모든 폼(의뢰/통보서)에 100% 자동 매핑</td><td style="color:#6ee7b7">O</td></tr>
+                <tr><td rowspan="4"><strong>UX/인프라</strong></td><td>D-01</td><td>반응형 UI (모바일 호환성)</td><td>관리자 관제 목적 우선순위에 따라 현 단계 구축 배제</td><td style="color:#fca5a5">X</td></tr>
+                <tr><td>D-02</td><td>음성인식 입력 기능</td><td>인프라 비용 문제로 현 단계 구축 배제</td><td style="color:#fca5a5">X</td></tr>
+                <tr><td>D-03</td><td>첨부파일 인라인 뷰어</td><td>현 단계 구축 배제</td><td style="color:#fca5a5">X</td></tr>
+                <tr><td>D-04</td><td>HTTPS 보안 통신 규격</td><td>현 단계 구축 배제</td><td style="color:#fca5a5">X</td></tr>
+                <tr><td rowspan="2"><strong>미래 기술</strong></td><td>E-01</td><td>비전 AI 기반 크랙/결함 자동 인식</td><td>기술 성숙도 및 비용 문제로 배제</td><td style="color:#fca5a5">X</td></tr>
+                <tr><td>E-02</td><td>법령 개선 (전자 서류 법적 효력 확보)</td><td>플랫폼 스코프 밖이므로 배제</td><td style="color:#fca5a5">X</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Architecture -->
+<div id="modal-architecture" class="modal" onclick="closeModalOnOutsideClick(event)">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('modal-architecture')">&times;</button>
+        <h3 class="modal-title">검측 플랫폼 시스템 아키텍처 구상도</h3>
+        <div class="modal-description">
+            <h4>단일 데이터베이스(OBS) 기반 아키텍처</h4>
+            <ul>
+                <li><strong>Presentation Layer</strong>: 시공사, 감리단, 발주처가 분리된 시스템을 쓰지 않고 하나의 화면 모듈에 권한별로 접속합니다.</li>
+                <li><strong>Application Layer</strong>: 결재 엔진, 맵핑 엔진, 통계 엔진이 독립적인 API 형태로 제공되어 확장이 용이합니다.</li>
+                <li><strong>Data Layer</strong>: 단순 파일 저장이 아닌, <strong>3D 기성객체모델(DB)</strong>을 중심으로 모든 서류와 사진 데이터가 관계형으로 묶여 저장됩니다.</li>
+            </ul>
+            <h4 style="margin-top: 1.2rem;">역할별 접근 권한 매트릭스</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem;">
+                <thead><tr style="border-bottom: 2px solid rgba(255,255,255,0.2);">
+                    <th style="padding: 0.5rem; text-align: left; color: var(--text-muted);">기능</th>
+                    <th style="padding: 0.5rem; text-align: center; color: #60a5fa;">시공사</th>
+                    <th style="padding: 0.5rem; text-align: center; color: #34d399;">감리단</th>
+                    <th style="padding: 0.5rem; text-align: center; color: #fbbf24;">발주처</th>
+                </tr></thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">의뢰서 생성</td><td style="text-align: center; color: #6ee7b7;">✅</td><td style="text-align: center; color: #fca5a5;">❌</td><td style="text-align: center; color: #fca5a5;">❌</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">체크리스트 입력</td><td style="text-align: center; color: #6ee7b7;">✅ 실측치</td><td style="text-align: center; color: #6ee7b7;">✅ 판정</td><td style="text-align: center; color: #fca5a5;">❌</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">사진 업로드</td><td style="text-align: center; color: #6ee7b7;">✅</td><td style="text-align: center; color: #6ee7b7;">✅ 입회</td><td style="text-align: center; color: #fca5a5;">❌</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">승인/반려</td><td style="text-align: center; color: #fca5a5;">❌</td><td style="text-align: center; color: #6ee7b7;">✅ 1차</td><td style="text-align: center; color: #6ee7b7;">✅ 최종</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">데이터 수정</td><td style="text-align: center; color: #fcd34d;">⚠ 반려건만</td><td style="text-align: center; color: #fca5a5;">❌</td><td style="text-align: center; color: #fca5a5;">❌</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">대시보드 조회</td><td style="text-align: center;">본인 공구</td><td style="text-align: center;">담당 공구</td><td style="text-align: center; color: #6ee7b7;">전체 공구</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);"><td style="padding: 0.4rem;">Audit Log</td><td style="text-align: center; color: #fca5a5;">❌</td><td style="text-align: center; color: #6ee7b7;">✅</td><td style="text-align: center; color: #6ee7b7;">✅</td></tr>
+                    <tr><td style="padding: 0.4rem;">Bypass 승인</td><td style="text-align: center; color: #fca5a5;">❌</td><td style="text-align: center; color: #6ee7b7;">✅ 사유필수</td><td style="text-align: center; color: #6ee7b7;">✅</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mermaid-wrapper">
+            <div class="mermaid">
+            flowchart TD
+                subgraph Presentation ["화면 (UI/UX Layer)"]
+                    UI_Dash["통합 관제 대시보드"]
+                    UI_2D["2D GIS 맵 뷰어"]
+                    UI_3D["3D 트윈 뷰어"]
+                    UI_Doc["결재 및 서류 모듈"]
+                end
+            
+                subgraph Application ["비즈니스 로직 (API Layer)"]
+                    App_Workflow["검측 워크플로우 API"]
+                    App_Map["공간/위치 맵핑 API"]
+                    App_Stat["통계/검색 엔진 API"]
+                end
+            
+                subgraph DataLayer ["데이터 & 엔진 (Data Layer)"]
+                    DB_OBS[("기성객체모델 DB")]
+                    Eng_Cupid[["CUPID 3D 엔진"]]
+                    Eng_BIM[["BCMF BIM 서버"]]
+                end
+            
+                UI_Dash <--> App_Stat
+                UI_2D <--> App_Map
+                UI_3D <--> Eng_BIM
+                UI_3D <--> Eng_Cupid
+                UI_Doc <--> App_Workflow
+            
+                App_Workflow <--> DB_OBS
+                App_Map <--> DB_OBS
+                App_Stat <--> DB_OBS
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+        startOnLoad: true, 
+        theme: 'default',
+        securityLevel: 'loose',
+        fontFamily: 'Pretendard',
+        fontSize: 16,
+        flowchart: {
+            useMaxWidth: false,
+            htmlLabels: true
+        }
+    });
+</script>
+
+<script>
+    function switchTab(tabId, btn) {
+        var panes = document.querySelectorAll('.tab-pane');
+        for (var i = 0; i < panes.length; i++) {
+            panes[i].classList.remove('active');
+        }
+        
+        var btns = document.querySelectorAll('.tab-btn');
+        for (var j = 0; j < btns.length; j++) {
+            btns[j].classList.remove('active');
+        }
+        
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function switchPhase(phaseId, btn) {
+        var contents = document.querySelectorAll('.phase-content');
+        for (var i = 0; i < contents.length; i++) {
+            contents[i].classList.remove('active');
+        }
+        
+        var btns = document.querySelectorAll('.phase-btn');
+        for (var j = 0; j < btns.length; j++) {
+            btns[j].classList.remove('active');
+        }
+        
+        document.getElementById('phase-' + phaseId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function openModal(id) {
+        var el = document.getElementById(id);
+        if(el) {
+            el.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeModal(id) {
+        var el = document.getElementById(id);
+        if(el) {
+            el.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function closeModalOnOutsideClick(event) {
+        var target = event.target || event.srcElement;
+        if(target && target.classList && target.classList.contains('modal')) {
+            target.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+</script>
+</body>
+</html>
