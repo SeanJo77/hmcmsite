@@ -1,0 +1,1235 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BCMF 등록창 입력항목최소화 목업 v0.1.7</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #eef1ef;
+      color: #14221d;
+      font-family: "Malgun Gothic", Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.42;
+    }
+    .app {
+      width: 1420px;
+      margin: 18px auto;
+      border: 1px solid #b7c4be;
+      background: #fff;
+      min-height: 820px;
+    }
+    .topbar {
+      height: 32px;
+      background: #174d3d;
+      color: #e8f4ef;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .titlebar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f4f8f6;
+      border-bottom: 1px solid #c8d4ce;
+    }
+    h1 { margin: 0; font-size: 17px; letter-spacing: 0; }
+    h2 { margin: 0; font-size: 15px; }
+    h3 { margin: 0; font-size: 13px; }
+    button, select {
+      border: 1px solid #bcc9c3;
+      background: #fff;
+      color: #17392f;
+      border-radius: 4px;
+      padding: 5px 9px;
+      font-weight: 800;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    button.primary { background: #174d3d; border-color: #174d3d; color: #fff; }
+    button.ghost { background: #f8faf9; }
+    .content { padding: 14px; }
+    .case-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid #21322c;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .case-title { font-size: 18px; font-weight: 900; }
+    .case-meta { color: #4e6259; font-size: 12px; text-align: right; }
+    .workspace {
+      display: grid;
+      grid-template-columns: 690px 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+    .panel {
+      position: relative;
+      border: 1px solid #c5d0ca;
+      background: #fff;
+      margin-top: 26px;
+    }
+    .panel::before {
+      content: attr(data-screen);
+      position: absolute;
+      left: 0;
+      top: -27px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border: 1px solid #c5d0ca;
+      border-bottom: 0;
+      background: #eaf2ee;
+      color: #17392f;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .screen-link {
+      margin-top: 26px;
+      min-height: 600px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 62px;
+      color: #174d3d;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .screen-link span {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #b8c8c0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .panel-head {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #cbd6d0;
+      background: #f4f8f6;
+    }
+    .panel-body { padding: 12px; overflow: hidden; }
+    .flow-screen-body {
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #d7e0dc;
+      border-top: 0;
+    }
+    .inner-head { min-height: 40px; }
+    .inner-head h2 { font-size: 14px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 102px 1fr;
+      gap: 8px 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .label { color: #53665e; font-weight: 900; font-size: 12px; }
+    .value {
+      border: 1px solid #cbd6d0;
+      background: #fbfcfb;
+      min-height: 29px;
+      padding: 6px 8px;
+      font-weight: 800;
+    }
+    .upload-box {
+      border: 2px dashed #9cb6ab;
+      background: #f8fbfa;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-align: center;
+      margin-bottom: 34px;
+      color: #36554a;
+      font-weight: 900;
+    }
+    .upload-box span { display: block; color: #687a73; font-weight: 700; font-size: 12px; margin-top: 0; line-height: 1.45; }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #d6ded9;
+      padding-bottom: 6px;
+      margin: 14px 0 8px;
+      font-weight: 900;
+    }
+    .mini-note {
+      border: 1px solid #e2d0aa;
+      background: #fff9ec;
+      color: #5b3d13;
+      padding: 8px 9px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td {
+      border: 1px solid #d4ddd8;
+      padding: 7px 8px;
+      vertical-align: middle;
+      text-align: left;
+    }
+    th {
+      background: #eef3f0;
+      font-size: 12px;
+      color: #263a32;
+      font-weight: 900;
+    }
+    td { background: #fff; }
+    .file-name { font-weight: 900; color: #1c2d27; }
+    .path { color: #66776f; font-size: 11px; margin-top: 2px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      border: 1px solid #c4d0ca;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-weight: 900;
+      font-size: 11px;
+      white-space: nowrap;
+      background: #fff;
+    }
+    .pill.good { color: #007a3d; border-color: #9ac9ad; background: #f3fbf6; }
+    .pill.warn { color: #b76500; border-color: #e3bc83; background: #fff8ec; }
+    .pill.empty { color: #8b2b2b; border-color: #e0aaa7; background: #fff4f3; }
+    .pill.info { color: #225a8a; border-color: #a8c5da; background: #f1f7fb; }
+    .select-small {
+      width: 100%;
+      min-width: 0;
+      padding: 5px 22px 5px 7px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid #aebdb6;
+      background: #fff;
+      color: #17241f;
+    }
+    .stage-select {
+      min-width: 140px;
+      border: 2px solid #174d3d;
+      background: #f7fbf9;
+      color: #12382d;
+    }
+    .basic-stage-select {
+      width: 100%;
+      border: 1px solid #9fb2aa;
+      background: #fff;
+      padding: 6px 8px;
+      font-weight: 900;
+      color: #12382d;
+    }
+    .stage-guide {
+      color: #174d3d;
+      font-weight: 900;
+    }
+    .purpose-fields {
+      border: 1px solid #cbd9d2;
+      background: #f8fbfa;
+      padding: 9px;
+      margin: 0 0 12px;
+    }
+    .purpose-fields.hidden { display: none; }
+    .hidden { display: none !important; }
+    .purpose-title {
+      font-weight: 900;
+      color: #17392f;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 6px 8px;
+      align-items: center;
+    }
+    .new-case-grid {
+      display: grid;
+      grid-template-columns: 64px minmax(150px, 1.4fr) 64px minmax(130px, 1fr);
+      gap: 6px 10px;
+      align-items: center;
+    }
+    .new-case-grid .wide-value {
+      grid-column: span 3;
+    }
+    .field-grid input,
+    .field-grid select,
+    .new-case-grid input,
+    .new-case-grid select,
+    .stage-pair select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #b8c7c0;
+      padding: 5px 7px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      color: #17392f;
+      background: #fff;
+      border-radius: 4px;
+    }
+    .stage-pair {
+      display: grid;
+      grid-template-columns: minmax(104px, 1fr) 72px;
+      gap: 4px;
+      min-width: 0;
+    }
+    .stage-pair select:first-child {
+      border-color: #8fb2a5;
+      background: #f7fbf9;
+    }
+    .stage-pair select:last-child {
+      border-color: #174d3d;
+      background: #fff;
+    }
+    .route-cell {
+      color: #17392f;
+      font-size: 11.2px;
+      line-height: 1.35;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    .route-cell strong {
+      display: inline-block;
+      margin-right: 3px;
+      color: #111;
+    }
+    .basic-link-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .flow-screen {
+      position: relative;
+      margin-top: 42px;
+      padding: 0;
+      border: 1px solid #b9cac2;
+      background: #f7faf8;
+      box-shadow: inset 0 2px 0 #e0ebe6;
+    }
+    .flow-screen::before {
+      content: attr(data-screen);
+      position: absolute;
+      left: -1px;
+      top: -26px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border: 1px solid #c5d0ca;
+      border-bottom: 0;
+      background: #eaf2ee;
+      color: #17392f;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .register-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      border-top: 1px solid #d6ded9;
+      padding-top: 10px;
+    }
+    .reflection {
+      border: 1px solid #bdd1c7;
+      background: #f3faf6;
+      color: #174d3d;
+      padding: 8px 9px;
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #bfcac4;
+      margin-bottom: 10px;
+    }
+    .tab {
+      border: 1px solid #c5d0ca;
+      border-bottom: 0;
+      background: #f7faf8;
+      padding: 7px 14px;
+      font-weight: 900;
+      color: #4c6259;
+    }
+    .tab.active {
+      color: #17392f;
+      background: #fff;
+      border-top: 3px solid #174d3d;
+      padding-top: 5px;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .metric {
+      border: 1px solid #cbd6d0;
+      background: #fbfcfb;
+      padding: 7px 8px;
+      min-height: 48px;
+    }
+    .metric strong { display: block; font-size: 14px; margin-bottom: 1px; }
+    .metric span { color: #5f716a; font-size: 11px; font-weight: 800; line-height: 1.25; }
+    .group {
+      border: 1px solid #cbd6d0;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .group-head {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr) 72px 48px;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 9px;
+      background: #f3f7f5;
+      border-bottom: 1px solid #cbd6d0;
+    }
+    .group-title { font-weight: 900; color: #162720; }
+    .group-sub { color: #61746c; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .group-head .pill { width: 54px; justify-content: center; }
+    .group-head .ghost { width: 48px; padding: 5px 0; }
+    .group-body { padding: 0; }
+    .doc-row {
+      display: grid;
+      grid-template-columns: 74px minmax(160px, 1fr) 64px 58px 34px;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 9px;
+      border-top: 1px solid #edf1ef;
+      background: #fff;
+    }
+    .doc-row:first-child { border-top: 0; }
+    .doc-type { color: #475d54; font-weight: 900; }
+    .doc-file { font-weight: 900; line-height: 1.15; }
+    .doc-meta { color: #65776f; font-size: 11px; font-weight: 800; line-height: 1.25; }
+    .doc-row .pill { min-width: 54px; justify-content: center; padding-left: 7px; padding-right: 7px; }
+    .doc-row .ghost { width: 58px; padding: 5px 0; }
+    .doc-row > :nth-child(3),
+    .doc-row > :nth-child(4),
+    .doc-row > :nth-child(5) { justify-self: end; }
+    .version-box {
+      display: none;
+      margin: 0 9px 8px 98px;
+      border: 1px solid #d8e0dc;
+      background: #fbfcfb;
+    }
+    .version-box.open { display: block; }
+    .version-line {
+      display: grid;
+      grid-template-columns: 42px 1fr 68px 72px;
+      gap: 8px;
+      padding: 6px 8px;
+      border-top: 1px solid #edf1ef;
+      font-size: 12px;
+    }
+    .version-line:first-child { border-top: 0; }
+    .folder-upload-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #bfd0c8;
+      padding: 8px 2px 10px;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+    .folder-stage {
+      border: 1px solid #cbd6d0;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .folder-stage-head {
+      display: grid;
+      grid-template-columns: 1fr 130px 84px;
+      gap: 8px;
+      align-items: center;
+      min-height: 31px;
+      padding: 6px 9px;
+      background: #edf8f2;
+      border-left: 4px solid #16815e;
+      border-bottom: 1px solid #d6e3dc;
+      font-weight: 900;
+      color: #174d3d;
+    }
+    .folder-row {
+      display: grid;
+      grid-template-columns: 1fr 82px 88px 68px;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 10px;
+      border-top: 1px solid #edf1ef;
+    }
+    .folder-row:first-child { border-top: 0; }
+    .folder-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 900;
+      color: #15352a;
+      min-width: 0;
+    }
+    .folder-icon {
+      width: 15px;
+      height: 11px;
+      flex: 0 0 auto;
+      border: 1px solid #7b6824;
+      background: #f7d35c;
+      position: relative;
+    }
+    .folder-icon::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: -4px;
+      width: 7px;
+      height: 4px;
+      border: 1px solid #7b6824;
+      border-bottom: 0;
+      background: #f7d35c;
+    }
+    .folder-files {
+      padding: 0 10px 7px 32px;
+      color: #50655c;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .folder-file {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 8px;
+      padding: 3px 0;
+    }
+    .file-ext {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 31px;
+      height: 17px;
+      border: 1px solid #b9c7c0;
+      background: #f5f8f7;
+      color: #586c64;
+      font-size: 10px;
+      font-weight: 900;
+    }    .history-list {
+      border: 1px solid #cbd6d0;
+    }
+    .history-row {
+      display: grid;
+      grid-template-columns: 128px 100px 1fr 98px;
+      gap: 8px;
+      padding: 8px 10px;
+      border-top: 1px solid #edf1ef;
+      align-items: center;
+    }
+    .history-row:first-child { border-top: 0; }
+    .muted { color: #66776f; font-weight: 800; font-size: 12px; }
+    .warning-line {
+      border: 1px solid #dfc6a0;
+      background: #fff8ed;
+      color: #5b3c11;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      font-weight: 900;
+    }
+    .complete-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #d6ded9;
+      padding-top: 10px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <span>9°C 서산시</span>
+      <span>2026.04.09 THU</span>
+      <span>시공사 · 김철수</span>
+    </div>
+
+    <div class="titlebar">
+      <h1>BCMF 설계변경 자료 등록/요약 연결 목업 v0.1.7</h1>
+      <div>
+        <button class="ghost">이력</button>
+        <button class="ghost">출력</button>
+        <button class="ghost" id="newModeBtn" type="button">신규 등록</button>
+        <button class="primary" id="addModeBtn" type="button">추가자료 등록</button>
+      </div>
+    </div>
+
+    <main class="content">
+      <div class="case-head">
+        <div>
+          <div class="case-title">실정보고/설계변경 요약</div>
+          <div class="muted">대산-당진 · 2공구 · STA.16+000 · 물가변동 계약금액 조정</div>
+        </div>
+        <div class="case-meta">
+          관리번호 DC-2-006<br />
+          상태: 설계변경 검토중 · 처리유형: 일반
+        </div>
+      </div>
+
+      <div class="workspace">
+        <section class="panel" data-screen="화면 1 · 자료 업로드" aria-label="등록창">
+          <div class="panel-head">
+            <h2 id="registerPanelTitle">추가자료 등록창</h2>
+            <span class="pill info">별도 등록창</span>
+          </div>
+          <div class="panel-body">
+
+            <div class="form-grid">
+              <div class="label existing-case-only">대상 건</div>
+              <div class="value existing-case-only">DC-2-006 · 대호지교 물가변동 계약금액 조정</div>
+              <div class="label">처리 유형</div>
+              <select id="caseTypeSelect">
+                <option selected>일반</option>
+                <option>긴급</option>
+                <option>경미</option>
+              </select>
+              <div class="label">업무/진행 단계</div>
+              <div class="basic-link-pair">
+                <select class="basic-stage-select">
+                  <option>실정보고</option>
+                  <option selected>설계변경</option>
+                  <option>계약금액 조정</option>
+                </select>
+                <select class="basic-stage-select">
+                  <option>접수</option>
+                  <option selected>검토</option>
+                  <option>승인요청</option>
+                  <option>결과등록</option>
+                  <option>완료</option>
+                </select>
+              </div>
+              <div class="label">등록자</div>
+              <div class="value">김철수 · 시공사 · 2026-04-09 14:20</div>
+            </div>
+
+            <div class="purpose-fields hidden" id="newCaseFields">
+              <div class="purpose-title">
+                <span>신규 건 정보</span>
+                <span class="muted">대상 건이 없을 때만 입력</span>
+              </div>
+              <div class="new-case-grid">
+                <div class="label">건명</div>
+                <input class="wide-value" value="대호지교 물가변동 계약금액 조정 실정보고" />
+                <div class="label">공구/위치</div>
+                <input value="2공구 · STA.16+000" />
+                <div class="label">공종</div>
+                <select id="workTypeSelect">
+                  <option>선택</option>
+                  <option>토공</option>
+                  <option>배수공</option>
+                  <option>옹벽공</option>
+                  <option selected>교량공</option>
+                  <option>포장공</option>
+                  <option>터널공</option>
+                  <option>부대공</option>
+                  <option>공통공</option>
+                  <option>지급자재</option>
+                </select>
+                <div class="label">조정항목</div>
+                <select id="adjustmentSelect">
+                  <option>선택</option>
+                  <option selected>K. 물가변동</option>
+                  <option>A. 법령 등 기준변경</option>
+                  <option>B. 방침적용</option>
+                  <option>C. 감사지적</option>
+                  <option>D. 민원 및 관련</option>
+                  <option>E. 현장여건변동</option>
+                  <option>F. 설계오류</option>
+                  <option>G. 정산설계</option>
+                  <option>H. 기타</option>
+                </select>
+                <div class="label">상세코드</div>
+                <select id="detailCodeSelect">
+                  <option>선택</option>
+                </select>
+                <div class="label">BIM객체</div>
+                <select>
+                  <option>선택</option>
+                  <option>BIM-1 토공</option>
+                  <option>BIM-2 배수공</option>
+                  <option>BIM-3 포장공</option>
+                  <option>BIM-4 터널공</option>
+                  <option>BIM-5 교량공</option>
+                  <option selected>BIM-6 공통</option>
+                </select>
+              </div>
+            </div>
+            <div class="section-title compact-title">
+              <span>자료 등록</span>
+            </div>
+            <div class="upload-box">
+              <span>폴더 또는 ZIP 파일을 이 영역에 끌어오거나 클릭해서 선택</span>
+              <span>원본 폴더는 그대로 보존하고, 파일별로 절차별 제출자료에 연결</span>
+            </div>
+
+            <div class="flow-screen" data-screen="화면 2 · 자동분류 확인/반영 위치">
+              <div class="panel-head inner-head">
+                <h2>자동분류 확인/수정 · 반영 위치</h2>
+                <span class="muted">확실 3 · 검토필요 2 · 미분류 1 · <span class="stage-guide">확실도와 무관하게 수정 가능</span></span>
+              </div>
+              <div class="flow-screen-body">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 130px;">파일</th>
+                  <th style="width: 72px;">상태</th>
+                  <th style="width: 145px;">문서유형 수정</th>
+                  <th style="width: 200px;">업무/진행 단계 수정</th>
+                  <th style="width: 93px;">반영 위치</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="file-name">실정보고서_보완.hwp</div>
+                    <div class="path">01_실정보고/보완자료</div>
+                  </td>
+                  <td><span class="pill good">확실</span></td>
+                  <td>
+                    <select class="select-small">
+                      <option selected>실정보고서</option>
+                      <option>설계도서/도면</option>
+                      <option>수량산출서</option>
+                      <option>공사비 증감 내역서</option>
+                      <option>변경공사비 내역서</option>
+                      <option>계약금액 조정자료</option>
+                      <option>계약금액 조정요청서</option>
+                      <option>실정보고 승인결과</option>
+                      <option>공통 승인결과</option>
+                      <option>설계변경 승인결과</option>
+                      <option>계약변경 통보</option>
+                      <option>현장사진/증빙자료</option>
+                      <option>기타</option>
+                    </select>
+                  </td>
+                  <td><div class="stage-pair"><select><option selected>실정보고</option><option>설계변경</option><option>계약금액 조정</option></select><select><option selected>접수</option><option>검토</option><option>승인요청</option><option>결과등록</option><option>완료</option></select></div></td>
+                  <td class="route-cell"><strong>원본</strong> 01_실정보고/보완자료<br><strong>제출</strong> 실정보고 · 접수</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="file-name">변경도면_최종.pdf</div>
+                    <div class="path">02_설계도서/도면</div>
+                  </td>
+                  <td><span class="pill good">확실</span></td>
+                  <td>
+                    <select class="select-small">
+                      <option>실정보고서</option>
+                      <option selected>설계도서/도면</option>
+                      <option>수량산출서</option>
+                      <option>공사비 증감 내역서</option>
+                      <option>변경공사비 내역서</option>
+                      <option>계약금액 조정자료</option>
+                      <option>계약금액 조정요청서</option>
+                      <option>실정보고 승인결과</option>
+                      <option>공통 승인결과</option>
+                      <option>설계변경 승인결과</option>
+                      <option>계약변경 통보</option>
+                      <option>현장사진/증빙자료</option>
+                      <option>기타</option>
+                    </select>
+                  </td>
+                  <td><div class="stage-pair"><select><option>실정보고</option><option selected>설계변경</option><option>계약금액 조정</option></select><select><option selected>접수</option><option>검토</option><option>승인요청</option><option>결과등록</option><option>완료</option></select></div></td>
+                  <td class="route-cell"><strong>원본</strong> 02_설계도서/도면<br><strong>제출</strong> 설계변경 · 접수</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="file-name">물가변동_산출.xlsx</div>
+                    <div class="path">03_내역/계약금액</div>
+                  </td>
+                  <td><span class="pill warn">검토필요</span></td>
+                  <td>
+                    <select class="select-small">
+                      <option>실정보고서</option>
+                      <option>설계도서/도면</option>
+                      <option>수량산출서</option>
+                      <option>공사비 증감 내역서</option>
+                      <option>변경공사비 내역서</option>
+                      <option selected>계약금액 조정자료</option>
+                      <option>계약금액 조정요청서</option>
+                      <option>실정보고 승인결과</option>
+                      <option>공통 승인결과</option>
+                      <option>설계변경 승인결과</option>
+                      <option>계약변경 통보</option>
+                      <option>현장사진/증빙자료</option>
+                      <option>기타</option>
+                    </select>
+                  </td>
+                  <td><div class="stage-pair"><select><option>실정보고</option><option>설계변경</option><option selected>계약금액 조정</option></select><select><option>접수</option><option selected>검토</option><option>승인요청</option><option>결과등록</option><option>완료</option></select></div></td>
+                  <td class="route-cell"><strong>원본</strong> 03_내역/계약금액<br><strong>제출</strong> 계약금액 · 검토</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="file-name">승인공문.pdf</div>
+                    <div class="path">04_공문/결과</div>
+                  </td>
+                  <td><span class="pill warn">검토필요</span></td>
+                  <td>
+                    <select class="select-small">
+                      <option>실정보고서</option>
+                      <option>설계도서/도면</option>
+                      <option>수량산출서</option>
+                      <option>공사비 증감 내역서</option>
+                      <option>변경공사비 내역서</option>
+                      <option>계약금액 조정자료</option>
+                      <option>계약금액 조정요청서</option>
+                      <option>실정보고 승인결과</option>
+                      <option selected>공통 승인결과</option>
+                      <option>설계변경 승인결과</option>
+                      <option>계약변경 통보</option>
+                      <option>현장사진/증빙자료</option>
+                      <option>기타</option>
+                    </select>
+                  </td>
+                  <td><div class="stage-pair"><select><option>실정보고</option><option selected>설계변경</option><option>계약금액 조정</option></select><select><option>접수</option><option>검토</option><option>승인요청</option><option selected>결과등록</option><option>완료</option></select></div></td>
+                  <td class="route-cell"><strong>원본</strong> 04_공문/결과<br><strong>제출</strong> 설계변경 · 결과등록</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="file-name">참고사진.zip</div>
+                    <div class="path">99_기타</div>
+                  </td>
+                  <td><span class="pill empty">미분류</span></td>
+                  <td>
+                    <select class="select-small">
+                      <option>실정보고서</option>
+                      <option>설계도서/도면</option>
+                      <option>수량산출서</option>
+                      <option>공사비 증감 내역서</option>
+                      <option>변경공사비 내역서</option>
+                      <option>계약금액 조정자료</option>
+                      <option>계약금액 조정요청서</option>
+                      <option>실정보고 승인결과</option>
+                      <option>공통 승인결과</option>
+                      <option>설계변경 승인결과</option>
+                      <option>계약변경 통보</option>
+                      <option selected>현장사진/증빙자료</option>
+                      <option>기타</option>
+                    </select>
+                  </td>
+                  <td><div class="stage-pair"><select><option>실정보고</option><option>설계변경</option><option>계약금액 조정</option></select><select><option selected>접수</option><option>검토</option><option>승인요청</option><option>결과등록</option><option>완료</option></select></div></td>
+                  <td class="route-cell"><strong>원본</strong> 99_기타<br><strong>제출</strong> 미분류 대기</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="register-actions">
+              <div class="reflection">확정 시: 원본 폴더 보존 + 절차별 제출자료 연결 + 버전 생성</div>
+              <button class="primary">등록 확정</button>
+            </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="screen-link" aria-hidden="true"><span>→</span></div>
+
+        <section class="panel" data-screen="화면 3 · 요약 화면" aria-label="요약 화면">
+          <div class="panel-head">
+            <h2>요약 화면 반영 결과</h2>
+            <span class="pill good">등록 확정 후 보기</span>
+          </div>
+          <div class="panel-body">
+            <div class="tabs">
+              <button class="tab active" data-tab="process">절차별 제출자료</button>
+              <button class="tab" data-tab="folder">원본 폴더</button>
+              <button class="tab" data-tab="history">버전 이력</button>
+            </div>
+
+            <div class="tab-panel active" id="process">
+              <div class="summary-strip">
+                <div class="metric"><strong>실정보고</strong><span>필수 6/6 · 공통 승인결과 연결</span></div>
+                <div class="metric"><strong>설계변경</strong><span>필수 5/8 · 누락 3</span></div>
+                <div class="metric"><strong>계약금액</strong><span>필수 2/4 · 부족 2</span></div>
+                <div class="metric"><strong>완료</strong><span>수동 완료 대기</span></div>
+              </div>
+
+              <div class="warning-line">부족 서류가 있어도 등록/진행 가능. 사유 입력 없음. 상태와 이력만 자동 기록됩니다.</div>
+
+              <div class="group">
+                <div class="group-head">
+                  <div class="group-title">실정보고</div>
+                  <div class="group-sub">접수 · 검토 · 승인요청 · 결과등록</div>
+                  <div><span class="pill warn">부족 1</span></div>
+                  <button class="ghost">펼침</button>
+                </div>
+                <div class="group-body">
+                  <div class="doc-row">
+                    <div class="doc-type">실정보고서</div>
+                    <div>
+                      <div class="doc-file">실정보고서_보완.hwp</div>
+                      <div class="doc-meta">김철수 · 시공사 · 2026-04-09 14:20</div>
+                    </div>
+                    <div><span class="pill good">최신 v2</span></div>
+                    <button class="ghost" data-version="report">이전 1건</button>
+                    <div class="doc-meta">접수</div>
+                  </div>
+                  <div class="version-box" id="report">
+                    <div class="version-line"><strong>v1</strong><span>실정보고서.hwp</span><span>김철수</span><span>04-08 10:20</span></div>
+                    <div class="version-line"><strong>v2</strong><span>실정보고서_보완.hwp</span><span>김철수</span><span>04-09 14:20</span></div>
+                  </div>
+                                    <div class="doc-row">
+                    <div class="doc-type">승인결과</div>
+                    <div>
+                      <div class="doc-file">승인공문.pdf</div>
+                      <div class="doc-meta">설계변경 결과와 공통 연결 · 이사업 · 2026-04-09 16:40</div>
+                    </div>
+                    <div><span class="pill good">공통 v1</span></div>
+                    <button class="ghost">보기</button>
+                    <div class="doc-meta">결과</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="group">
+                <div class="group-head">
+                  <div class="group-title">설계변경</div>
+                  <div class="group-sub">접수 · 검토 · 승인요청 · 결과등록</div>
+                  <div><span class="pill warn">누락 3</span></div>
+                  <button class="ghost">펼침</button>
+                </div>
+                <div class="group-body">
+                  <div class="doc-row">
+                    <div class="doc-type">설계도서</div>
+                    <div>
+                      <div class="doc-file">변경도면_최종.pdf</div>
+                      <div class="doc-meta">김철수 · 시공사 · 원본: 02_설계도서/도면</div>
+                    </div>
+                    <div><span class="pill good">최신 v3</span></div>
+                    <button class="ghost" data-version="drawing">이전 2건</button>
+                    <div class="doc-meta">접수</div>
+                  </div>
+                  <div class="version-box" id="drawing">
+                    <div class="version-line"><strong>v1</strong><span>변경도면.pdf</span><span>김철수</span><span>04-07 17:10</span></div>
+                    <div class="version-line"><strong>v2</strong><span>변경도면_보완.pdf</span><span>박감독</span><span>04-08 13:40</span></div>
+                    <div class="version-line"><strong>v3</strong><span>변경도면_최종.pdf</span><span>김철수</span><span>04-09 14:20</span></div>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-type">승인결과</div>
+                    <div>
+                      <div class="doc-file">승인공문.pdf</div>
+                      <div class="doc-meta">이사업 · 사업단 · 2026-04-09 16:40</div>
+                    </div>
+                    <div><span class="pill good">v1</span></div>
+                    <button class="ghost">보기</button>
+                    <div class="doc-meta">결과</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="group">
+                <div class="group-head">
+                  <div class="group-title">계약금액 조정</div>
+                  <div class="group-sub">조정자료 · 조정결과</div>
+                  <div><span class="pill warn">부족 2</span></div>
+                  <button class="ghost">펼침</button>
+                </div>
+                <div class="group-body">
+                  <div class="doc-row">
+                    <div class="doc-type">조정자료</div>
+                    <div>
+                      <div class="doc-file">물가변동_산출.xlsx</div>
+                      <div class="doc-meta">자동분류 수정: 수량산출서 → 계약금액 조정자료</div>
+                    </div>
+                    <div><span class="pill warn">검토필요</span></div>
+                    <button class="ghost">이력</button>
+                    <div class="doc-meta">조정</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="complete-area">
+                <span class="muted">누락 단계 확인 후 조건부 완료 여부를 수동 확정합니다.</span>
+                <button class="primary">조건부 완료 검토</button>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="folder">
+              <div class="folder-upload-summary">
+                <span>제출자료 원본 묶음</span>
+                <span class="muted">37묶음 · 73파일 · 원본 단계 구조 보존</span>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>0단계 사전검토</span>
+                  <span class="muted">10묶음 · 21파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20250722_4769840_대호지교 상부공 시공방안 변경 사전검토 보고(최종)</div>
+                  <span class="muted">김시공</span>
+                  <span class="muted">2025.07.22</span>
+                  <span class="muted">첨부 7</span>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20250812_4781350_설계변경 사전검토 요청서</div>
+                  <span class="muted">김시공</span>
+                  <span class="muted">2025.08.12</span>
+                  <span class="muted">첨부 1</span>
+                </div>
+                <div class="folder-files">
+                  <div class="folder-file"><span class="file-ext">JSON</span><span>00_게시글정보.json</span></div>
+                  <div class="folder-file"><span class="file-ext">HWPX</span><span>01_250707 대호지교 하부공 시공방안 변경 사전검토 보고(최종)_수정.hwpx</span></div>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20250818_4783884_대호지교 사전검토</div>
+                  <span class="muted">김시공</span>
+                  <span class="muted">2025.08.18</span>
+                  <span class="muted">첨부 2</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>1단계 실정보고</span>
+                  <span class="muted">3묶음 · 3파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20251118_4838310_대호지교 가설교량 설계변경자료 송부</div>
+                  <span class="muted">김시공</span>
+                  <span class="muted">2025.11.18</span>
+                  <span class="muted">첨부 1</span>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20251127_4844520_대산당진2공구 설계변경자료 송부</div>
+                  <span class="muted">김시공</span>
+                  <span class="muted">2025.11.27</span>
+                  <span class="muted">첨부 1</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>2단계 실정보고 검토</span>
+                  <span class="muted">0묶음 · 0파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title muted">확인된 자료 없음</div>
+                  <span></span><span></span><span class="muted">미확인</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>3단계 실정보고 승인요청</span>
+                  <span class="muted">0묶음 · 0파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title muted">확인된 자료 없음</div>
+                  <span></span><span></span><span class="muted">미확인</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>4단계 실정보고 결과등록</span>
+                  <span class="muted">1묶음 · 1파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20260409_승인공문_실정보고 결과 통보</div>
+                  <span class="muted">이사업</span>
+                  <span class="muted">2026.04.09</span>
+                  <span class="muted">첨부 1</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>5단계 설계변경 접수</span>
+                  <span class="muted">0묶음 · 0파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title muted">확인된 자료 없음</div>
+                  <span></span><span></span><span class="muted">미확인</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>6단계 설계변경 검토</span>
+                  <span class="muted">0묶음 · 0파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title muted">확인된 자료 없음</div>
+                  <span></span><span></span><span class="muted">미확인</span>
+                </div>
+              </div>
+
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>7단계 설계변경 승인요청</span>
+                  <span class="muted">0묶음 · 0파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title muted">확인된 자료 없음</div>
+                  <span></span><span></span><span class="muted">미확인</span>
+                </div>
+              </div>
+              <div class="folder-stage">
+                <div class="folder-stage-head">
+                  <span>8단계 설계변경 결과등록</span>
+                  <span class="muted">1묶음 · 1파일</span>
+                  <button class="ghost">자료추가</button>
+                </div>
+                <div class="folder-row">
+                  <div class="folder-title"><span class="folder-icon"></span>20260409_승인공문_설계변경 결과 통보</div>
+                  <span class="muted">이사업</span>
+                  <span class="muted">2026.04.09</span>
+                  <span class="muted">첨부 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="tab-panel" id="history">
+              <div class="history-list">
+                <div class="history-row">
+                  <strong>04-09 14:20</strong>
+                  <span>김철수</span>
+                  <span>추가자료 등록 · 자동분류 6건 · 수동수정 1건 · 요약 반영</span>
+                  <span class="pill good">v3</span>
+                </div>
+                <div class="history-row">
+                  <strong>04-08 13:40</strong>
+                  <span>박감독</span>
+                  <span>검토 추가자료 등록 · 변경도면 v2 반영</span>
+                  <span class="pill info">v2</span>
+                </div>
+                <div class="history-row">
+                  <strong>04-07 17:10</strong>
+                  <span>김철수</span>
+                  <span>신규 등록 · 원본 폴더 업로드 · 자동분류 확정</span>
+                  <span class="pill info">v1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll(".tab").forEach(function(tab) {
+      tab.addEventListener("click", function() {
+        document.querySelectorAll(".tab").forEach(function(item) { item.classList.remove("active"); });
+        document.querySelectorAll(".tab-panel").forEach(function(panel) { panel.classList.remove("active"); });
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    document.querySelectorAll("[data-version]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        var target = document.getElementById(button.dataset.version);
+        target.classList.toggle("open");
+      });
+    });
+
+    var newModeBtn = document.getElementById("newModeBtn");
+    var addModeBtn = document.getElementById("addModeBtn");
+    var registerPanelTitle = document.getElementById("registerPanelTitle");
+    var newCaseFields = document.getElementById("newCaseFields");
+    var existingCaseOnly = document.querySelectorAll(".existing-case-only");
+
+    function setRegisterMode(mode) {
+      var isNew = mode === "new";
+      registerPanelTitle.textContent = isNew ? "신규 설계변경 등록창" : "추가자료 등록창";
+      newCaseFields.classList.toggle("hidden", !isNew);
+      existingCaseOnly.forEach(function(item) { item.classList.toggle("hidden", isNew); });
+      newModeBtn.className = isNew ? "primary" : "ghost";
+      addModeBtn.className = isNew ? "ghost" : "primary";
+    }
+
+    newModeBtn.addEventListener("click", function() { setRegisterMode("new"); });
+    addModeBtn.addEventListener("click", function() { setRegisterMode("add"); });
+    setRegisterMode("add");
+    var detailCodeMap = {
+      "K. 물가변동": ["K-00. 물가변동(공통)", "K-01. 계약금액조정", "K-02. 지수조정", "K-03. 품목조정", "K-04. 단품슬라이딩"],
+      "A. 법령 등 기준변경": ["A-00. 법령 등 기준변경(공통)", "A-01. 법규변경", "A-02. 설계기준 변경", "A-03. 시방서 변경", "A-04. 관계기관 기준 반영"],
+      "B. 방침적용": ["B-00. 방침적용(공통)", "B-01. 방침사항", "B-02. 본사방침", "B-03. 품질/안전 방침", "B-04. 관계기관 협의사항"],
+      "C. 감사지적": ["C-00. 감사지적(공통)", "C-01. 감사 지적사항", "C-02. 점검 지적사항", "C-03. 조치계획 반영", "C-04. 재발방지 보완"],
+      "D. 민원 및 관련": ["D-01. 나들목 설치", "D-02. 교량화 및 교량연장", "D-03. 터널화", "D-04. 종횡단 선형조정", "D-05. 통로(수로)암거", "D-06. 부체도로 및 농로", "D-07. 도로선형 개량", "D-08. 배수시설설치", "D-09. 영구방음벽", "D-10. 가설방음벽", "D-11. 소음진동 및 환경피해", "D-12. 공사피해", "D-13. 간접피해보상", "D-14. 부대시설설치", "D-15. 기타 민원사항"],
+      "E. 현장여건변동": ["E-01. 운반거리변경", "E-02. 토공유동 계획변경", "E-03. 종횡단 선형조정", "E-04. 교량변경(기초포함)", "E-05. 사면(갱구사면) 보강", "E-06. 발파공법변경", "E-07. 터널보강", "E-08. 지반(연약지반)보강", "E-09. 보강토옹벽", "E-10. 안전시설 보강", "E-11. 관련계획반영", "E-12. 우회도로(기존도로보호)", "E-13. 배수시설설치", "E-14. 가도(가교), 가시설", "E-15. 지장물이설", "E-16. 환경시설", "E-17. 부대시설설치", "E-18. 기타 사항"],
+      "F. 설계오류": ["F-01. 수량오류", "F-02. 도면오류", "F-03. 기준적용오류", "F-04. 현장불일치", "F-05. 기타 사항"],
+      "G. 정산설계": ["G-01. 절토부 암판정", "G-02. 터널 굴착타입 정산", "G-03. 교량 말뚝수량 정산", "G-04. 기타 사항"],
+      "H. 기타": ["H-01. 기타", "H-02. 공정 조정", "H-03. 사용자 요청", "H-04. 자료 정정", "H-05. 기타 보완사항"]
+    };
+    var adjustmentSelect = document.getElementById("adjustmentSelect");
+    var detailCodeSelect = document.getElementById("detailCodeSelect");
+
+    function syncDetailCodes() {
+      var codes = detailCodeMap[adjustmentSelect.value] || [];
+      detailCodeSelect.innerHTML = '<option>선택</option>' + codes.map(function(code) {
+        return '<option>' + code + '</option>';
+      }).join('');
+      if (codes.length) {
+        detailCodeSelect.selectedIndex = 1;
+      }
+    }
+
+    adjustmentSelect.addEventListener("change", syncDetailCodes);
+    syncDetailCodes();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
