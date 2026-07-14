@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>차세대 검측 플랫폼 — 대호지교</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface2:#f8fafc; --border:#e2e7ef;
+  --accent:#3b6fd4; --accent2:#2554c7; --text:#1a202c; --text-muted:#64748b;
+  --green:#16a34a; --blue:#2563eb; --orange:#ea580c; --red:#dc2626;
+  --header-h:50px; --aside-w:192px; --panel-w:272px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Pretendard','Malgun Gothic',sans-serif;font-size:13px;height:100vh;overflow:hidden;}
+
+/* HEADER */
+.header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;z-index:100;
+}
+.logo-area{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;}
+.logo-badge{background:var(--accent);color:#fff;font-weight:700;font-size:11px;padding:2px 8px;border-radius:4px;}
+.project-path{display:flex;align-items:center;gap:6px;padding:0 14px;color:var(--text-muted);font-size:12px;}
+.project-path .current{color:var(--text);font-weight:600;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:6px;padding:0 14px;}
+.btn-icon{background:none;border:1px solid var(--border);color:var(--text-muted);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;}
+.btn-primary:hover{background:var(--accent2);}
+
+.layout{display:flex;margin-top:var(--header-h);height:calc(100vh - var(--header-h));}
+
+/* ASIDE */
+.aside{width:var(--aside-w);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.aside-head{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;}
+.aside-body{overflow-y:auto;flex:1;padding:6px 0;}
+.obj-group{padding:2px 0;}
+.obj-group-title{display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;color:var(--text-muted);cursor:pointer;user-select:none;transition:color 0.15s;}
+.obj-group-title:hover{color:var(--text);}
+.dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;flex-shrink:0;}
+.dot.active{background:var(--orange);}
+.obj-item-grid{display:flex;flex-wrap:wrap;gap:4px;padding:2px 12px 8px;}
+.obj-chip{padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#f8fafc;color:var(--text-muted);transition:all 0.15s;}
+.obj-chip:hover{border-color:var(--accent);color:var(--accent);}
+.obj-chip.selected{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+
+/* Map & Markers (Overview) */
+.viewer-tabs{position:absolute;top:16px;left:16px;display:flex;background:rgba(255,255,255,0.9);border:1px solid var(--border);border-radius:8px;overflow:hidden;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.v-tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;background:none;border:none;outline:none;}
+.v-tab.active{background:var(--accent);color:#fff;}
+.marker{position:absolute;width:24px;height:24px;background:#fff;border-radius:50%;border:2px solid var(--text);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,0.15);cursor:pointer;transform:translate(-50%, -50%);transition:all 0.15s;z-index:20;}
+.marker:hover{transform:translate(-50%, -50%) scale(1.15);}
+.marker.hp{border-color:var(--blue);color:var(--blue);}
+.marker.hps{border-color:var(--orange);color:var(--orange);border-width:3px;width:32px;height:24px;border-radius:12px;}
+.marker .tooltip{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:0.15s;}
+.marker:hover .tooltip{opacity:1;}
+.map-2d{width:100%;height:100%;background:url('../01. 참고자료/공정시뮬레이션 기반 검측 대시보드 참고안/UI용.PNG') top center/cover no-repeat; background-color:#e8edf5; position:relative; display:block;}
+.map-3d{width:100%;height:100%;background:linear-gradient(160deg,#dde5f0 0%,#c8d5e8 100%); position:relative; display:none; align-items:center; justify-content:center;}
+
+/* CENTER */
+.viewer-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.viewer-main{flex:1;position:relative;background:#e8edf5;overflow:hidden;}
+.viewer-label{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.9);border:1px solid var(--border);border-radius:6px;padding:4px 14px;font-size:11px;color:var(--text-muted);backdrop-filter:blur(4px);box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.viewer-canvas{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#dde5f0 0%,#c8d5e8 100%);}
+.viewer-controls{position:absolute;bottom:12px;right:12px;display:flex;flex-direction:column;gap:4px;}
+.viewer-controls button{width:30px;height:30px;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,0.9);color:var(--text-muted);cursor:pointer;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.viewer-controls button:hover{border-color:var(--accent);color:var(--accent);}
+
+/* 하단 탭 */
+.viewer-bottom{height:280px;background:#fff;border-top:1px solid var(--border);flex-shrink:0;transition:height 0.3s ease;display:flex;flex-direction:column;}
+.viewer-bottom.collapsed{height:33px; overflow:hidden;}
+.bottom-tabs{display:flex;border-bottom:1px solid var(--border);background:#f8fafc;justify-content:space-between;align-items:center;flex-shrink:0;}
+.tab-left{display:flex;}
+.bottom-tab{padding:8px 16px;font-size:11px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;user-select:none;}
+.bottom-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.btn-collapse{background:none;border:none;cursor:pointer;padding:0 16px;font-size:12px;color:var(--text-muted);height:100%;}
+.btn-collapse:hover{color:var(--accent);}
+.bottom-content{height:calc(100% - 33px);overflow-y:auto;}
+.tab-panel{display:none;padding:10px 14px;}
+.tab-panel.active{display:block;}
+.gantt-bar{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f0f2f5;font-size:11px;}
+.gantt-label{width:80px;color:var(--text-muted);flex-shrink:0;}
+.gantt-track{flex:1;height:12px;background:#f0f2f5;border-radius:3px;overflow:hidden;}
+.gantt-fill{height:100%;border-radius:3px;}
+.gantt-fill.done{background:var(--green);}
+.gantt-fill.prog{background:var(--blue);}
+.gantt-fill.prog{background:var(--blue);}
+.gantt-pct{width:36px;text-align:right;font-size:10px;color:var(--text-muted);}
+
+/* Sat-Pointer */
+.sat-pointer { position:absolute; transform:translate(-50%, -100%); cursor:pointer; z-index:20; }
+.sat-icon { font-size:24px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition:transform 0.2s; }
+.sat-icon:hover { transform:scale(1.2); }
+.sat-tooltip { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:6px 10px; border-radius:6px; font-size:11px; white-space:nowrap; opacity:0; pointer-events:none; transition:0.2s; display:flex; flex-direction:column; gap:4px; align-items:center; }
+.sat-pointer:hover .sat-tooltip { opacity:1; }
+.sat-thumb { width:80px; height:50px; background:#475569; border-radius:4px; border:1px solid #64748b; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2394a3b8"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>'); background-size:cover; }
+
+/* RIGHT PANEL */
+.right-panel{width:var(--panel-w);background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.rp-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rp-title{font-weight:700;font-size:15px;}
+.rp-body{flex:1;overflow-y:auto;padding:12px 14px;}
+.info-section{margin-bottom:14px;}
+.info-section-title{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:1px solid #f4f6f9;font-size:11px;gap:6px;}
+.info-row .ik{color:var(--text-muted);flex-shrink:0;}
+.info-row .iv{color:var(--text);text-align:right;font-weight:500;}
+.insp-status-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f4f6f9;font-size:11px;transition:0.15s;}
+.insp-status-row.selected{border-color:var(--accent) !important;background:#eff6ff !important;}
+.insp-status-row:hover{filter:brightness(0.97);}
+.rp-cta{padding:12px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;}
+.btn-cta{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-cta:hover{background:var(--accent2);}
+.btn-sec-full{width:100%;padding:8px;background:#fff;color:var(--text-muted);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;margin-top:6px;}
+.btn-sec-full:hover{border-color:var(--accent);color:var(--accent);}
+@keyframes pulse{0%,100%{opacity:0.85;}50%{opacity:1;}}
+.pier-hl{filter:drop-shadow(0 0 8px rgba(59,111,212,0.6));animation:pulse 2s ease-in-out infinite;}
+::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px;}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo-area">
+    <span class="logo-badge">BCMF</span>
+  </div>
+  <div class="project-path">
+    <span>대산-당진 시공 2공구</span>
+    <span style="color:#d1d5db;">›</span>
+    <span class="current">대호지교</span>
+  </div>
+  <div class="header-right">
+    <button class="btn-icon">🔔</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="aside">
+    <div class="aside-head">⬡ 기성객체</div>
+    <div class="aside-body">
+      <div class="obj-group" style="padding:6px 12px; border-bottom:1px solid var(--border);">
+        <div id="chip-all" class="obj-chip selected" style="text-align:center; padding:8px; font-weight:700; font-size:12px; display:block;" onclick="setViewMode('overview')">대호지교 전체 보기</div>
+      </div>
+      <div class="obj-group">
+        <div class="obj-group-title"><span class="dot active"></span> 교각</div>
+        <div class="obj-item-grid">
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각12</span><span class="obj-chip" onclick="setViewMode('pier7')">교각11</span>
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각10</span><span class="obj-chip" onclick="setViewMode('pier7')">교각9</span>
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각8</span>
+          <span id="chip-p7" class="obj-chip" onclick="setViewMode('pier7')">교각7</span>
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각6</span><span class="obj-chip" onclick="setViewMode('pier7')">교각5</span>
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각4</span><span class="obj-chip" onclick="setViewMode('pier7')">교각3</span>
+          <span class="obj-chip" onclick="setViewMode('pier7')">교각2</span><span class="obj-chip" onclick="setViewMode('pier7')">교각1</span>
+        </div>
+      </div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 가축도 및 가교</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 교각준비공</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 거더제작</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 교량받침</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 거더가설</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 교량바닥판</div></div>
+      <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
+      <div class="obj-group"><div class="obj-group-title" style="font-size:10px;color:#b0bac9;">배경모델</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 지형</div></div>
+      <div class="obj-group"><div class="obj-group-title"><span class="dot"></span> 연결시설물</div></div>
+    </div>
+  </aside>
+
+  <div class="viewer-area">
+    <div class="viewer-main">
+      <!-- OVERVIEW VIEWER -->
+      <div id="overview-viewer" style="display:block; width:100%; height:100%; position:relative;">
+        <div class="viewer-tabs">
+          <button class="v-tab active" onclick="switchMap('2d', this)">2D 평면도</button>
+          <button class="v-tab" onclick="switchMap('3d', this)">3D 모델</button>
+        </div>
+        <div id="map-2d" class="map-2d">
+          <div id="marker-p7" class="marker hp" style="top:45%; left:30%;" onclick="setViewMode('pier7')">
+            HP<div class="tooltip">교각7 (클릭하여 상세이동)</div>
+          </div>
+          <div id="marker-p5" class="marker hps" style="top:30%; left:80%;">
+            *HP<div class="tooltip">교각5 말뚝기초 (사업단)</div>
+          </div>
+        </div>
+        <div id="map-3d" class="map-3d" style="display:none; padding:0; overflow:hidden;">
+          <img src="file:///D:/Work/00. CM_PlanningProjects_Code/CMPlanning_Projects_KSK/10. 검측/01.Phase1/03. UI구성/01. 참고자료/공정시뮬레이션 기반 검측 대시보드 참고안/3D.PNG" style="width:100%; height:100%; object-fit:cover;" alt="3D 모델">
+        </div>
+      </div>
+
+      <!-- SPECIFIC PIER VIEWER -->
+      <div id="specific-viewer" style="display:none; width:100%; height:100%; position:relative;">
+        <div class="viewer-tabs">
+          <button class="v-tab active" onclick="switchSpecMap('svg', this)">상세 단면도(2D)</button>
+          <button class="v-tab" onclick="switchSpecMap('3d', this)">전체 교량(3D)</button>
+        </div>
+        
+        <div id="spec-svg" style="width:100%; height:100%; position:relative; display:block;">
+          <div class="viewer-label">대호지교 — 교각7 선택됨</div>
+          <div class="viewer-canvas">
+            <svg width="520" height="230" viewBox="0 0 520 230" fill="none">
+              <ellipse cx="260" cy="165" rx="248" ry="36" fill="#b8c8dc" opacity="0.5"/>
+              <rect x="30" y="80" width="460" height="10" rx="2" fill="#94a3b8"/>
+              <rect x="30" y="76" width="460" height="6" rx="2" fill="#a8b8cc"/>
+              <rect x="78" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="128" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="178" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="228" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="278" y="85" width="18" height="80" rx="2" fill="#3b6fd4" class="pier-hl"/>
+              <rect x="274" y="80" width="26" height="7" rx="2" fill="#5a8af0" class="pier-hl"/>
+              <rect x="328" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="378" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="428" y="90" width="14" height="74" rx="2" fill="#b0bbc8"/>
+              <rect x="270" y="163" width="34" height="5" rx="1" fill="#5a8af0" opacity="0.5" class="pier-hl"/>
+              <text x="287" y="73" fill="#2554c7" font-size="9" text-anchor="middle" font-weight="700">교각7</text>
+              <text x="287" y="63" fill="#5a8af0" font-size="8" text-anchor="middle">STA 9+330.256</text>
+              <line x1="287" y1="75" x2="287" y2="85" stroke="#3b6fd4" stroke-width="1" stroke-dasharray="2,2"/>
+            </svg>
+          </div>
+          <!-- Sat-Pointer -->
+          <div class="sat-pointer" style="top:42%; left:55%;" onclick="location.href='screen4_원페이지뷰.html'">
+            <div class="sat-icon">📍</div>
+            <div class="sat-tooltip">
+              <div class="sat-thumb"></div>
+              <div style="font-weight:700;">Sat-Pointer 기반 사진대지</div>
+              <div style="color:#cbd5e1;font-size:10px;">교각7 코핑 타설 전 전경 (클릭하여 확인)</div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="spec-3d" class="map-3d" style="display:none; padding:0; overflow:hidden;">
+          <img src="file:///D:/Work/00. CM_PlanningProjects_Code/CMPlanning_Projects_KSK/10. 검측/01.Phase1/03. UI구성/01. 참고자료/공정시뮬레이션 기반 검측 대시보드 참고안/3D.PNG" style="width:100%; height:100%; object-fit:cover;" alt="전체 교량 3D 모델">
+        </div>
+        
+        <div class="viewer-controls">
+          <button title="확대">+</button>
+          <button title="축소">−</button>
+          <button title="초기화" style="font-size:10px;">⊙</button>
+        </div>
+      </div>
+    </div>
+    <div class="viewer-bottom" id="bottom-panel">
+      <!-- OVERVIEW BOTTOM HEADER -->
+      <div class="bottom-tabs" id="overview-bottom-header">
+        <div class="tab-left">
+          <div class="bottom-tab active">전체 공정 시뮬레이션 및 검측 포인트</div>
+        </div>
+        <button class="btn-collapse" onclick="toggleBottomPanel()">▼</button>
+      </div>
+
+      <div class="bottom-content" style="flex:1; overflow-y:auto;">
+        <!-- OVERVIEW GANTT -->
+        <div id="overview-gantt" class="tab-panel active" style="padding:10px 14px;">
+          <!-- Timeline Header & Legend -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+            <div style="display:flex; flex:1; padding-left:90px; border-bottom:1px solid #e2e7ef; font-size:10px; color:var(--text-muted); padding-bottom:4px;">
+              <div style="flex:1;text-align:left;border-left:1px solid #f0f2f5;padding-left:4px;">Q3 2026 (7~9월)</div>
+              <div style="flex:1;text-align:left;border-left:1px solid #f0f2f5;padding-left:4px;">Q4 2026 (10~12월)</div>
+              <div style="flex:1;text-align:left;border-left:1px solid #f0f2f5;padding-left:4px;">Q1 2027 (1~3월)</div>
+            </div>
+            <div style="display:flex; gap:12px; font-size:10px; color:var(--text); font-weight:700; margin-left:14px; padding-bottom:4px;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:12px; height:12px; background:var(--green); border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div> 상시(WP)
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:12px; height:12px; background:var(--blue); border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div> 필수(HP)
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:12px; height:12px; background:var(--orange); border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div> 필수(*HP)
+              </div>
+            </div>
+          </div>
+          
+          <div class="gantt-bar">
+            <span class="gantt-label" style="width:90px;">교각5 말뚝기초</span>
+            <div class="gantt-track" style="position:relative;">
+              <div class="gantt-fill prog" style="width:15%"></div>
+              <div style="position:absolute; top:-1px; left:12%; width:14px; height:14px; background:var(--orange); border:2px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.4); z-index:2; cursor:help;" title="*HP(사업단) 검측 포인트"></div>
+            </div>
+            <span class="gantt-pct">15%</span>
+          </div>
+          
+          <div class="gantt-bar">
+            <span class="gantt-label" style="width:90px;">교각6 기둥</span>
+            <div class="gantt-track" style="position:relative;">
+              <div class="gantt-fill done" style="width:25%"></div>
+              <div style="position:absolute; top:-1px; left:20%; width:14px; height:14px; background:var(--green); border:2px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.4); z-index:2; cursor:help;" title="WP 검측 완료"></div>
+            </div>
+            <span class="gantt-pct" style="color:var(--green)">완료</span>
+          </div>
+          
+          <div class="gantt-bar" style="background:#f8fafc;padding:4px;border-radius:4px;margin:-4px 0;cursor:pointer;" onclick="setViewMode('pier7')">
+            <span class="gantt-label" style="width:90px;color:var(--accent);font-weight:700;">교각7 기둥/코핑</span>
+            <div class="gantt-track" style="position:relative;">
+              <div class="gantt-fill prog" style="width:25%"></div>
+              <div style="position:absolute; top:-1px; left:20%; width:14px; height:14px; background:var(--green); border:2px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,0.4); z-index:2; cursor:help;" title="WP 검측 완료"></div>
+              <div style="position:absolute; top:-1px; left:25%; width:14px; height:14px; background:var(--blue); border:2px solid #fff; border-radius:50%; box-shadow:0 0 6px var(--blue); z-index:2; cursor:help;" title="HP 검측 대기중"></div>
+            </div>
+            <span class="gantt-pct">65%</span>
+          </div>
+          
+          <div class="gantt-bar">
+            <span class="gantt-label" style="width:90px;">교각8 거푸집</span>
+            <div class="gantt-track" style="position:relative;">
+              <div class="gantt-fill prog" style="width:20%;margin-left:25%;"></div>
+            </div>
+            <span class="gantt-pct">조립중</span>
+          </div>
+          
+          <div class="gantt-bar">
+            <span class="gantt-label" style="width:90px;">대호지교 거더</span>
+            <div class="gantt-track" style="position:relative;">
+              <div class="gantt-fill prog" style="width:40%;margin-left:40%;background:#cbd5e1;"></div>
+            </div>
+            <span class="gantt-pct" style="color:#b0bac9">제작중</span>
+          </div>
+        </div>
+
+        <!-- SPECIFIC HISTORY (Replaces Gantt in specific mode) -->
+        <div id="specific-history" style="display:none; height:100%; flex-direction:column;">
+          <div class="bottom-tabs" style="border:none; border-bottom:1px solid var(--border); background:#fff; padding-right:14px;">
+            <div style="display:flex;">
+              <div class="bottom-tab active" onclick="switchHist('prog', this)">진행 중 및 대기 건 확인</div>
+              <div class="bottom-tab" onclick="switchHist('done', this)">최종 종결된 이력 확인</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button style="background:var(--accent);color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(59,111,212,0.3);" onclick="location.href='screen2_의뢰서작성.html'">+ 신규 상시검측(WP) 의뢰</button>
+              <button class="btn-collapse" onclick="toggleBottomPanel()">▼</button>
+            </div>
+          </div>
+          
+          <div id="hist-prog" style="padding:14px; background:#f8fafc; flex:1; display:flex; flex-direction:column; gap:8px; overflow-y:auto;">
+             
+             <!-- Case: WP 의뢰서 작성 완료, 검토중 -->
+             <div class="insp-status-row" style="background:#fff; border-left:3px solid var(--blue); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#dcfce7;color:var(--green);font-size:9px;">상시(WP) 진행중</span> 
+                     <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">시공사 의뢰 완료 / 감리단 판정 대기</span>
+                   </div>
+                   <span style="color:var(--text);font-weight:700;font-size:14px;">기둥 철근 배근 완료 전</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">의뢰일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-13</div>
+                 </div>
+                 <button style="background:#fff;color:var(--accent);border:1px solid var(--accent);padding:7px 15px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;" onclick="location.href='screen4_원페이지뷰.html'">검측 내용 판정</button>
+                 <button style="background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;">승인</button>
+               </div>
+             </div>
+
+             <!-- Case: WP 완료 후 HP 의뢰 대기 -->
+             <div class="insp-status-row" style="background:#fff; border-left:3px solid var(--orange); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--orange); border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#dcfce7;color:var(--green);font-size:9px;">상시(WP) 완료</span> 
+                     <span style="font-size:10px;color:var(--orange);font-weight:700;margin-left:8px;">▶ 필수(HP) 검측 단계 진입 필요</span>
+                   </div>
+                   <span style="color:var(--text);font-weight:700;font-size:14px;">기둥 거푸집 설치 (HP 대상)</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">WP 완료일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-10</div>
+                 </div>
+                 <button style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;" onclick="location.href='screen2_의뢰서작성.html'">필수(HP) 검측 의뢰하기</button>
+               </div>
+             </div>
+
+             <!-- Case: HP 진행중 -->
+             <div class="insp-status-row" style="background:#eff6ff; border-left:3px solid var(--blue); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#dbeafe;color:var(--blue);font-size:9px;">필수(HP) 검토중</span> 
+                     <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">감리단 판정 및 발주처 승인 대기</span>
+                   </div>
+                   <span style="color:var(--accent);font-weight:700;font-size:14px;">코핑 콘크리트 타설 전</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">의뢰일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-13</div>
+                 </div>
+                 <button style="background:#fff;color:var(--accent);border:1px solid var(--accent);padding:7px 15px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;" onclick="location.href='screen4_원페이지뷰.html'">검측 내용 판정</button>
+                 <button style="background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;">최종 승인</button>
+               </div>
+             </div>
+             
+             <!-- Case: 반려 / 재작성 필요 -->
+             <div class="insp-status-row" style="background:#fef2f2; border-left:3px solid var(--red); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#fee2e2;color:var(--red);font-size:9px;">반려(재검측)</span> 
+                     <span style="font-size:10px;color:var(--red);font-weight:700;margin-left:8px;">철근 간격 불량 (재시공 후 재의뢰 필요)</span>
+                   </div>
+                   <span style="color:var(--text);font-weight:700;font-size:14px;">코핑 철근 배근 완료</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">반려일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-12</div>
+                 </div>
+                 <button style="background:var(--red);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;" onclick="location.href='screen2_의뢰서작성.html'">의뢰서 재작성</button>
+               </div>
+             </div>
+          </div>
+          
+          <div id="hist-done" style="padding:14px; background:#f8fafc; flex:1; display:none; flex-direction:column; gap:8px; overflow-y:auto;">
+             <!-- Done Case 1 -->
+             <div class="insp-status-row" style="background:#fff; border-left:3px solid #cbd5e1; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#dcfce7;color:var(--green);font-size:9px;">상시(WP) 종결</span> 
+                     <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">(추가 단계 없이 종결됨)</span>
+                   </div>
+                   <span style="color:var(--text);font-weight:600;font-size:14px;">말뚝기초 철근배근</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">종결일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-05</div>
+                 </div>
+                 <button style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border);padding:7px 15px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;">상세 보기</button>
+               </div>
+             </div>
+             
+             <!-- Done Case 2 -->
+             <div class="insp-status-row" style="background:#fff; border-left:3px solid #cbd5e1; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+               <div style="display:flex; align-items:center; gap:16px;">
+                 <div>
+                   <div style="margin-bottom:6px;">
+                     <span class="ic-badge" style="background:#dbeafe;color:var(--blue);font-size:9px;">필수(HP) 종결</span> 
+                     <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">발주처 최종 승인 완료</span>
+                   </div>
+                   <span style="color:var(--text);font-weight:600;font-size:14px;">말뚝기초 콘크리트 타설 전</span>
+                 </div>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px;">
+                 <div style="text-align:right; margin-right:8px;">
+                   <div style="color:var(--text-muted);font-size:10px;">종결일</div>
+                   <div style="color:var(--text);font-size:12px;font-weight:600;">2026-07-07</div>
+                 </div>
+                 <button style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border);padding:7px 15px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;">상세 보기</button>
+               </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <!-- OVERVIEW RP -->
+    <div id="rp-overview" style="display:flex; flex-direction:column; height:100%;">
+      <div class="rp-head">
+        <span class="rp-title">대호지교 진행중인 검측 List</span>
+      </div>
+      <div class="rp-body" style="flex:1; padding:14px; background:#f8fafc; overflow-y:auto;">
+        
+        <div style="margin-bottom:16px;">
+          <div style="font-weight:700; color:var(--text); margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between;">
+            <span>▶ 교각7</span> <span style="font-size:10px;color:var(--accent);font-weight:400;cursor:pointer;" onclick="setViewMode('pier7')">상세보기</span>
+          </div>
+          <div class="insp-status-row" style="background:#fff; border-left:3px solid var(--blue); padding-left:10px; cursor:pointer; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="highlightMarker('marker-p7', this)">
+            <div>
+              <div style="margin-bottom:4px;"><span class="ic-badge" style="background:#dbeafe;color:var(--blue);font-size:9px;">필수(HP)</span></div>
+              <span style="color:var(--text);font-weight:600;">코핑 콘크리트 타설 전</span>
+            </div>
+            <span style="color:var(--blue);font-size:10px;font-weight:600;margin-right:10px;">검토중</span>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="font-weight:700; color:var(--text); margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between;">
+            <span>▶ 교각5</span> <span style="font-size:10px;color:var(--accent);font-weight:400;cursor:pointer;">상세보기</span>
+          </div>
+          <div class="insp-status-row" style="background:#fff; border-left:3px solid var(--orange); padding-left:10px; cursor:pointer; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="highlightMarker('marker-p5', this)">
+            <div>
+              <div style="margin-bottom:4px;"><span class="ic-badge" style="background:#ffedd5;color:var(--orange);font-size:9px;">*필수(HP)</span></div>
+              <span style="color:var(--text);font-weight:600;">말뚝기초 철근배근</span>
+            </div>
+            <span style="color:var(--orange);font-size:10px;font-weight:600;margin-right:10px;">검토중</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- SPECIFIC RP -->
+    <div id="rp-specific" style="display:none; flex-direction:column; height:100%;">
+      <div class="rp-head">
+        <span class="rp-title">교각7 상세 정보</span>
+        <span style="font-size:10px;color:var(--text-muted);">P7 / 3B-Obj3.7</span>
+      </div>
+      <div class="rp-body" style="flex:1; overflow-y:auto;">
+        <div class="info-section">
+          <div class="info-section-title">설계정보 및 주요 제원</div>
+          <div class="info-row"><span class="ik">위치(STA)</span><span class="iv">9+330.256</span></div>
+          <div class="info-row"><span class="ik">형식</span><span class="iv">π형 / 원형 기둥</span></div>
+          <div class="info-row"><span class="ik">기초</span><span class="iv">단일현장타설말뚝</span></div>
+          <div class="info-row"><span class="ik">교각 높이</span><span class="iv">37.18m</span></div>
+          <div class="info-row"><span class="ik">코핑 폭</span><span class="iv">12.5m</span></div>
+          <div class="info-row"><span class="ik">설계강도</span><span class="iv">fck = 27 MPa</span></div>
+        </div>
+        <div class="info-section">
+          <div class="info-section-title">CBS 분류 체계</div>
+          <div class="info-row"><span class="ik">대공종</span><span class="iv">3.0 교량공</span></div>
+          <div class="info-row"><span class="ik">중공종</span><span class="iv">3-02. 대호지교</span></div>
+          <div class="info-row"><span class="ik">소공종</span><span class="iv">하부공</span></div>
+        </div>
+        <div class="info-section">
+          <div class="info-section-title">관련 업체 및 담당자 정보</div>
+          <div class="info-row"><span class="ik">시공사</span><span class="iv">대한건설(주) 제2공구</span></div>
+          <div class="info-row"><span class="ik">담당자</span><span class="iv">김철수 현장소장</span></div>
+          <div class="info-row"><span class="ik">감리단</span><span class="iv">(주)제일엔지니어링</span></div>
+          <div class="info-row"><span class="ik">책임감리</span><span class="iv">이영희 단장</span></div>
+        </div>
+        <div class="info-section">
+          <div class="info-section-title">자재 투입 현황 (누계)</div>
+          <div class="info-row"><span class="ik">콘크리트</span><span class="iv">1,250 ㎥</span></div>
+          <div class="info-row"><span class="ik">철근</span><span class="iv">420 ton</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function selectInsp(el, state){
+  document.querySelectorAll('.insp-status-row').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  const btnCreate = document.getElementById('btn-create');
+  if(state === 'need_hp') {
+    btnCreate.style.opacity = '1';
+    btnCreate.disabled = false;
+    btnCreate.innerText = '필수검측(HP) 의뢰서 작성';
+    btnCreate.style.cursor = 'pointer';
+  } else if (state === 'done') {
+    btnCreate.style.opacity = '0.5';
+    btnCreate.disabled = true;
+    btnCreate.innerText = '검측 종결됨';
+    btnCreate.style.cursor = 'not-allowed';
+  } else {
+    btnCreate.style.opacity = '0.5';
+    btnCreate.disabled = true;
+    btnCreate.innerText = '검측 진행중 (의뢰불가)';
+    btnCreate.style.cursor = 'not-allowed';
+  }
+}
+function toggleBottomPanel() {
+  const panel = document.getElementById('bottom-panel');
+  panel.classList.toggle('collapsed');
+  const btn = document.querySelector('.btn-collapse');
+  btn.textContent = panel.classList.contains('collapsed') ? '▲' : '▼';
+}
+function switchHist(type, btn) {
+  document.querySelectorAll('#specific-history .bottom-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('hist-prog').style.display = type === 'prog' ? 'flex' : 'none';
+  document.getElementById('hist-done').style.display = type === 'done' ? 'flex' : 'none';
+}
+function highlightMarker(id, el) {
+  document.querySelectorAll('#rp-overview .insp-status-row').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  const marker = document.getElementById(id);
+  if(marker) {
+    marker.style.animation = 'none';
+    setTimeout(() => { marker.style.animation = 'pulse 1s infinite'; }, 10);
+  }
+}
+function switchSpecMap(type, btn) {
+  document.querySelectorAll('#specific-viewer .v-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('spec-svg').style.display = type === 'svg' ? 'block' : 'none';
+  document.getElementById('spec-3d').style.display = type === '3d' ? 'flex' : 'none';
+}
+function setViewMode(mode) {
+  document.querySelectorAll('.obj-chip').forEach(c=>c.classList.remove('selected'));
+  if(mode === 'overview') {
+    document.getElementById('chip-all').classList.add('selected');
+    
+    // Center map
+    document.getElementById('overview-viewer').style.display = 'block';
+    document.getElementById('specific-viewer').style.display = 'none';
+    
+    // Bottom panel
+    document.getElementById('overview-bottom-header').style.display = 'flex';
+    document.getElementById('overview-gantt').style.display = 'block';
+    document.getElementById('specific-history').style.display = 'none';
+    
+    // Right panel
+    document.getElementById('rp-overview').style.display = 'flex';
+    document.getElementById('rp-specific').style.display = 'none';
+    
+  } else if(mode === 'pier7') {
+    document.getElementById('chip-p7').classList.add('selected');
+    
+    // Center map
+    document.getElementById('overview-viewer').style.display = 'none';
+    document.getElementById('specific-viewer').style.display = 'block';
+    
+    // Bottom panel
+    document.getElementById('overview-bottom-header').style.display = 'none';
+    document.getElementById('overview-gantt').style.display = 'none';
+    document.getElementById('specific-history').style.display = 'flex';
+    
+    // Right panel
+    document.getElementById('rp-overview').style.display = 'none';
+    document.getElementById('rp-specific').style.display = 'flex';
+  }
+}
+function switchMap(type, btn) {
+  document.querySelectorAll('.v-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('map-2d').style.display = type === '2d' ? 'block' : 'none';
+  document.getElementById('map-3d').style.display = type === '3d' ? 'flex' : 'none';
+}
+
+// 초기 로딩 시 기본 뷰 모드 설정
+window.onload = function() {
+  setViewMode('overview');
+};
+</script>
+</body>
+</html>
