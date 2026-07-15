@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>체크리스트 작성 - 차세대 검측 플랫폼</title>
+<style>
+:root{--ac:#2563eb;--bd:#cbd5e1;--bg:#e2e8f0;--tx:#0f172a;--su:#475569;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Pretendard',sans-serif;}
+body{background:var(--bg);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+header{height:54px;background:#1e293b;color:white;display:flex;align-items:center;gap:16px;padding:0 20px;flex-shrink:0;}
+.logo{font-weight:800;font-size:16px;}
+.body{flex:1;display:flex;overflow:hidden;}
+
+/* sidebar tree */
+.sb{width:320px;background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;}
+.sb-hd{padding:14px 16px;background:#f8fafc;border-bottom:1px solid var(--bd);font-weight:700;font-size:13px;}
+.sb-sc{flex:1;overflow-y:auto;padding:10px;}
+.tree-ul{list-style:none;padding-left:14px;}
+.tree-ul.root{padding-left:0;}
+.tree-li{margin:2px 0;}
+.tree-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--su);cursor:pointer;padding:6px;border-radius:4px;}
+.tree-label:hover{background:#f1f5f9;color:var(--tx);}
+.tree-icon{font-size:10px;width:12px;text-align:center;color:#94a3b8;}
+.tree-item{font-size:12px;margin:2px 0 2px 12px;padding:6px 10px;background:#fff;border:1px solid var(--bd);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;cursor:pointer;}
+.tree-item:hover{background:#f8fafc;}
+.active-ti{background:#eff6ff;border-color:#bfdbfe;color:var(--ac);font-weight:700;}
+.btn-add{background:#64748b;color:#fff;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;}
+.btn-add.added{background:var(--ac);}
+
+/* content */
+.ca{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg);}
+.pf{background:#fff;border-bottom:1px solid var(--bd);padding:10px 20px;flex-shrink:0;}
+.fd{display:flex;align-items:center;gap:8px;background:#f8fafc;padding:10px 16px;border-radius:6px;border:1px dashed var(--bd);overflow-x:auto;margin-top:6px;}
+.fb{border:2px solid #94a3b8;background:#fff;padding:7px 10px;border-radius:6px;text-align:center;font-size:10px;font-weight:700;color:var(--su);white-space:nowrap;}
+.fb.act{border-color:var(--ac);background:#eff6ff;color:#1d4ed8;}
+.fw{font-size:12px;color:#94a3b8;}
+.fbg{display:block;font-size:9px;color:#fff;background:#94a3b8;border-radius:3px;padding:1px 4px;margin:0 auto 3px;}
+.fb.act .fbg{background:var(--ac);}
+
+.tabs{display:flex;background:#e2e8f0;padding:6px 20px 0;gap:4px;flex-shrink:0;overflow-x:auto;box-shadow:inset 0 -1px 0 var(--bd);}
+.tab{padding:9px 14px;background:#cbd5e1;color:var(--su);border-radius:7px 7px 0 0;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid transparent;border-bottom:none;}
+.tab.act{background:#fff;color:var(--ac);border-color:var(--bd);}
+.tab .cx{color:#94a3b8;font-weight:normal;}
+.tab .cx:hover{color:#ef4444;}
+
+.ds{flex:1;overflow-y:auto;padding:30px;display:flex;justify-content:center;padding-bottom:90px;}
+.doc{width:1100px;min-height:297mm;background:#fff;padding:24px;box-shadow:0 8px 20px rgba(0,0,0,.1);display:flex;flex-direction:column;}
+.dt{text-align:center;font-size:24px;font-weight:800;letter-spacing:6px;margin-bottom:20px;text-decoration:underline;text-underline-offset:6px;}
+.bb{background:var(--ac);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end;margin-bottom:12px;box-shadow:0 2px 4px rgba(37,99,235,0.2);}
+.bb:hover{background:#1d4ed8;}
+
+.sl{display:flex;gap:20px;align-items:flex-start;}
+.ta{flex:3;}
+.na-panel{flex:1;border-left:2px dashed var(--bd);padding-left:16px;min-height:400px;}
+.na-tl{font-size:14px;font-weight:800;margin-bottom:6px;color:var(--tx);}
+
+/* checklist table */
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;table-layout:fixed;}
+th,td{border:1px solid #cbd5e1;padding:8px 6px;vertical-align:middle;}
+th{background:#f8fafc;font-weight:700;text-align:center;border-bottom:2px solid #94a3b8;color:#334155;}
+.list-table th:nth-child(1){width:26%;}
+.list-table th:nth-child(2){width:34%;}
+.list-table th:nth-child(3){width:24%;}
+.list-table th:nth-child(4){width:16%;}
+.gh td{background:#f1f5f9;font-weight:700;text-align:left;padding:10px;color:var(--tx);border-top:2px solid #e2e8f0;}
+.rg{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.rg label{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;color:#475569;}
+.rg input{accent-color:var(--ac);cursor:pointer;}
+
+/* Inspector (4th column) completely faded out */
+.list-table td:nth-child(4) { background: #f8fafc; opacity: 0.4; pointer-events: none; }
+
+/* has docs */
+.has-docs td{background:#f0fdf4;}
+.btn-doc{background:#fff;border:1px solid #22c55e;color:#166534;border-radius:4px;font-size:10px;padding:3px 6px;cursor:pointer;display:inline-block;margin-top:4px;}
+.btn-doc:hover{background:#dcfce7;}
+
+/* NA panel items */
+.na-grp{margin-bottom:10px;background:#fff;border:1px solid var(--bd);border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.na-gh{padding:10px 12px;background:#f8fafc;font-size:12px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--tx);}
+.na-badge{background:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:10px;color:var(--su);}
+.na-body{padding:10px 12px;}
+.na-card{background:#fff;border:1px solid #e2e8f0;border-radius:5px;padding:10px;font-size:11px;margin-bottom:8px;position:relative;box-shadow:0 1px 3px rgba(0,0,0,0.02);}
+.na-card:last-child{margin-bottom:0;}
+.na-card b{color:var(--tx);display:block;margin-bottom:4px;}
+.btn-rv{position:absolute;top:8px;right:8px;background:#f8fafc;border:1px solid var(--bd);border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;color:var(--tx);font-weight:600;}
+.btn-rv:hover{background:#e2e8f0;}
+
+/* action bar */
+.ab{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 40px;z-index:20;}
+.btn{padding:10px 20px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;border:none;}
+.btn-ol{background:#fff;border:1px solid var(--bd);color:var(--tx);}
+.btn-ol:hover{background:#f1f5f9;}
+.btn-pr{background:var(--ac);color:#fff;}
+.btn-pr:hover{background:#1d4ed8;}
+.btn-ai{width:100%;background:#f8fafc;border:1px dashed #94a3b8;padding:10px;font-size:12px;font-weight:700;color:var(--su);cursor:pointer;border-radius:4px;margin-top:10px;}
+.btn-ai:hover{background:#eff6ff;color:var(--ac);}
+
+/* Drawer for docs */
+.drawer{position:absolute;top:0;right:-450px;width:450px;height:100%;background:#f8fafc;box-shadow:-4px 0 15px rgba(0,0,0,0.1);z-index:100;transition:right 0.3s ease;display:flex;flex-direction:column;border-left:1px solid var(--bd);}
+.drawer.open{right:0;}
+.dr-hd{padding:16px 20px;background:#1e293b;color:#fff;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center;}
+.dr-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;}
+.dr-bd{flex:1;padding:20px;overflow-y:auto;}
+.doc-card{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.doc-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;}
+.tag-audit{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+.tag-guide{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;}
+.tag-safe{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.doc-card h4{font-size:14px;margin-bottom:8px;color:var(--tx);}
+.doc-card p{font-size:12px;color:var(--su);line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">BCMF 검측플랫폼</div>
+  <div style="font-size:13px;color:#94a3b8;">대산-당진 시공2공구 &gt; 대호지교 &gt; 교각7 &gt; 체크리스트 작성</div>
+</header>
+<div class="body">
+  <!-- Sidebar -->
+  <div class="sb">
+    <div class="sb-hd">📋 교각7 관련 체크리스트 전체 목록</div>
+    <div class="sb-sc">
+      <ul class="tree-ul root">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 01 토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 절토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-101" onclick="switchTab('101')"><span>CodeNo101 땅깎기</span><button class="btn-add" onclick="addTab(event, 'CodeNo101 땅깎기', '101')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-102" onclick="switchTab('102')"><span>CodeNo102 발파</span><button class="btn-add" onclick="addTab(event, 'CodeNo102 발파', '102')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 성토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-111" onclick="switchTab('111')"><span>CodeNo111 흙쌓기</span><button class="btn-add" onclick="addTab(event, 'CodeNo111 흙쌓기', '111')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 02 배수공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 관거공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-201" onclick="switchTab('201')"><span>CodeNo201 콘크리트 암거</span><button class="btn-add" onclick="addTab(event, 'CodeNo201 콘크리트 암거', '201')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-221" onclick="switchTab('221')"><span>CodeNo221 종·횡배수관</span><button class="btn-add" onclick="addTab(event, 'CodeNo221 종·횡배수관', '221')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 측구공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-211" onclick="switchTab('211')"><span>CodeNo211 측구</span><button class="btn-add" onclick="addTab(event, 'CodeNo211 측구', '211')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▼</span> 03 교량공</div><ul class="tree-ul" style="display:block">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 기초공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-301" onclick="switchTab('301')"><span>CodeNo301 직접기초</span><button class="btn-add" onclick="addTab(event, 'CodeNo301 직접기초', '301')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-302" onclick="switchTab('302')"><span>CodeNo302 강관말뚝</span><button class="btn-add" onclick="addTab(event, 'CodeNo302 강관말뚝', '302')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-303" onclick="switchTab('303')"><span>CodeNo303 PHC 말뚝</span><button class="btn-add" onclick="addTab(event, 'CodeNo303 PHC 말뚝', '303')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-304" onclick="switchTab('304')"><span>CodeNo304 우물통 기초</span><button class="btn-add" onclick="addTab(event, 'CodeNo304 우물통 기초', '304')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▼</span> 하부공 (현재 공정)</div><ul class="tree-ul" style="display:block">
+<li class="tree-li"><div class="tree-item active-ti" id="nav-311" onclick="switchTab('311')"><span>CodeNo311 벽체타설</span><button class="btn-add added">선택됨</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-312" onclick="switchTab('312')"><span>CodeNo312 CLIMBING FORM</span><button class="btn-add" onclick="addTab(event, 'CodeNo312 CLIMBING FORM', '312')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-313" onclick="switchTab('313')"><span>CodeNo313 Slip Form</span><button class="btn-add" onclick="addTab(event, 'CodeNo313 Slip Form', '313')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 상부공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-321" onclick="switchTab('321')"><span>CodeNo321 PSC BEAM</span><button class="btn-add" onclick="addTab(event, 'CodeNo321 PSC BEAM', '321')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-324" onclick="switchTab('324')"><span>CodeNo324 강교</span><button class="btn-add" onclick="addTab(event, 'CodeNo324 강교', '324')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-341" onclick="switchTab('341')"><span>CodeNo341 슬래브 타설</span><button class="btn-add" onclick="addTab(event, 'CodeNo341 슬래브 타설', '341')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 04 포장공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 포장</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-401" onclick="switchTab('401')"><span>CodeNo401 콘크리트 포장</span><button class="btn-add" onclick="addTab(event, 'CodeNo401 콘크리트 포장', '401')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-411" onclick="switchTab('411')"><span>CodeNo411 아스팔트 포장</span><button class="btn-add" onclick="addTab(event, 'CodeNo411 아스팔트 포장', '411')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 07 안전</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 안전점검</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-701" onclick="switchTab('701')"><span>CodeNo701 코핑 폼 설치·해체</span><button class="btn-add" onclick="addTab(event, 'CodeNo701 코핑 폼 설치·해체', '701')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-702" onclick="switchTab('702')"><span>CodeNo702 동바리 가설비계</span><button class="btn-add" onclick="addTab(event, 'CodeNo702 동바리 가설비계', '702')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-703" onclick="switchTab('703')"><span>CodeNo703 중량물 인양</span><button class="btn-add" onclick="addTab(event, 'CodeNo703 중량물 인양', '703')">추가</button></div></li>
+</ul></li>
+</ul></li>
+</ul>
+      <div style="margin-top:16px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;color:#475569;line-height:1.5;">
+        ℹ️ <strong style="color:var(--ac);">파란색 하이라이트</strong>된 항목은 현재 객체(교각7)와 연계된 검측 절차서 및 공정계획에 의해 자동 선택되었습니다. 
+        목록에서 필요한 검측을 추가로 열람 및 병행 작성할 수 있습니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="ca">
+    <div class="pf">
+      <div style="font-size:13px;font-weight:800;color:var(--tx);">📌 검측 절차서 프로세스 연계 현황 (현재: 교각7 벽체 철근조립 WP)</div>
+      <div class="fd">
+        <div class="fb"><span class="fbg">사전</span>시공계획서</div><div class="fw">➔</div>
+        <div class="fb"><span class="fbg">WP</span>기초 콘크리트</div><div class="fw">➔</div>
+        <div class="fb act"><span class="fbg">WP</span>벽체 철근조립</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">HP</span>거푸집 검사</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">WP</span>콘크리트 타설</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">WP</span>양생·해체</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabsBar">
+      <div class="tab act" data-code="311" onclick="switchTab('311')">03교량공ㅣCodeNo311 벽체타설 <span class="cx" onclick="closeTab(event, this,'311')">×</span></div>
+    </div>
+
+    <div class="ds">
+      <!-- MAIN TAB 311 CONTENT -->
+      <div class="doc" id="tc-311">
+        <div class="dt">검 측 체 크 리 스 트</div>
+        <button class="bb" onclick="batchOK()">적정 일괄 체크</button>
+
+        <div class="sl">
+          <div class="ta">
+            <table class="list-table" id="cl-table">
+              <thead>
+                <tr>
+                  <th>검 측 내 용</th>
+                  <th>이 행 기 준</th>
+                  <th>원도급사 확인결과</th>
+                  <th>검측자 판정</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr class="gh" id="mgh-_사전_조치사항" style=""><td colspan="4">□ 사전 조치사항</td></tr>
+<tr class="ir " id="row-1" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">시공계획서</div></td>
+  <td class="cc">시공계획서 제출 (EXCS 101010)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i1" value="ok"> 적정</label>
+        <label><input type="radio" name="i1" value="ng"> 부적정</label>
+        <label><input type="radio" name="i1" value="na" onchange="toNA(1, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j1" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j1" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-2" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">품질·안전 협의체 회의</div></td>
+  <td class="cc">공종 착수 전 및 필요시 / 시공계획, 장비·인력 투입계획, 교육계획, 안전계획</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i2" value="ok"> 적정</label>
+        <label><input type="radio" name="i2" value="ng"> 부적정</label>
+        <label><input type="radio" name="i2" value="na" onchange="toNA(2, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j2" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j2" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir has-docs" id="row-3" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">근로자 교육</div><button class="btn-doc" onclick="openDrawer('근로자 교육')">📄 문서뷰어</button></td>
+  <td class="cc">공종 착수전, 안전교육 및 TBM 실시 / 특별안전교육·신규근로자 교육여부</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i3" value="ok"> 적정</label>
+        <label><input type="radio" name="i3" value="ng"> 부적정</label>
+        <label><input type="radio" name="i3" value="na" onchange="toNA(3, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j3" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j3" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-4" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">신구 이음부 접합면 처리 ◎</div></td>
+  <td class="cc">시공이음면 레이턴스 제거 (치핑·모래 뿜기 등)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i4" value="ok"> 적정</label>
+        <label><input type="radio" name="i4" value="ng"> 부적정</label>
+        <label><input type="radio" name="i4" value="na" onchange="toNA(4, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j4" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j4" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh" id="mgh-_시공상태_확인__철근_조립_현재_공" style=""><td colspan="4">□ 시공상태 확인 - 철근 조립 (현재 공정)</td></tr>
+<tr class="ir has-docs" id="row-5" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 전·후면 철근 간격 ◎</div><button class="btn-doc" onclick="openDrawer('★ 전·후면 철근 간격 ◎')">📄 문서뷰어</button></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i5" value="ok"> 적정</label>
+        <label><input type="radio" name="i5" value="ng"> 부적정</label>
+        <label><input type="radio" name="i5" value="na" onchange="toNA(5, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j5" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j5" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir has-docs" id="row-6" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 철근 피복 ◎</div><button class="btn-doc" onclick="openDrawer('★ 철근 피복 ◎')">📄 문서뷰어</button></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i6" value="ok"> 적정</label>
+        <label><input type="radio" name="i6" value="ng"> 부적정</label>
+        <label><input type="radio" name="i6" value="na" onchange="toNA(6, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j6" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j6" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-7" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 주철근 겹이음길이 ◎</div></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i7" value="ok"> 적정</label>
+        <label><input type="radio" name="i7" value="ng"> 부적정</label>
+        <label><input type="radio" name="i7" value="na" onchange="toNA(7, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j7" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j7" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-8" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">철근의 결속상태 ◎</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i8" value="ok"> 적정</label>
+        <label><input type="radio" name="i8" value="ng"> 부적정</label>
+        <label><input type="radio" name="i8" value="na" onchange="toNA(8, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j8" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j8" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__거푸집_조립" style="display:none;"><td colspan="4">□ 시공상태 확인 - 거푸집 조립</td></tr>
+<tr class="ir in-na " id="row-9" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 설치 — 상태 (손상여부)</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i9" value="ok"> 적정</label>
+        <label><input type="radio" name="i9" value="ng"> 부적정</label>
+        <label><input type="radio" name="i9" value="na" onchange="toNA(9, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j9" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j9" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-10" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 설치 — 규격 (가로×세로)</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i10" value="ok"> 적정</label>
+        <label><input type="radio" name="i10" value="ng"> 부적정</label>
+        <label><input type="radio" name="i10" value="na" onchange="toNA(10, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j10" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j10" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-11" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 조립 및 동바리 지지상태</div><button class="btn-doc" onclick="openDrawer('거푸집 조립 및 동바리 지지상태')">📄 문서뷰어</button></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i11" value="ok"> 적정</label>
+        <label><input type="radio" name="i11" value="ng"> 부적정</label>
+        <label><input type="radio" name="i11" value="na" onchange="toNA(11, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j11" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j11" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-12" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">면목 설치</div></td>
+  <td class="cc">모서리 및 시공이음부 모따기용 면목 설치여부 — 설치/미설치</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i12" value="ok"> 적정</label>
+        <label><input type="radio" name="i12" value="ng"> 부적정</label>
+        <label><input type="radio" name="i12" value="na" onchange="toNA(12, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j12" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j12" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__콘크리트_타설" style="display:none;"><td colspan="4">□ 시공상태 확인 - 콘크리트 타설</td></tr>
+<tr class="ir in-na " id="row-13" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">타설시간 관리</div></td>
+  <td class="cc">25℃초과: 1.5시간 이내 / 25℃이하: 2시간 이내 (EXCS 1420103.3)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i13" value="ok"> 적정</label>
+        <label><input type="radio" name="i13" value="ng"> 부적정</label>
+        <label><input type="radio" name="i13" value="na" onchange="toNA(13, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j13" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j13" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-14" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">1회 타설 높이</div></td>
+  <td class="cc">40~50㎝ 준수여부 (진동기 성능 고려) — 준수/미준수</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i14" value="ok"> 적정</label>
+        <label><input type="radio" name="i14" value="ng"> 부적정</label>
+        <label><input type="radio" name="i14" value="na" onchange="toNA(14, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j14" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j14" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-15" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">콘크리트 다짐</div><button class="btn-doc" onclick="openDrawer('콘크리트 다짐')">📄 문서뷰어</button></td>
+  <td class="cc">진동다짐 실시 (수평간격 50㎝이하, 진동시간 5~15초, 매입깊이 10㎝)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i15" value="ok"> 적정</label>
+        <label><input type="radio" name="i15" value="ng"> 부적정</label>
+        <label><input type="radio" name="i15" value="na" onchange="toNA(15, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j15" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j15" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__콘크리트_양생관리" style="display:none;"><td colspan="4">□ 시공상태 확인 - 콘크리트 양생관리</td></tr>
+<tr class="ir in-na " id="row-16" style="display:none;" data-gid="_시공상태_확인__콘크리트_양생관리">
+  <td class="ic"><div class="item-name">★ 양생관리 — 유해환경 보호</div></td>
+  <td class="cc">진동·충격등 유해한 외부환경으로부터 보호</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i16" value="ok"> 적정</label>
+        <label><input type="radio" name="i16" value="ng"> 부적정</label>
+        <label><input type="radio" name="i16" value="na" onchange="toNA(16, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j16" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j16" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-17" style="display:none;" data-gid="_시공상태_확인__콘크리트_양생관리">
+  <td class="ic"><div class="item-name">★ 습윤양생 최소기간 준수 (EXCS 1420103.10)</div><button class="btn-doc" onclick="openDrawer('★ 습윤양생 최소기간 준수 (EXCS 1420103.10)')">📄 문서뷰어</button></td>
+  <td class="cc">15℃이상: 보통5일/고로7일/조강3일 / 10℃이상: 7/9/4일 / 5℃이상: 9/12/5일</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i17" value="ok"> 적정</label>
+        <label><input type="radio" name="i17" value="ng"> 부적정</label>
+        <label><input type="radio" name="i17" value="na" onchange="toNA(17, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j17" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j17" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__거푸집_해체" style="display:none;"><td colspan="4">□ 시공상태 확인 - 거푸집 해체</td></tr>
+<tr class="ir in-na " id="row-18" style="display:none;" data-gid="_시공상태_확인__거푸집_해체">
+  <td class="ic"><div class="item-name">거푸집 탈형 시기 준수 (EXCS 1420123)</div></td>
+  <td class="cc">압축강도 5MPa이상 / 미실시시 20℃이상:4일, 10~20℃:6일</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i18" value="ok"> 적정</label>
+        <label><input type="radio" name="i18" value="ng"> 부적정</label>
+        <label><input type="radio" name="i18" value="na" onchange="toNA(18, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j18" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j18" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__검사" style="display:none;"><td colspan="4">□ 시공상태 확인 - 검사</td></tr>
+<tr class="ir in-na " id="row-19" style="display:none;" data-gid="_시공상태_확인__검사">
+  <td class="ic"><div class="item-name">부재 치수 — 벽체 두께 허용오차 ◎</div></td>
+  <td class="cc">300㎜미만:+9/-6㎜ / 300~900㎜:+13/-9㎜ / 900㎜이상:+25㎜ / 설계:__㎜ 실측:__㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i19" value="ok"> 적정</label>
+        <label><input type="radio" name="i19" value="ng"> 부적정</label>
+        <label><input type="radio" name="i19" value="na" onchange="toNA(19, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j19" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j19" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-20" style="display:none;" data-gid="_시공상태_확인__검사">
+  <td class="ic"><div class="item-name">수직·수평 오차 확인 ◎</div></td>
+  <td class="cc">수직: 30m이하 25㎜이하, 30m초과 1/1000이하(최대150㎜) / 수평: 부재 25㎜이하</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i20" value="ok"> 적정</label>
+        <label><input type="radio" name="i20" value="ng"> 부적정</label>
+        <label><input type="radio" name="i20" value="na" onchange="toNA(20, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j20" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j20" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+
+              </tbody>
+            </table>
+            <button class="btn-ai" onclick="alert('현장 맞춤 항목 추가 기능')">+ 현장 맞춤형 신규 검측 항목 추가</button>
+          </div>
+
+          <div class="na-panel">
+            <div class="na-tl">해당사항 없음 (N/A)</div>
+            <div style="font-size:11px;color:var(--su);margin-bottom:12px;line-height:1.4;">
+              현재 공정에 해당하지 않는 후속 공정 검측 항목이 자동 분리되어 대기 중입니다. 클릭하여 펼칠 수 있으며, 언제든 다시 <strong>[복구 ↺]</strong>하여 표출할 수 있습니다.
+            </div>
+            
+            <!-- AUTO NA PANELS -->
+            <div class="na-grp" id="nag-_시공상태_확인__거푸집_조립">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__거푸집_조립')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 거푸집 조립</span> <span class="na-badge" id="bdg-_시공상태_확인__거푸집_조립">4건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__거푸집_조립" style="display:none"><div class="na-card" id="nac-9">
+  <div class="ic"><b>거푸집 설치 — 상태 (손상여부)</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  
+  <button class="btn-rv" onclick="restoreNA(9, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-10">
+  <div class="ic"><b>거푸집 설치 — 규격 (가로×세로)</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  
+  <button class="btn-rv" onclick="restoreNA(10, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-11">
+  <div class="ic"><b>거푸집 조립 및 동바리 지지상태</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  <button class="btn-doc" onclick="openDrawer('거푸집 조립 및 동바리 지지상태')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(11, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-12">
+  <div class="ic"><b>면목 설치</b></div>
+  <div style="margin-top:4px;">모서리 및 시공이음부 모따기용 면목 설치여부 — 설치/미설치</div>
+  
+  <button class="btn-rv" onclick="restoreNA(12, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__콘크리트_타설">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__콘크리트_타설')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 콘크리트 타설</span> <span class="na-badge" id="bdg-_시공상태_확인__콘크리트_타설">3건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__콘크리트_타설" style="display:none"><div class="na-card" id="nac-13">
+  <div class="ic"><b>타설시간 관리</b></div>
+  <div style="margin-top:4px;">25℃초과: 1.5시간 이내 / 25℃이하: 2시간 이내 (EXCS 1420103.3)</div>
+  
+  <button class="btn-rv" onclick="restoreNA(13, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-14">
+  <div class="ic"><b>1회 타설 높이</b></div>
+  <div style="margin-top:4px;">40~50㎝ 준수여부 (진동기 성능 고려) — 준수/미준수</div>
+  
+  <button class="btn-rv" onclick="restoreNA(14, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-15">
+  <div class="ic"><b>콘크리트 다짐</b></div>
+  <div style="margin-top:4px;">진동다짐 실시 (수평간격 50㎝이하, 진동시간 5~15초, 매입깊이 10㎝)</div>
+  <button class="btn-doc" onclick="openDrawer('콘크리트 다짐')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(15, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__콘크리트_양생관리">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__콘크리트_양생관리')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 콘크리트 양생관리</span> <span class="na-badge" id="bdg-_시공상태_확인__콘크리트_양생관리">2건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__콘크리트_양생관리" style="display:none"><div class="na-card" id="nac-16">
+  <div class="ic"><b>★ 양생관리 — 유해환경 보호</b></div>
+  <div style="margin-top:4px;">진동·충격등 유해한 외부환경으로부터 보호</div>
+  
+  <button class="btn-rv" onclick="restoreNA(16, '_시공상태_확인__콘크리트_양생관리')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-17">
+  <div class="ic"><b>★ 습윤양생 최소기간 준수 (EXCS 1420103.10)</b></div>
+  <div style="margin-top:4px;">15℃이상: 보통5일/고로7일/조강3일 / 10℃이상: 7/9/4일 / 5℃이상: 9/12/5일</div>
+  <button class="btn-doc" onclick="openDrawer('★ 습윤양생 최소기간 준수 (EXCS 1420103.10)')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(17, '_시공상태_확인__콘크리트_양생관리')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__거푸집_해체">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__거푸집_해체')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 거푸집 해체</span> <span class="na-badge" id="bdg-_시공상태_확인__거푸집_해체">1건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__거푸집_해체" style="display:none"><div class="na-card" id="nac-18">
+  <div class="ic"><b>거푸집 탈형 시기 준수 (EXCS 1420123)</b></div>
+  <div style="margin-top:4px;">압축강도 5MPa이상 / 미실시시 20℃이상:4일, 10~20℃:6일</div>
+  
+  <button class="btn-rv" onclick="restoreNA(18, '_시공상태_확인__거푸집_해체')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__검사">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__검사')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 검사</span> <span class="na-badge" id="bdg-_시공상태_확인__검사">2건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__검사" style="display:none"><div class="na-card" id="nac-19">
+  <div class="ic"><b>부재 치수 — 벽체 두께 허용오차 ◎</b></div>
+  <div style="margin-top:4px;">300㎜미만:+9/-6㎜ / 300~900㎜:+13/-9㎜ / 900㎜이상:+25㎜ / 설계:__㎜ 실측:__㎜</div>
+  
+  <button class="btn-rv" onclick="restoreNA(19, '_시공상태_확인__검사')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-20">
+  <div class="ic"><b>수직·수평 오차 확인 ◎</b></div>
+  <div style="margin-top:4px;">수직: 30m이하 25㎜이하, 30m초과 1/1000이하(최대150㎜) / 수평: 부재 25㎜이하</div>
+  
+  <button class="btn-rv" onclick="restoreNA(20, '_시공상태_확인__검사')">복구 ↺</button>
+</div>
+</div>
+</div>
+
+            
+            <div id="dynNA" style="margin-top:20px; border-top:2px dashed var(--bd); padding-top:16px;">
+              <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;">[사용자 수동 제외 항목]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DUMMY TAB CONTENT -->
+      <div class="doc" id="tc-dummy" style="display:none; justify-content:center; align-items:center; font-size:18px; color:var(--su); font-weight:700; background:#f8fafc; border:2px dashed var(--bd);">
+         더미 데이터 렌더링 영역
+      </div>
+      
+    </div>
+
+    <div class="ab">
+      <button class="btn btn-ol" onclick="location.href='screen1_기성객체선택.html?selected=pier7'">← 이전으로 (취소)</button>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-ol">임시저장</button>
+        <button class="btn btn-pr" onclick="location.href='screen2_의뢰서작성.html?mode=s2-1'">의뢰서 자동 생성 및 작성 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Document Drawer -->
+<div class="drawer" id="docDrawer">
+    <div class="dr-hd">
+        <span>관련 설계 및 안전문서 뷰어</span>
+        <button class="dr-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="dr-bd" id="dr-body-content">
+        <!-- JS Injects Here -->
+    </div>
+</div>
+
+<script>
+const DOCS_DATA = {"근로자 교육": [{"type": "tag-safe", "label": "안전 가이드라인", "title": "근로자 투입 전 안전 수칙", "text": "- 철근 조립 작업 시 안전난간대 및 생명줄 필수 확인<br>- 상하 동시 작업 금지 및 낙하물 방지망 설치 여부 점검"}], "★ 전·후면 철근 간격 ◎": [{"type": "tag-audit", "label": "과거 감사 지적사례", "title": "교각 벽체 철근 배근 피복두께 부족", "text": "[2023 국토부 감사 지적]<br>스페이서 설치 간격 불량으로 인한 피복두께 부족 및 Honeycomb 발생 사례 다수 적발. 스페이서 간격(1m 이내) 철저 준수 요망."}, {"type": "tag-guide", "label": "KCS 시방서 기준", "title": "KCS 14 20 11 (철근공사)", "text": "- 흙에 접하는 콘크리트 피복두께: 80mm 이상<br>- 수중에 치는 콘크리트 피복두께: 100mm 이상<br>- 옥외 노출 D16 이하 철근: 40mm 이상"}], "★ 철근 피복 ◎": [{"type": "tag-guide", "label": "설계실무지침", "title": "교량 하부구조 피복두께", "text": "해수면 인접 또는 동결융해 작용을 받는 구조물의 경우 피복두께를 10mm 추가 확보할 것."}], "거푸집 조립 및 동바리 지지상태": [{"type": "tag-safe", "label": "안전 가이드라인", "title": "거푸집 동바리 붕괴 예방", "text": "- 시스템 동바리 수평연결재 간격 준수<br>- 지반 침하 방지를 위한 깔판/깔목 설치 확인"}], "콘크리트 다짐": [{"type": "tag-guide", "label": "KCS 시방서 기준", "title": "콘크리트 진동다짐 요령", "text": "- 진동기 삽입 간격: 50cm 이하<br>- 1개소당 진동 시간: 5~15초<br>- 하부 콘크리트에 10cm 이상 찔러넣을 것"}], "★ 습윤양생 최소기간 준수 (EXCS 1420103.10)": [{"type": "tag-guide", "label": "표준 시방서", "title": "양생 기간 및 방법", "text": "- 타설 직후 직사광선 피하고 살수 양생 실시<br>- 기온 급강하 시 보온 양생 대책 강구"}]};
+
+function toggleTree(label){
+    var ul=label.nextElementSibling;
+    if(!ul)return;
+    var icon=label.querySelector('.tree-icon');
+    if(ul.style.display==='none'){ul.style.display='block';icon.innerText='▼';}
+    else{ul.style.display='none';icon.innerText='▶';}
+}
+
+function switchTab(code){
+    // Make tabs act active
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+    let found = false;
+    document.querySelectorAll('.tab').forEach(t=>{
+        if(t.dataset.code === code) {
+            t.classList.add('act');
+            found = true;
+        }
+    });
+    
+    // Switch active ti
+    document.querySelectorAll('.tree-item').forEach(ti=>ti.classList.remove('active-ti'));
+    let nav = document.getElementById('nav-'+code);
+    if(nav) nav.classList.add('active-ti');
+
+    // Show/hide document contents based on tab
+    if(code === '311') {
+        document.getElementById('tc-311').style.display = 'block';
+        document.getElementById('tc-dummy').style.display = 'none';
+    } else {
+        document.getElementById('tc-311').style.display = 'none';
+        document.getElementById('tc-dummy').style.display = 'flex';
+        document.getElementById('tc-dummy').innerText = "CodeNo" + code + " 체크리스트 양식이 로드되었습니다. (UI 목업)";
+    }
+}
+
+function addTab(e, name, code){
+    e.stopPropagation(); // prevent row click from triggering switchTab immediately if we just want to add
+    var btn=e.currentTarget;
+    if(btn.classList.contains('added')){alert('이미 열려 있습니다.');return;}
+    
+    var bar=document.getElementById('tabsBar');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});
+    var t=document.createElement('div');
+    t.className='tab act';
+    t.dataset.code = code;
+    t.innerHTML=name+' <span class="cx" onclick="closeTab(event, this,\''+code+'\')">×</span>';
+    t.onclick = function() { switchTab(code); };
+    bar.appendChild(t);
+    
+    btn.classList.add('added');btn.innerText='선택됨';
+    switchTab(code);
+}
+
+function closeTab(e, span, code){
+    e.stopPropagation();
+    span.parentElement.remove();
+    var btn=document.querySelector('#nav-'+code+' button');
+    if(btn){btn.classList.remove('added');btn.innerText='추가';}
+    
+    // default back to 311
+    var tabs=document.querySelectorAll('.tab');
+    if(tabs.length) {
+        tabs[0].classList.add('act');
+        switchTab(tabs[0].dataset.code);
+    }
+}
+
+function toggleNA(gid){
+    var b=document.getElementById('nab-'+gid);
+    var h=document.querySelector('#nag-'+gid+' .na-arrow');
+    if(b.style.display==='none'){b.style.display='block';h.innerText='▼';}
+    else{b.style.display='none';h.innerText='▶';}
+}
+
+function batchOK(){
+    var inputs = document.querySelectorAll('#tc-311 .list-table input[type="radio"][value="ok"][name^="i"]');
+    var count = 0;
+    inputs.forEach(function(r){
+        // Only check if it's visible (not in NA)
+        let row = r.closest('tr');
+        if(!row.classList.contains('in-na') && row.style.display !== 'none' && !r.checked) {
+            r.checked=true; 
+            count++; 
+        }
+    });
+    if(count>0){
+        alert('현재 활성화된 항목의 원도급사 결과를 [적정]으로 일괄 체크했습니다. ('+count+'건)');
+    } else {
+        alert('이미 모든 항목이 체크되어 있거나 체크할 항목이 없습니다.');
+    }
+}
+
+function toNA(rid, manual){
+    var row=document.getElementById('row-'+rid);
+    if(!row || row.classList.contains('in-na')) return;
+    
+    var ic_html = row.querySelector('.ic').innerHTML;
+    var cc_html = row.querySelector('.cc').innerHTML;
+    var gid = row.dataset.gid;
+    
+    row.style.display='none';
+    row.classList.add('in-na');
+    
+    var panel = document.getElementById('dynNA');
+    var card=document.createElement('div');
+    card.className='na-card manual-na';
+    card.id='nac-'+rid;
+    card.innerHTML='<div class="ic">'+ic_html+'</div><div style="margin-top:4px;">'+cc_html+'</div><button class="btn-rv" onclick="restoreNA('+rid+', \''+gid+'\')">복구 ↺</button>';
+    panel.appendChild(card);
+    
+    // If entire group is hidden, we might need to handle group header
+    checkGroupEmpty(gid);
+}
+
+function restoreNA(rid, gid){
+    var c=document.getElementById('nac-'+rid);
+    if(c) c.remove();
+    var row=document.getElementById('row-'+rid);
+    if(row){
+        row.classList.remove('in-na');
+        row.style.display='table-row';
+        row.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});
+        
+        // Show group header if it was hidden
+        var gh = document.getElementById('mgh-'+gid);
+        if(gh) gh.style.display = 'table-row';
+        
+        // Update badge if it came from an auto-na group
+        updateBadge(gid);
+    }
+}
+
+function checkGroupEmpty(gid) {
+    var rows = document.querySelectorAll('tr.ir[data-gid="'+gid+'"]');
+    var allHidden = true;
+    rows.forEach(r => { if(!r.classList.contains('in-na')) allHidden = false; });
+    var gh = document.getElementById('mgh-'+gid);
+    if(gh && allHidden && !gh.classList.contains('auto-na-gh')) {
+        gh.style.display = 'none'; // hide group header if all items are manually NA'd
+    }
+}
+
+function updateBadge(gid) {
+    var nab = document.getElementById('nab-'+gid);
+    if(!nab) return;
+    var cards = nab.querySelectorAll('.na-card');
+    var bdg = document.getElementById('bdg-'+gid);
+    if(bdg) bdg.innerText = cards.length + '건';
+    
+    if(cards.length === 0) {
+        document.getElementById('nag-'+gid).style.display = 'none';
+    }
+}
+
+function openDrawer(itemName){
+    var bd = document.getElementById('dr-body-content');
+    bd.innerHTML = '';
+    
+    if(DOCS_DATA[itemName]) {
+        DOCS_DATA[itemName].forEach(function(doc) {
+            bd.innerHTML += `<div class="doc-card">
+                <span class="doc-tag ${doc.type}">${doc.label}</span>
+                <h4>${doc.title}</h4>
+                <p>${doc.text}</p>
+            </div>`;
+        });
+    } else {
+        bd.innerHTML = '<p style="color:#64748b;">이 항목에 등록된 관련 문서가 없습니다.</p>';
+    }
+    
+    document.getElementById('docDrawer').classList.add('open');
+}
+function closeDrawer(){
+    document.getElementById('docDrawer').classList.remove('open');
+}
+</script>
+</body>
+</html>
