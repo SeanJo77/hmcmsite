@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>체크리스트 작성 - 차세대 검측 플랫폼</title>
+<style>
+:root{--ac:#2563eb;--bd:#cbd5e1;--bg:#e2e8f0;--tx:#0f172a;--su:#475569;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Pretendard',sans-serif;}
+body{background:var(--bg);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+header{height:54px;background:#1e293b;color:white;display:flex;align-items:center;gap:16px;padding:0 20px;flex-shrink:0;}
+.logo{font-weight:800;font-size:16px;}
+.body{flex:1;display:flex;overflow:hidden;}
+
+/* sidebar tree */
+.sb{width:320px;background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;}
+.sb-hd{padding:14px 16px;background:#f8fafc;border-bottom:1px solid var(--bd);font-weight:700;font-size:13px;}
+.sb-sc{flex:1;overflow-y:auto;padding:10px;}
+.tree-ul{list-style:none;padding-left:14px;}
+.tree-ul.root{padding-left:0;}
+.tree-li{margin:2px 0;}
+.tree-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--su);cursor:pointer;padding:6px;border-radius:4px;}
+.tree-label:hover{background:#f1f5f9;color:var(--tx);}
+.tree-icon{font-size:10px;width:12px;text-align:center;color:#94a3b8;}
+.tree-item{font-size:12px;margin:2px 0 2px 12px;padding:6px 10px;background:#fff;border:1px solid var(--bd);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;cursor:pointer;}
+.tree-item:hover{background:#f8fafc;}
+.active-ti{background:#eff6ff;border-color:#bfdbfe;color:var(--ac);font-weight:700;}
+.btn-add{background:#64748b;color:#fff;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;}
+.btn-add.added{background:var(--ac);}
+
+/* content */
+.ca{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg);}
+.pf{background:#fff;border-bottom:1px solid var(--bd);padding:10px 20px;flex-shrink:0;}
+.fd{display:flex;align-items:center;gap:8px;background:#f8fafc;padding:10px 16px;border-radius:6px;border:1px dashed var(--bd);overflow-x:auto;margin-top:6px;}
+.fb{border:2px solid #94a3b8;background:#fff;padding:7px 10px;border-radius:6px;text-align:center;font-size:10px;font-weight:700;color:var(--su);white-space:nowrap;}
+.fb.act{border-color:var(--ac);background:#eff6ff;color:#1d4ed8;}
+.fw{font-size:12px;color:#94a3b8;}
+.fbg{display:block;font-size:9px;color:#fff;background:#94a3b8;border-radius:3px;padding:1px 4px;margin:0 auto 3px;}
+.fb.act .fbg{background:var(--ac);}
+
+.tabs{display:flex;background:#e2e8f0;padding:6px 20px 0;gap:4px;flex-shrink:0;overflow-x:auto;box-shadow:inset 0 -1px 0 var(--bd);}
+.tab{padding:9px 14px;background:#cbd5e1;color:var(--su);border-radius:7px 7px 0 0;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid transparent;border-bottom:none;}
+.tab.act{background:#fff;color:var(--ac);border-color:var(--bd);}
+.tab .cx{color:#94a3b8;font-weight:normal;}
+.tab .cx:hover{color:#ef4444;}
+
+.ds{flex:1;overflow-y:auto;padding:30px;padding-bottom:90px;}
+.doc{width:1100px;min-height:297mm;background:#fff;padding:24px;box-shadow:0 8px 20px rgba(0,0,0,.1);margin:0 auto;display:flex;flex-direction:column;}
+.dt{text-align:center;font-size:24px;font-weight:800;letter-spacing:6px;margin-bottom:20px;text-decoration:underline;text-underline-offset:6px;}
+.bb{background:var(--ac);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end;margin-bottom:12px;box-shadow:0 2px 4px rgba(37,99,235,0.2);}
+.bb:hover{background:#1d4ed8;}
+
+.sl{display:flex;gap:20px;align-items:flex-start;}
+.ta{flex:3;}
+.na-panel{flex:1;border-left:2px dashed var(--bd);padding-left:16px;min-height:400px;}
+.na-tl{font-size:14px;font-weight:800;margin-bottom:6px;color:var(--tx);}
+
+/* checklist table */
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;table-layout:fixed;}
+th,td{border:1px solid #cbd5e1;padding:8px 6px;vertical-align:middle;}
+th{background:#f8fafc;font-weight:700;text-align:center;border-bottom:2px solid #94a3b8;color:#334155;}
+.list-table th:nth-child(1){width:26%;}
+.list-table th:nth-child(2){width:34%;}
+.list-table th:nth-child(3){width:24%;}
+.list-table th:nth-child(4){width:16%;}
+.gh td{background:#f1f5f9;font-weight:700;text-align:left;padding:10px;color:var(--tx);border-top:2px solid #e2e8f0;}
+.rg{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.rg label{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;color:#475569;}
+.rg input{accent-color:var(--ac);cursor:pointer;}
+
+/* Inspector (4th column) completely faded out */
+.list-table td:nth-child(4) { background: #f8fafc; opacity: 0.4; pointer-events: none; }
+
+/* has docs */
+.has-docs td{background:#f0fdf4;}
+.btn-doc{background:#fff;border:1px solid #22c55e;color:#166534;border-radius:4px;font-size:10px;padding:3px 6px;cursor:pointer;display:inline-block;margin-top:4px;}
+.btn-doc:hover{background:#dcfce7;}
+
+/* NA panel items */
+.na-grp{margin-bottom:10px;background:#fff;border:1px solid var(--bd);border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.na-gh{padding:10px 12px;background:#f8fafc;font-size:12px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--tx);}
+.na-badge{background:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:10px;color:var(--su);}
+.na-body{padding:10px 12px;}
+.na-card{background:#fff;border:1px solid #e2e8f0;border-radius:5px;padding:10px;font-size:11px;margin-bottom:8px;position:relative;box-shadow:0 1px 3px rgba(0,0,0,0.02);}
+.na-card:last-child{margin-bottom:0;}
+.na-card b{color:var(--tx);display:block;margin-bottom:4px;}
+.btn-rv{position:absolute;top:8px;right:8px;background:#f8fafc;border:1px solid var(--bd);border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;color:var(--tx);font-weight:600;}
+.btn-rv:hover{background:#e2e8f0;}
+
+/* action bar */
+.ab{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 40px;z-index:20;}
+.btn{padding:10px 20px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;border:none;}
+.btn-ol{background:#fff;border:1px solid var(--bd);color:var(--tx);}
+.btn-ol:hover{background:#f1f5f9;}
+.btn-pr{background:var(--ac);color:#fff;}
+.btn-pr:hover{background:#1d4ed8;}
+.btn-ai{width:100%;background:#f8fafc;border:1px dashed #94a3b8;padding:10px;font-size:12px;font-weight:700;color:var(--su);cursor:pointer;border-radius:4px;margin-top:10px;}
+.btn-ai:hover{background:#eff6ff;color:var(--ac);}
+
+/* Drawer for docs */
+.drawer{position:absolute;top:0;right:-650px;width:450px;height:100%;background:#f8fafc;box-shadow:-4px 0 15px rgba(0,0,0,0.1);z-index:100;transition:right 0.3s ease;display:flex;flex-direction:column;border-left:1px solid var(--bd);}
+.drawer.open{right:0;}
+.dr-hd{padding:16px 20px;background:#1e293b;color:#fff;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center;}
+.dr-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;}
+.dr-bd{flex:1;padding:20px;overflow-y:auto;}
+.doc-card{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.doc-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;}
+.tag-audit{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+.tag-guide{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;}
+.tag-safe{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.doc-card h4{font-size:14px;margin-bottom:8px;color:var(--tx);}
+.doc-card p{font-size:12px;color:var(--su);line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">BCMF 검측플랫폼</div>
+  <div style="font-size:13px;color:#94a3b8;">대산-당진 시공2공구 &gt; 대호지교 &gt; 교각7 &gt; 체크리스트 작성</div>
+</header>
+<div class="body">
+  <!-- Sidebar -->
+  <div class="sb">
+    <div class="sb-hd" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 전체 체크리스트</span>
+      <button id="btnTreeToggle" onclick="toggleAllTree()" style="font-size:10px; padding:3px 6px; border-radius:3px; background:#fff; border:1px solid #cbd5e1; cursor:pointer;">전체 펼치기</button>
+    </div>
+    <div class="sb-sc">
+      <ul class="tree-ul root">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 01 토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 절토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-101" onclick="switchTab('101')"><span>CodeNo101 땅깎기</span><button class="btn-add" onclick="addTab(event, 'CodeNo101 땅깎기', '101')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-102" onclick="switchTab('102')"><span>CodeNo102 발파</span><button class="btn-add" onclick="addTab(event, 'CodeNo102 발파', '102')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 성토공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-111" onclick="switchTab('111')"><span>CodeNo111 흙쌓기</span><button class="btn-add" onclick="addTab(event, 'CodeNo111 흙쌓기', '111')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 02 배수공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 관거공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-201" onclick="switchTab('201')"><span>CodeNo201 콘크리트 암거</span><button class="btn-add" onclick="addTab(event, 'CodeNo201 콘크리트 암거', '201')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-221" onclick="switchTab('221')"><span>CodeNo221 종·횡배수관</span><button class="btn-add" onclick="addTab(event, 'CodeNo221 종·횡배수관', '221')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 측구공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-211" onclick="switchTab('211')"><span>CodeNo211 측구</span><button class="btn-add" onclick="addTab(event, 'CodeNo211 측구', '211')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▼</span> 03 교량공</div><ul class="tree-ul" style="display:block">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 기초공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-301" onclick="switchTab('301')"><span>CodeNo301 직접기초</span><button class="btn-add" onclick="addTab(event, 'CodeNo301 직접기초', '301')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-302" onclick="switchTab('302')"><span>CodeNo302 강관말뚝</span><button class="btn-add" onclick="addTab(event, 'CodeNo302 강관말뚝', '302')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-303" onclick="switchTab('303')"><span>CodeNo303 PHC 말뚝</span><button class="btn-add" onclick="addTab(event, 'CodeNo303 PHC 말뚝', '303')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-304" onclick="switchTab('304')"><span>CodeNo304 우물통 기초</span><button class="btn-add" onclick="addTab(event, 'CodeNo304 우물통 기초', '304')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▼</span> 하부공 (현재 공정)</div><ul class="tree-ul" style="display:block">
+<li class="tree-li"><div class="tree-item active-ti" id="nav-311" onclick="switchTab('311')"><span>CodeNo311 벽체타설</span><button class="btn-add added">선택됨</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-312" onclick="switchTab('312')"><span>CodeNo312 CLIMBING FORM</span><button class="btn-add" onclick="addTab(event, 'CodeNo312 CLIMBING FORM', '312')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-313" onclick="switchTab('313')"><span>CodeNo313 Slip Form</span><button class="btn-add" onclick="addTab(event, 'CodeNo313 Slip Form', '313')">추가</button></div></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 상부공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-321" onclick="switchTab('321')"><span>CodeNo321 PSC BEAM</span><button class="btn-add" onclick="addTab(event, 'CodeNo321 PSC BEAM', '321')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-324" onclick="switchTab('324')"><span>CodeNo324 강교</span><button class="btn-add" onclick="addTab(event, 'CodeNo324 강교', '324')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-341" onclick="switchTab('341')"><span>CodeNo341 슬래브 타설</span><button class="btn-add" onclick="addTab(event, 'CodeNo341 슬래브 타설', '341')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 04 포장공</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 포장</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-401" onclick="switchTab('401')"><span>CodeNo401 콘크리트 포장</span><button class="btn-add" onclick="addTab(event, 'CodeNo401 콘크리트 포장', '401')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-411" onclick="switchTab('411')"><span>CodeNo411 아스팔트 포장</span><button class="btn-add" onclick="addTab(event, 'CodeNo411 아스팔트 포장', '411')">추가</button></div></li>
+</ul></li>
+</ul></li>
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 07 안전</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-label" onclick="toggleTree(this)"><span class="tree-icon">▶</span> 안전점검</div><ul class="tree-ul" style="display:none">
+<li class="tree-li"><div class="tree-item" id="nav-701" onclick="switchTab('701')"><span>CodeNo701 코핑 폼 설치·해체</span><button class="btn-add" onclick="addTab(event, 'CodeNo701 코핑 폼 설치·해체', '701')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-702" onclick="switchTab('702')"><span>CodeNo702 동바리 가설비계</span><button class="btn-add" onclick="addTab(event, 'CodeNo702 동바리 가설비계', '702')">추가</button></div></li>
+<li class="tree-li"><div class="tree-item" id="nav-703" onclick="switchTab('703')"><span>CodeNo703 중량물 인양</span><button class="btn-add" onclick="addTab(event, 'CodeNo703 중량물 인양', '703')">추가</button></div></li>
+</ul></li>
+</ul></li>
+</ul>
+      <div style="margin-top:16px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;color:#475569;line-height:1.5;">
+        ℹ️ <strong style="color:var(--ac);">파란색 하이라이트</strong>된 항목은 현재 객체(교각7)와 연계된 검측 절차서 및 공정계획에 의해 자동 선택되었습니다. 
+        목록에서 필요한 검측을 추가로 열람 및 병행 작성할 수 있습니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="ca">
+    <div class="pf">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:800;color:var(--tx);">📌 검측 절차서 프로세스 연계 현황 (현재: 교각7 벽체 철근조립 WP)</div>
+        <button class="btn-doc" style="margin-top:0; border-color:#2563eb; color:#1d4ed8; background:#eff6ff; padding:4px 10px;" onclick="openDrawer('PROCEDURE')">📄 검측절차서 원본 보기</button>
+      </div>
+      <div class="fd">
+        <div class="fb"><span class="fbg">사전</span>시공계획서</div><div class="fw">➔</div>
+        <div class="fb"><span class="fbg">WP</span>기초 콘크리트</div><div class="fw">➔</div>
+        <div class="fb act"><span class="fbg">WP</span>벽체 철근조립</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">HP</span>거푸집 검사</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">WP</span>콘크리트 타설</div><div class="fw">➔</div>
+        <div class="fb" style="opacity:.6"><span class="fbg" style="background:#94a3b8">WP</span>양생·해체</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabsBar">
+      <div class="tab act" data-code="311" onclick="switchTab('311')">03교량공ㅣCodeNo311 벽체타설 <span class="cx" onclick="closeTab(event, this,'311')">×</span></div>
+    </div>
+
+    <div class="ds">
+      <!-- MAIN TAB 311 CONTENT -->
+      <div class="doc" id="tc-311">
+        <div class="dt">검 측 체 크 리 스 트</div>
+        <button class="bb" onclick="batchOK()">적정 일괄 체크</button>
+
+        <div class="sl">
+          <div class="ta">
+            <table class="list-table" id="cl-table">
+              <thead>
+                <tr>
+                  <th>검 측 내 용</th>
+                  <th>이 행 기 준</th>
+                  <th>원도급사 확인결과</th>
+                  <th>검측자 판정</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr class="gh" id="mgh-_사전_조치사항" style=""><td colspan="4">□ 사전 조치사항</td></tr>
+<tr class="ir " id="row-1" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">시공계획서</div></td>
+  <td class="cc">시공계획서 제출 (EXCS 101010)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i1" value="ok"> 적정</label>
+        <label><input type="radio" name="i1" value="ng"> 부적정</label>
+        <label><input type="radio" name="i1" value="na" onchange="toNA(1, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j1" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j1" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-2" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">품질·안전 협의체 회의</div></td>
+  <td class="cc">공종 착수 전 및 필요시 / 시공계획, 장비·인력 투입계획, 교육계획, 안전계획</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i2" value="ok"> 적정</label>
+        <label><input type="radio" name="i2" value="ng"> 부적정</label>
+        <label><input type="radio" name="i2" value="na" onchange="toNA(2, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j2" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j2" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir has-docs" id="row-3" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">근로자 교육</div><button class="btn-doc" onclick="openDrawer('근로자 교육')">📄 문서뷰어</button></td>
+  <td class="cc">공종 착수전, 안전교육 및 TBM 실시 / 특별안전교육·신규근로자 교육여부</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i3" value="ok"> 적정</label>
+        <label><input type="radio" name="i3" value="ng"> 부적정</label>
+        <label><input type="radio" name="i3" value="na" onchange="toNA(3, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j3" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j3" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-4" style="" data-gid="_사전_조치사항">
+  <td class="ic"><div class="item-name">신구 이음부 접합면 처리 ◎</div></td>
+  <td class="cc">시공이음면 레이턴스 제거 (치핑·모래 뿜기 등)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i4" value="ok"> 적정</label>
+        <label><input type="radio" name="i4" value="ng"> 부적정</label>
+        <label><input type="radio" name="i4" value="na" onchange="toNA(4, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j4" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j4" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh" id="mgh-_시공상태_확인__철근_조립_현재_공" style=""><td colspan="4">□ 시공상태 확인 - 철근 조립 (현재 공정)</td></tr>
+<tr class="ir has-docs" id="row-5" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 전·후면 철근 간격 ◎</div><button class="btn-doc" onclick="openDrawer('★ 전·후면 철근 간격 ◎')">📄 문서뷰어</button></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i5" value="ok"> 적정</label>
+        <label><input type="radio" name="i5" value="ng"> 부적정</label>
+        <label><input type="radio" name="i5" value="na" onchange="toNA(5, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j5" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j5" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir has-docs" id="row-6" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 철근 피복 ◎</div><button class="btn-doc" onclick="openDrawer('★ 철근 피복 ◎')">📄 문서뷰어</button></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i6" value="ok"> 적정</label>
+        <label><input type="radio" name="i6" value="ng"> 부적정</label>
+        <label><input type="radio" name="i6" value="na" onchange="toNA(6, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j6" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j6" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-7" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">★ 주철근 겹이음길이 ◎</div></td>
+  <td class="cc">설계: __㎜ / 시공: __㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i7" value="ok"> 적정</label>
+        <label><input type="radio" name="i7" value="ng"> 부적정</label>
+        <label><input type="radio" name="i7" value="na" onchange="toNA(7, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j7" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j7" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir " id="row-8" style="" data-gid="_시공상태_확인__철근_조립_현재_공">
+  <td class="ic"><div class="item-name">철근의 결속상태 ◎</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i8" value="ok"> 적정</label>
+        <label><input type="radio" name="i8" value="ng"> 부적정</label>
+        <label><input type="radio" name="i8" value="na" onchange="toNA(8, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j8" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j8" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__거푸집_조립" style="display:none;"><td colspan="4">□ 시공상태 확인 - 거푸집 조립</td></tr>
+<tr class="ir in-na " id="row-9" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 설치 — 상태 (손상여부)</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i9" value="ok"> 적정</label>
+        <label><input type="radio" name="i9" value="ng"> 부적정</label>
+        <label><input type="radio" name="i9" value="na" onchange="toNA(9, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j9" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j9" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-10" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 설치 — 규격 (가로×세로)</div></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i10" value="ok"> 적정</label>
+        <label><input type="radio" name="i10" value="ng"> 부적정</label>
+        <label><input type="radio" name="i10" value="na" onchange="toNA(10, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j10" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j10" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-11" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">거푸집 조립 및 동바리 지지상태</div><button class="btn-doc" onclick="openDrawer('거푸집 조립 및 동바리 지지상태')">📄 문서뷰어</button></td>
+  <td class="cc">적정/부적정</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i11" value="ok"> 적정</label>
+        <label><input type="radio" name="i11" value="ng"> 부적정</label>
+        <label><input type="radio" name="i11" value="na" onchange="toNA(11, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j11" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j11" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-12" style="display:none;" data-gid="_시공상태_확인__거푸집_조립">
+  <td class="ic"><div class="item-name">면목 설치</div></td>
+  <td class="cc">모서리 및 시공이음부 모따기용 면목 설치여부 — 설치/미설치</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i12" value="ok"> 적정</label>
+        <label><input type="radio" name="i12" value="ng"> 부적정</label>
+        <label><input type="radio" name="i12" value="na" onchange="toNA(12, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j12" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j12" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__콘크리트_타설" style="display:none;"><td colspan="4">□ 시공상태 확인 - 콘크리트 타설</td></tr>
+<tr class="ir in-na " id="row-13" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">타설시간 관리</div></td>
+  <td class="cc">25℃초과: 1.5시간 이내 / 25℃이하: 2시간 이내 (EXCS 1420103.3)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i13" value="ok"> 적정</label>
+        <label><input type="radio" name="i13" value="ng"> 부적정</label>
+        <label><input type="radio" name="i13" value="na" onchange="toNA(13, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j13" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j13" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-14" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">1회 타설 높이</div></td>
+  <td class="cc">40~50㎝ 준수여부 (진동기 성능 고려) — 준수/미준수</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i14" value="ok"> 적정</label>
+        <label><input type="radio" name="i14" value="ng"> 부적정</label>
+        <label><input type="radio" name="i14" value="na" onchange="toNA(14, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j14" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j14" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-15" style="display:none;" data-gid="_시공상태_확인__콘크리트_타설">
+  <td class="ic"><div class="item-name">콘크리트 다짐</div><button class="btn-doc" onclick="openDrawer('콘크리트 다짐')">📄 문서뷰어</button></td>
+  <td class="cc">진동다짐 실시 (수평간격 50㎝이하, 진동시간 5~15초, 매입깊이 10㎝)</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i15" value="ok"> 적정</label>
+        <label><input type="radio" name="i15" value="ng"> 부적정</label>
+        <label><input type="radio" name="i15" value="na" onchange="toNA(15, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j15" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j15" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__콘크리트_양생관리" style="display:none;"><td colspan="4">□ 시공상태 확인 - 콘크리트 양생관리</td></tr>
+<tr class="ir in-na " id="row-16" style="display:none;" data-gid="_시공상태_확인__콘크리트_양생관리">
+  <td class="ic"><div class="item-name">★ 양생관리 — 유해환경 보호</div></td>
+  <td class="cc">진동·충격등 유해한 외부환경으로부터 보호</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i16" value="ok"> 적정</label>
+        <label><input type="radio" name="i16" value="ng"> 부적정</label>
+        <label><input type="radio" name="i16" value="na" onchange="toNA(16, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j16" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j16" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na has-docs" id="row-17" style="display:none;" data-gid="_시공상태_확인__콘크리트_양생관리">
+  <td class="ic"><div class="item-name">★ 습윤양생 최소기간 준수 (EXCS 1420103.10)</div><button class="btn-doc" onclick="openDrawer('★ 습윤양생 최소기간 준수 (EXCS 1420103.10)')">📄 문서뷰어</button></td>
+  <td class="cc">15℃이상: 보통5일/고로7일/조강3일 / 10℃이상: 7/9/4일 / 5℃이상: 9/12/5일</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i17" value="ok"> 적정</label>
+        <label><input type="radio" name="i17" value="ng"> 부적정</label>
+        <label><input type="radio" name="i17" value="na" onchange="toNA(17, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j17" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j17" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__거푸집_해체" style="display:none;"><td colspan="4">□ 시공상태 확인 - 거푸집 해체</td></tr>
+<tr class="ir in-na " id="row-18" style="display:none;" data-gid="_시공상태_확인__거푸집_해체">
+  <td class="ic"><div class="item-name">거푸집 탈형 시기 준수 (EXCS 1420123)</div></td>
+  <td class="cc">압축강도 5MPa이상 / 미실시시 20℃이상:4일, 10~20℃:6일</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i18" value="ok"> 적정</label>
+        <label><input type="radio" name="i18" value="ng"> 부적정</label>
+        <label><input type="radio" name="i18" value="na" onchange="toNA(18, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j18" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j18" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="gh auto-na-gh" id="mgh-_시공상태_확인__검사" style="display:none;"><td colspan="4">□ 시공상태 확인 - 검사</td></tr>
+<tr class="ir in-na " id="row-19" style="display:none;" data-gid="_시공상태_확인__검사">
+  <td class="ic"><div class="item-name">부재 치수 — 벽체 두께 허용오차 ◎</div></td>
+  <td class="cc">300㎜미만:+9/-6㎜ / 300~900㎜:+13/-9㎜ / 900㎜이상:+25㎜ / 설계:__㎜ 실측:__㎜</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i19" value="ok"> 적정</label>
+        <label><input type="radio" name="i19" value="ng"> 부적정</label>
+        <label><input type="radio" name="i19" value="na" onchange="toNA(19, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j19" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j19" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+<tr class="ir in-na " id="row-20" style="display:none;" data-gid="_시공상태_확인__검사">
+  <td class="ic"><div class="item-name">수직·수평 오차 확인 ◎</div></td>
+  <td class="cc">수직: 30m이하 25㎜이하, 30m초과 1/1000이하(최대150㎜) / 수평: 부재 25㎜이하</td>
+  <td><div class="rg">
+        <label><input type="radio" name="i20" value="ok"> 적정</label>
+        <label><input type="radio" name="i20" value="ng"> 부적정</label>
+        <label><input type="radio" name="i20" value="na" onchange="toNA(20, true)"> 해당없음</label>
+    </div></td>
+  <td><div class="rg">
+        <label><input type="radio" name="j20" value="ok" disabled> 적정</label>
+        <label><input type="radio" name="j20" value="ng" disabled> 부적정</label>
+    </div></td>
+</tr>
+
+              </tbody>
+            </table>
+            <button class="btn-ai" onclick="alert('현장 맞춤 항목 추가 기능')">+ 현장 맞춤형 신규 검측 항목 추가</button>
+          </div>
+
+          <div class="na-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+               <div class="na-tl" style="margin-bottom:0;">해당사항 없음 (N/A)</div>
+               <button class="btn-rv" style="position:static; padding:4px 10px; font-size:11px; border-color:#94a3b8; color:#334155;" onclick="restoreAllNA()">전체 일괄 복구 ↺</button>
+            </div>
+            <div style="font-size:11px;color:var(--su);margin-bottom:12px;line-height:1.4;">
+              현재 공정에 해당하지 않는 후속 공정 검측 항목이 자동 분리되어 대기 중입니다. 클릭하여 펼칠 수 있으며, 언제든 다시 <strong>[복구 ↺]</strong>하여 표출할 수 있습니다.
+            </div>
+            
+            <!-- AUTO NA PANELS -->
+            <div class="na-grp" id="nag-_시공상태_확인__거푸집_조립">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__거푸집_조립')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 거푸집 조립</span> <span class="na-badge" id="bdg-_시공상태_확인__거푸집_조립">4건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__거푸집_조립" style="display:none"><div class="na-card" id="nac-9">
+  <div class="ic"><b>거푸집 설치 — 상태 (손상여부)</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  
+  <button class="btn-rv" onclick="restoreNA(9, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-10">
+  <div class="ic"><b>거푸집 설치 — 규격 (가로×세로)</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  
+  <button class="btn-rv" onclick="restoreNA(10, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-11">
+  <div class="ic"><b>거푸집 조립 및 동바리 지지상태</b></div>
+  <div style="margin-top:4px;">적정/부적정</div>
+  <button class="btn-doc" onclick="openDrawer('거푸집 조립 및 동바리 지지상태')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(11, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-12">
+  <div class="ic"><b>면목 설치</b></div>
+  <div style="margin-top:4px;">모서리 및 시공이음부 모따기용 면목 설치여부 — 설치/미설치</div>
+  
+  <button class="btn-rv" onclick="restoreNA(12, '_시공상태_확인__거푸집_조립')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__콘크리트_타설">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__콘크리트_타설')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 콘크리트 타설</span> <span class="na-badge" id="bdg-_시공상태_확인__콘크리트_타설">3건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__콘크리트_타설" style="display:none"><div class="na-card" id="nac-13">
+  <div class="ic"><b>타설시간 관리</b></div>
+  <div style="margin-top:4px;">25℃초과: 1.5시간 이내 / 25℃이하: 2시간 이내 (EXCS 1420103.3)</div>
+  
+  <button class="btn-rv" onclick="restoreNA(13, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-14">
+  <div class="ic"><b>1회 타설 높이</b></div>
+  <div style="margin-top:4px;">40~50㎝ 준수여부 (진동기 성능 고려) — 준수/미준수</div>
+  
+  <button class="btn-rv" onclick="restoreNA(14, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-15">
+  <div class="ic"><b>콘크리트 다짐</b></div>
+  <div style="margin-top:4px;">진동다짐 실시 (수평간격 50㎝이하, 진동시간 5~15초, 매입깊이 10㎝)</div>
+  <button class="btn-doc" onclick="openDrawer('콘크리트 다짐')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(15, '_시공상태_확인__콘크리트_타설')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__콘크리트_양생관리">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__콘크리트_양생관리')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 콘크리트 양생관리</span> <span class="na-badge" id="bdg-_시공상태_확인__콘크리트_양생관리">2건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__콘크리트_양생관리" style="display:none"><div class="na-card" id="nac-16">
+  <div class="ic"><b>★ 양생관리 — 유해환경 보호</b></div>
+  <div style="margin-top:4px;">진동·충격등 유해한 외부환경으로부터 보호</div>
+  
+  <button class="btn-rv" onclick="restoreNA(16, '_시공상태_확인__콘크리트_양생관리')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-17">
+  <div class="ic"><b>★ 습윤양생 최소기간 준수 (EXCS 1420103.10)</b></div>
+  <div style="margin-top:4px;">15℃이상: 보통5일/고로7일/조강3일 / 10℃이상: 7/9/4일 / 5℃이상: 9/12/5일</div>
+  <button class="btn-doc" onclick="openDrawer('★ 습윤양생 최소기간 준수 (EXCS 1420103.10)')" style="margin-top:4px;">📄 문서뷰어</button>
+  <button class="btn-rv" onclick="restoreNA(17, '_시공상태_확인__콘크리트_양생관리')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__거푸집_해체">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__거푸집_해체')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 거푸집 해체</span> <span class="na-badge" id="bdg-_시공상태_확인__거푸집_해체">1건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__거푸집_해체" style="display:none"><div class="na-card" id="nac-18">
+  <div class="ic"><b>거푸집 탈형 시기 준수 (EXCS 1420123)</b></div>
+  <div style="margin-top:4px;">압축강도 5MPa이상 / 미실시시 20℃이상:4일, 10~20℃:6일</div>
+  
+  <button class="btn-rv" onclick="restoreNA(18, '_시공상태_확인__거푸집_해체')">복구 ↺</button>
+</div>
+</div>
+</div>
+<div class="na-grp" id="nag-_시공상태_확인__검사">
+  <div class="na-gh" onclick="toggleNA('_시공상태_확인__검사')"><span class="na-arrow">▶</span> <span class="na-title-text">□ 시공상태 확인 - 검사</span> <span class="na-badge" id="bdg-_시공상태_확인__검사">2건</span></div>
+  <div class="na-body" id="nab-_시공상태_확인__검사" style="display:none"><div class="na-card" id="nac-19">
+  <div class="ic"><b>부재 치수 — 벽체 두께 허용오차 ◎</b></div>
+  <div style="margin-top:4px;">300㎜미만:+9/-6㎜ / 300~900㎜:+13/-9㎜ / 900㎜이상:+25㎜ / 설계:__㎜ 실측:__㎜</div>
+  
+  <button class="btn-rv" onclick="restoreNA(19, '_시공상태_확인__검사')">복구 ↺</button>
+</div>
+<div class="na-card" id="nac-20">
+  <div class="ic"><b>수직·수평 오차 확인 ◎</b></div>
+  <div style="margin-top:4px;">수직: 30m이하 25㎜이하, 30m초과 1/1000이하(최대150㎜) / 수평: 부재 25㎜이하</div>
+  
+  <button class="btn-rv" onclick="restoreNA(20, '_시공상태_확인__검사')">복구 ↺</button>
+</div>
+</div>
+</div>
+
+            
+            <div id="dynNA" style="margin-top:20px; border-top:2px dashed var(--bd); padding-top:16px;">
+              <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;">[사용자 수동 제외 항목]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DUMMY TAB CONTENT -->
+      <div class="doc" id="tc-dummy" style="display:none; justify-content:center; align-items:center; font-size:18px; color:var(--su); font-weight:700; background:#f8fafc; border:2px dashed var(--bd);">
+         더미 데이터 렌더링 영역
+      </div>
+      
+    </div>
+
+    <div class="ab">
+      <button class="btn btn-ol" onclick="location.href='screen1_기성객체선택.html?selected=pier7'">← 이전으로 (취소)</button>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-ol">임시저장</button>
+        <button class="btn btn-pr" onclick="location.href='screen2_의뢰서작성.html?mode=s2-1'">의뢰서 자동 생성 및 작성 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Document Drawer -->
+<div class="drawer" id="docDrawer">
+    <div class="dr-hd">
+        <span>관련 설계 및 안전문서 뷰어</span>
+        <button class="dr-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="dr-bd" id="dr-body-content">
+        <!-- JS Injects Here -->
+    </div>
+</div>
+
+<script>
+const DOCS_DATA = {"근로자 교육": [{"type": "tag-safe", "label": "안전 가이드라인", "title": "근로자 투입 전 안전 수칙", "text": "- 철근 조립 작업 시 안전난간대 및 생명줄 필수 확인<br>- 상하 동시 작업 금지 및 낙하물 방지망 설치 여부 점검"}], "★ 전·후면 철근 간격 ◎": [{"type": "tag-audit", "label": "과거 감사 지적사례", "title": "교각 벽체 철근 배근 피복두께 부족", "text": "[2023 국토부 감사 지적]<br>스페이서 설치 간격 불량으로 인한 피복두께 부족 및 Honeycomb 발생 사례 다수 적발. 스페이서 간격(1m 이내) 철저 준수 요망."}, {"type": "tag-guide", "label": "KCS 시방서 기준", "title": "KCS 14 20 11 (철근공사)", "text": "- 흙에 접하는 콘크리트 피복두께: 80mm 이상<br>- 수중에 치는 콘크리트 피복두께: 100mm 이상<br>- 옥외 노출 D16 이하 철근: 40mm 이상"}], "★ 철근 피복 ◎": [{"type": "tag-guide", "label": "설계실무지침", "title": "교량 하부구조 피복두께", "text": "해수면 인접 또는 동결융해 작용을 받는 구조물의 경우 피복두께를 10mm 추가 확보할 것."}], "거푸집 조립 및 동바리 지지상태": [{"type": "tag-safe", "label": "안전 가이드라인", "title": "거푸집 동바리 붕괴 예방", "text": "- 시스템 동바리 수평연결재 간격 준수<br>- 지반 침하 방지를 위한 깔판/깔목 설치 확인"}], "콘크리트 다짐": [{"type": "tag-guide", "label": "KCS 시방서 기준", "title": "콘크리트 진동다짐 요령", "text": "- 진동기 삽입 간격: 50cm 이하<br>- 1개소당 진동 시간: 5~15초<br>- 하부 콘크리트에 10cm 이상 찔러넣을 것"}], "★ 습윤양생 최소기간 준수 (EXCS 1420103.10)": [{"type": "tag-guide", "label": "표준 시방서", "title": "양생 기간 및 방법", "text": "- 타설 직후 직사광선 피하고 살수 양생 실시<br>- 기온 급강하 시 보온 양생 대책 강구"}]};
+
+
+let treeExpanded = false;
+function toggleAllTree() {
+    treeExpanded = !treeExpanded;
+    var btn = document.getElementById('btnTreeToggle');
+    if(treeExpanded) {
+        btn.innerText = '관련 항목만 보기';
+        document.querySelectorAll('.sb-sc .tree-ul').forEach(ul => { if(!ul.classList.contains('root')) ul.style.display = 'block'; });
+        document.querySelectorAll('.sb-sc .tree-icon').forEach(ic => { ic.innerText = '▼'; });
+    } else {
+        btn.innerText = '전체 펼치기';
+        document.querySelectorAll('.sb-sc .tree-ul').forEach(ul => { if(!ul.classList.contains('root')) ul.style.display = 'none'; });
+        document.querySelectorAll('.sb-sc .tree-icon').forEach(ic => { ic.innerText = '▶'; });
+        
+        // Restore only "03 교량공 -> 하부공"
+        var items = document.querySelectorAll('.tree-label');
+        items.forEach(lbl => {
+            if(lbl.innerText.includes('03 교량공') || lbl.innerText.includes('하부공')) {
+                var ul = lbl.nextElementSibling;
+                if(ul) ul.style.display = 'block';
+                lbl.querySelector('.tree-icon').innerText = '▼';
+            }
+        });
+    }
+}
+
+function toggleTree(label){
+    var ul=label.nextElementSibling;
+    if(!ul)return;
+    var icon=label.querySelector('.tree-icon');
+    if(ul.style.display==='none'){ul.style.display='block';icon.innerText='▼';}
+    else{ul.style.display='none';icon.innerText='▶';}
+}
+
+function switchTab(code){
+    // Make tabs act active
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+    let found = false;
+    document.querySelectorAll('.tab').forEach(t=>{
+        if(t.dataset.code === code) {
+            t.classList.add('act');
+            found = true;
+        }
+    });
+    
+    // Switch active ti
+    document.querySelectorAll('.tree-item').forEach(ti=>ti.classList.remove('active-ti'));
+    let nav = document.getElementById('nav-'+code);
+    if(nav) nav.classList.add('active-ti');
+
+    // Show/hide document contents based on tab
+    if(code === '311') {
+        document.getElementById('tc-311').style.display = 'block';
+        document.getElementById('tc-dummy').style.display = 'none';
+    } else {
+        document.getElementById('tc-311').style.display = 'none';
+        document.getElementById('tc-dummy').style.display = 'flex';
+        document.getElementById('tc-dummy').innerText = "CodeNo" + code + " 체크리스트 양식이 로드되었습니다. (UI 목업)";
+    }
+}
+
+function addTab(e, name, code){
+    e.stopPropagation(); // prevent row click from triggering switchTab immediately if we just want to add
+    var btn=e.currentTarget;
+    if(btn.classList.contains('added')){alert('이미 열려 있습니다.');return;}
+    
+    var bar=document.getElementById('tabsBar');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});
+    var t=document.createElement('div');
+    t.className='tab act';
+    t.dataset.code = code;
+    t.innerHTML=name+' <span class="cx" onclick="closeTab(event, this,\''+code+'\')">×</span>';
+    t.onclick = function() { switchTab(code); };
+    bar.appendChild(t);
+    
+    btn.classList.add('added');btn.innerText='선택됨';
+    switchTab(code);
+}
+
+function closeTab(e, span, code){
+    e.stopPropagation();
+    span.parentElement.remove();
+    var btn=document.querySelector('#nav-'+code+' button');
+    if(btn){btn.classList.remove('added');btn.innerText='추가';}
+    
+    // default back to 311
+    var tabs=document.querySelectorAll('.tab');
+    if(tabs.length) {
+        tabs[0].classList.add('act');
+        switchTab(tabs[0].dataset.code);
+    }
+}
+
+function toggleNA(gid){
+    var b=document.getElementById('nab-'+gid);
+    var h=document.querySelector('#nag-'+gid+' .na-arrow');
+    if(b.style.display==='none'){b.style.display='block';h.innerText='▼';}
+    else{b.style.display='none';h.innerText='▶';}
+}
+
+function batchOK(){
+    var inputs = document.querySelectorAll('#tc-311 .list-table input[type="radio"][value="ok"][name^="i"]');
+    var count = 0;
+    inputs.forEach(function(r){
+        // Only check if it's visible (not in NA)
+        let row = r.closest('tr');
+        if(!row.classList.contains('in-na') && row.style.display !== 'none' && !r.checked) {
+            r.checked=true; 
+            count++; 
+        }
+    });
+    if(count>0){
+        alert('현재 활성화된 항목의 원도급사 결과를 [적정]으로 일괄 체크했습니다. ('+count+'건)');
+    } else {
+        alert('이미 모든 항목이 체크되어 있거나 체크할 항목이 없습니다.');
+    }
+}
+
+function toNA(rid, manual){
+    var row=document.getElementById('row-'+rid);
+    if(!row || row.classList.contains('in-na')) return;
+    
+    var ic_html = row.querySelector('.ic').innerHTML;
+    var cc_html = row.querySelector('.cc').innerHTML;
+    var gid = row.dataset.gid;
+    
+    row.style.display='none';
+    row.classList.add('in-na');
+    
+    var panel = document.getElementById('dynNA');
+    var card=document.createElement('div');
+    card.className='na-card manual-na';
+    card.id='nac-'+rid;
+    card.innerHTML='<div class="ic">'+ic_html+'</div><div style="margin-top:4px;">'+cc_html+'</div><button class="btn-rv" onclick="restoreNA('+rid+', \''+gid+'\')">복구 ↺</button>';
+    panel.appendChild(card);
+    
+    // If entire group is hidden, we might need to handle group header
+    checkGroupEmpty(gid);
+}
+
+
+function restoreAllNA() {
+    var cards = document.querySelectorAll('.na-card');
+    cards.forEach(c => {
+        var id_str = c.id.replace('nac-', '');
+        var row = document.getElementById('row-'+id_str);
+        if(row) {
+            var gid = row.dataset.gid;
+            restoreNA(id_str, gid);
+        }
+    });
+}
+
+function restoreNA(rid, gid){
+    var c=document.getElementById('nac-'+rid);
+    if(c) c.remove();
+    var row=document.getElementById('row-'+rid);
+    if(row){
+        row.classList.remove('in-na');
+        row.style.display='table-row';
+        row.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});
+        
+        // Show group header if it was hidden
+        var gh = document.getElementById('mgh-'+gid);
+        if(gh) gh.style.display = 'table-row';
+        
+        // Update badge if it came from an auto-na group
+        updateBadge(gid);
+    }
+}
+
+function checkGroupEmpty(gid) {
+    var rows = document.querySelectorAll('tr.ir[data-gid="'+gid+'"]');
+    var allHidden = true;
+    rows.forEach(r => { if(!r.classList.contains('in-na')) allHidden = false; });
+    var gh = document.getElementById('mgh-'+gid);
+    if(gh && allHidden && !gh.classList.contains('auto-na-gh')) {
+        gh.style.display = 'none'; // hide group header if all items are manually NA'd
+    }
+}
+
+function updateBadge(gid) {
+    var nab = document.getElementById('nab-'+gid);
+    if(!nab) return;
+    var cards = nab.querySelectorAll('.na-card');
+    var bdg = document.getElementById('bdg-'+gid);
+    if(bdg) bdg.innerText = cards.length + '건';
+    
+    if(cards.length === 0) {
+        document.getElementById('nag-'+gid).style.display = 'none';
+    }
+}
+
+function openDrawer(itemName){
+    var bd = document.getElementById('dr-body-content');
+    bd.innerHTML = '';
+    
+    var drawer = document.getElementById('docDrawer');
+    if(itemName === 'PROCEDURE') {
+        drawer.style.width = '600px';
+        bd.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:13px; font-weight:700; color:#334155;">
+                <span>📄 03교량공ㅣ5. 교대,교각.pdf</span>
+                <span style="color:#94a3b8; font-size:11px;">1 / 5 페이지</span>
+            </div>
+            <div style="width:100%; height:85%; background:url('https://www.transparenttextures.com/patterns/cubes.png') #fff; border:1px solid #cbd5e1; box-shadow:0 4px 15px rgba(0,0,0,0.1); border-radius:4px; display:flex; flex-direction:column; align-items:center; padding:20px; text-align:center;">
+                <div style="width:100%; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:20px; font-size:18px; font-weight:800; letter-spacing:4px;">
+                    검 측 절 차 서
+                </div>
+                <div style="font-size:12px; color:#475569; line-height:1.8; text-align:left; width:100%;">
+                    <b>1. 검측 대상:</b> 교대, 교각<br>
+                    <b>2. 관련 도면:</b> 일반도, 상세도, 배근도<br>
+                    <b>3. 검측 시기 및 횟수:</b><br>
+                    &nbsp;&nbsp;- [사전] 시공계획서 제출<br>
+                    &nbsp;&nbsp;- [WP] 기초 콘크리트 타설 전<br>
+                    &nbsp;&nbsp;- <span style="background:#fef08a; font-weight:bold;">[WP] 벽체 철근 조립 완료 시 (현재 공정)</span><br>
+                    &nbsp;&nbsp;- [HP] 거푸집 조립 완료 시<br>
+                    &nbsp;&nbsp;- [WP] 콘크리트 타설 후 양생/해체 시<br>
+                </div>
+                <img src='data:image/png;base64,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eiznX8nlv9edrG671aHylvPSKY123obbJu67q/6vflFH734zn/JRhk5UfVZ1pirv2h7dfi9ALLi2Il9vJQpVw22jjWujyrg899p2xYK2dVW5YmFU5AAAAJpFzB0XhAc5AAAAgALIAQAAABRADgAAAKBArRwcffTRhXTMMcewroHr9ttvv3nWXXrppfOsS/mzJ5988jzrqr6Pz1Z/lnWsY93ordO+Okhq5eDVV18lJZBeeOGFeda9/fbb86yrSql89rXXXptnXdX38dnqz7KOdawbvXXaVwdJrRwstdRShaTTW1jXvHWLLrroPOu22mqredal/Nl11llnnnVV38dnqz/LOtaxbvTWaV8dJMw5AAAAgALIAQAAABRADgAAAKAAcgAAAAAFkAMAAAAogBwAAABAAeQAAAAACiAHAAAAUAA5AAAAgALIAQAAABRADgAAAKAAcgAAAAAFkAMAAAAogBwAAABAAeQAAAAACiAHAAAAUAA5AAAAgALIAQAAABRADgAAAKAAcgAAAAAFkAMAAAAogBwAAABAAeQAoGFMnjzZ/Pd///dA0m677Va5PpWUevn222+/yvUxp5jzrLzFkL/dd989ax38gRwANIx/+7d/y5ZGn//6r//KltIk9fL9z//8T7bUHGLOs/IWQ/4kCL5BDgAaBnIQDuQgPpCDepADAEAOAoIcxAdyUA9yAADIQUCQg/hADupBDgAAOQgIchAfyEE9yAEAIAcBQQ7iAzmoBzkAAOQgIMhBfCAH9SAHAIAcBAQ5iA/koB7kAACQg4AgB/GBHNSDHABAV3Lw3nvvmR133LGQzjjjjOxVY95//31z3nnnZc/mcvLJJ2dLnQnVeU6dOtU+fvrpp+baa681c+bMMfvvv79dl+eYY44xH3zwQfbMP6HK99prr5k999zT7LLLLua+++6z63Q1xjy33HKLmTZtWvbMmD322CNb8sdIOrLjjz/eTJo0yRxxxBHmq6++snnN5zfPM888Y+65556hpP+s3/L0k+eXXnrJPPXUU2aTTTaxjy+//LI5+OCDbb1yKI977bWXmTJlivnss8861rnh6EYOjj32WFuvdBXDm2++2a4r//d5lF+XXnjhBbuvHnbYYdmr1SAHANB35GDLLbfMlox54403zFJLLWV23XXXobTppptmr3YmVOe50UYbmXfeece8+OKLZtttt7Wd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Vi6ee+4588QTT9j3vfPOO/a1lVde2Xz44Yd2WTz66KNm3333tb9//PHH2+86/PDDzSabbGKOPfbY7F2d0fc6wdHvKu8vv/yyfT5u3Dj7WEbys+SSS5p77rknW2Psb1555ZXZs2YTso4iB0VS7zxTLx9y4BfkIJEdRkfw6qiV1LE++OCDtrM/55xzzPrrr5+962ueeeYZ2/nefffdttPXEffrr79ullhiCfPJJ59k7zL2qPyQQw6x33X77bebpZZayrz77rv2tVVWWaUgB2LPPfc0F110kfn444/niWTUccwxx5i///u/NyeffLK58MILbcX86KOP7GsrrLCCfSyjsi622GI27xIdScLmm2+OHHQBclAk9c4z9fIhB35BDhLZYRRGlwRsttlmZtKkSeb888+3HfR1111nrr/++uxd9SgaMBzbbrtttlQtBxIJRS/OPvtsc/rpp9toxsYbb9x1JdNQRRVVcqDyaQhh7733thGNa6+91tx7773296dOnZq9q9mErKPIQZHUO8/Uy4cc+AU5SHCHUXh/6aWXtstXX331PEfw77//vo0WPPvss+a+++4zF1xwgTnttNNsh77RRhtl75qL1q211lp2joGGCnbaaaehIYpOcqAhDR3Ja5hAr3/22WfZq/UocjBlyhRz6KGHWtlRZEBIDhTFmDFjhn2u4YYtt9zSDnmIDTbYwEZBhIYVVK4UCFlHkYMiqXeeqZcPOfALcpDADqOjZU3YU8TgyCOPNKeccopZc801bSetjnbHHXc0q622mnn88cft++fMmWMOOuggs/POO5vLL7/cvPjii3a9OlcJQJlf/vKX2VKR8pwDMXnyZHPggQfaYQ2F+DWv4aSTTrLy0Q1VkQPNK1hooYVsFEJlEldddZWdZPnGG29YGVLSsIekQGV++umn7fuaTsg6ihwUSb3zTL18yIFfkINEdphXX33VRgnUWfaLOlVFFMosu+yy2ZKx3++GDBZffPF55OCLL76wExxvvvlm+6gjfQ15KJLQDcsss4x91ARITag86qijzDXXXNNxzoF+X+9TJZ45c6aNhkiUJEwpELKOIgdFUu88Uy8fcuAX5CCRHUZH0TpLYLfddsvWVCOJ0ORDhfzffvttG7bX2QmzZs2yYXp16ooeuLMEhM4UWHXVVe18BoXsXag/P6wgqVCk4KmnnjLPP/+8nfCozvqu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BxxwgNlhhx2yNUVeeukl89Zbb2XPjHnhhRfMuuuuax5++OFsTbNJrY7WgRyEI/XyIQd+QQ4S2mGOO+44s8suu5gTTzzRnHnmmeaMM84wZ511lvnbv/1b8/nnn2fvmstNN91kpk+fbu68805zxx13mGnTppnLLrvMHH300eaVV17J3mXMm2++aeXiueeeM0888YR93zvvvGNfW3nllc2HH35ol8Wjjz5q9t13X/v7xx9/vP2uww8/3GyyySbm2GOPzd7VGX2vExz9rvL+8ssv2+fjxo2zj2UkP0suuaS55557sjXG/uaVV16ZPWs2qdXROpCDcKRePuTAL8hBIjuMjuDVUSupY33wwQdtZ3/OOeeY9ddfP3vX1zzzzDO287377rttp68j7tdff90sscQS5pNPPsneZexR+SGHHGK/6/bbbzdLLbWUeffdd+1rq6yySkEOxJ577mkuuugi8/HHH88TyajjmGOOMX//939vTj75ZHPhhRfaivnRRx/Z11ZYYQX7WEZlXWyxxWzeJTqShM033xw5aCjIQThSLx9y4BfkIJEdRmF0ScBmm21mJk2aZM4//3zbQV933XXm+uuvz95Vj6IBw7HttttmS9VyIJFQ9OLss882p59+uo1mbLzxxl1XMg1VVFElByqfhhD23ntvG9G49tprzb333mt/f+rUqdm7mk1KdbQbkINwpF4+5MAvyEGCO4zC+0svvbRdvvrqq+c5gn///fdttODZZ5819913n7ngggvMaaedZjv0jTbaKHvXXLRurbXWsnMMNFSw0047DQ1RdJIDDWnoSF7DBHr9s88+y16tR5GDKVOmmEMPPdTKjiIDQnKgKMaMGTPscw03bLnllnbIQ2ywwQY2CiI0rKBypUCqdbQTyEE4Ui8fcuAX5CCBHUZHy5qwp4jBkUceaU455RSz5ppr2k5aHe2OO+5oVlttNfP444/b98+ZM8ccdNBBZueddzaXX365efHFF+16da4SgDK//OUvs6Ui5TkHYvLkyebAAw+0wxoK8Wtew0knnWTloxuqIgeaV7DQQgvZKITKJK666io7yfKNN96wMqSkYQ9Jgcr89NNP2/c1nVTqaLcgB+FIvXzIgV+Qg0R2mFdffdVGCdRZ9os6VUUUyiy77LLZkrHf74YMFl988Xnk4IsvvrATHG+++Wb7qCN9DXkoktANyyyzjH3U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' style='width:100%; height:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin-top:10px;'>
+            </div>
+        `;
+    } else {
+        drawer.style.width = '450px';
+        if(DOCS_DATA[itemName]) {
+            DOCS_DATA[itemName].forEach(function(doc) {
+                bd.innerHTML += `<div class="doc-card">
+                    <span class="doc-tag ${doc.type}">${doc.label}</span>
+                    <h4>${doc.title}</h4>
+                    <p>${doc.text}</p>
+                </div>`;
+            });
+        } else {
+            bd.innerHTML = '<p style="color:#64748b;">이 항목에 등록된 관련 문서가 없습니다.</p>';
+        }
+    }
+    
+    drawer.classList.add('open');
+}
+function closeDrawer(){
+    document.getElementById('docDrawer').classList.remove('open');
+}
+</script>
+</body>
+</html>
