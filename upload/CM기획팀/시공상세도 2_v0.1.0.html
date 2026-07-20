@@ -1,0 +1,394 @@
+<meta charset="utf-8">
+<title>철근 구부림 및 절곡 오차 보정</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --or:#E2701F; --or-d:#B4550F;
+  --gr:#2E8B57; --gr-d:#1F6640;
+  --gy:#4B5259; --gy-l:#F1F3F4; --line:#DEE2E5; --mut2:#A9B0B6;
+  --bar:#B4BABF; --bar-s:#8F969C;
+  --ink:#1F2429; --mut:#858D95;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:"Pretendard","Pretendard Variable","Noto Sans KR",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;word-break:keep-all}
+html,body{height:100%}
+body{background:#DADEE1;font-family:var(--sans);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;transition:padding-left .18s}
+body.panel{padding-left:286px}
+#sheet{width:1600px;height:900px;background:#fff;transform-origin:center;
+  box-shadow:0 20px 60px rgba(20,26,32,.22);padding:52px 56px 40px;
+  display:flex;flex-direction:column;flex:0 0 auto;overflow:hidden}
+
+.head{display:flex;align-items:baseline;gap:22px;padding-bottom:16px;border-bottom:2px solid var(--ink);flex:0 0 auto}
+.head h1{font-size:32px;font-weight:800;letter-spacing:-.025em}
+.head h1 em{font-style:normal;color:var(--or)}
+.head .flow{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--mono);
+  font-size:11.5px;letter-spacing:.1em;color:var(--mut)}
+.head .flow b{color:var(--gr-d);font-weight:600}
+
+.main{flex:1;min-height:0;display:flex;flex-direction:column;padding-top:20px}
+.shead{display:flex;align-items:center;gap:10px;margin-bottom:11px;flex:0 0 auto;height:26px}
+.shead .no{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--or);
+  border-bottom:2px solid var(--or);padding-bottom:2px}
+.shead h2{font-size:19.5px;font-weight:750;letter-spacing:-.02em}
+.shead .cap{margin-left:auto;font-size:11.5px;color:var(--mut);font-weight:500}
+
+/* ===== 2.1 : 상단 전폭 밴드 ===== */
+.band{border:1px solid var(--line);padding:14px 18px;flex:0 0 auto;
+  display:grid;grid-template-columns:0.82fr 1.18fr;gap:36px;align-items:start}
+.chips{display:flex;gap:7px;margin-bottom:11px}
+.chip{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--gy);
+  background:var(--gy-l);border:1px solid var(--line);padding:5px 9px}
+.chip b{color:var(--or-d)}
+.li{font-size:12.5px;line-height:1.7;color:#4A5259;font-weight:550;display:flex;gap:9px;margin-bottom:7px}
+.li:last-child{margin-bottom:0}
+.li i{font-style:normal;flex:0 0 5px;height:5px;background:var(--or);margin-top:8px}
+.li b{color:var(--ink);font-weight:750}
+
+.bwrap{display:grid;grid-template-columns:3fr 2fr;gap:24px}
+.bgrp{display:flex;flex-direction:column}
+.bgrp+.bgrp{border-left:1px solid var(--line);padding-left:24px}
+.gl{display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:6px;border-bottom:1.6px solid var(--ink);margin-bottom:10px}
+.gl b{font-size:12.5px;font-weight:750;color:var(--gy);letter-spacing:-.01em}
+.gl u{text-decoration:none;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cards.two{grid-template-columns:repeat(2,1fr)}
+.bc{border:1px solid var(--line);background:#fff;padding:9px 11px 10px;
+  display:flex;align-items:center;gap:11px}
+.bc svg{flex:0 0 auto}
+.bc div{min-width:0}
+.bc .bn{font-size:11px;font-weight:650;color:var(--mut);white-space:nowrap;margin-bottom:2px}
+.bc .bv{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--ink);line-height:1}
+.bc .bv i{font-style:normal;font-size:11px;color:var(--mut)}
+
+/* ===== 2.2 ===== */
+.row2{display:grid;grid-template-columns:1fr 404px;gap:32px;flex:1;min-height:0}
+.fig{background:#FAFBFB;border:1px solid var(--line);padding:12px 14px 10px;
+  display:flex;flex-direction:column;min-height:0}
+.fig svg{flex:1;min-height:0;width:100%}
+.vt{font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:var(--mut);
+  border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:8px;
+  display:flex;justify-content:space-between;flex:0 0 auto}
+.vt b{font-weight:600;color:var(--gy)}
+
+/* 세로 3단 */
+.steps{display:flex;flex-direction:column;min-height:0}
+.step{display:grid;grid-template-columns:32px 1fr;column-gap:14px;flex:1;min-height:0}
+.rail{position:relative;display:flex;justify-content:center}
+.rail em{font-style:normal;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--mut2);
+  background:#fff;color:var(--mut2);font-family:var(--mono);font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;z-index:1}
+.rail::after{content:"";position:absolute;top:26px;bottom:0;width:1.5px;background:var(--line)}
+.step:last-child .rail::after{display:none}
+.step.b .rail em{border-color:var(--gr);color:var(--gr-d)}
+.step.c .rail em{border-color:var(--or);color:var(--or-d)}
+.step.b .rail::after{background:var(--or);opacity:.45}
+.sc{padding-bottom:16px}
+.sh{display:flex;align-items:baseline;gap:10px;height:26px;margin-bottom:8px}
+.sh h4{font-size:14px;font-weight:750;letter-spacing:-.01em}
+.step.b .sh h4{color:var(--gr-d)} .step.c .sh h4{color:var(--or-d)}
+.sh u{text-decoration:none;margin-left:auto;font-family:var(--mono);font-size:9px;
+  letter-spacing:.12em;color:var(--mut2)}
+.sp{font-size:12.5px;line-height:1.75;letter-spacing:-.005em;color:#434A51;font-weight:550}
+.sp b{color:var(--ink);font-weight:750}
+.sp em{font-style:normal;font-family:var(--mono);font-weight:700;color:var(--or-d)}
+.key{margin-top:9px;padding:8px 11px;background:#EFF6F2;border-left:3px solid var(--gr);
+  font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--gr-d);
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.key s{text-decoration:none;font-family:var(--sans);font-size:10px;font-weight:600;color:var(--mut)}
+.wl{margin-top:9px;padding:9px 11px;background:#FCEFE4;border-left:3px solid var(--or);
+  font-size:12.5px;line-height:1.62;font-weight:750;color:var(--or-d)}
+
+.foot{display:flex;justify-content:space-between;align-items:center;flex:0 0 auto;
+  border-top:1px solid var(--line);padding-top:12px;margin-top:18px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:#A9B0B6}
+
+body.editing .ed{outline:1px dashed #9BC7E8;outline-offset:3px;border-radius:2px;cursor:text}
+body.editing .ed:hover{background:#EAF4FC}
+body.editing .ed:focus{outline:1.5px solid #3C8FD0;background:#fff}
+
+#panel{position:fixed;left:0;top:0;bottom:0;width:286px;background:#fff;z-index:50;
+  border-right:1px solid #C7CDD2;box-shadow:2px 0 18px rgba(0,0,0,.08);
+  padding:18px 18px 24px;overflow-y:auto;transform:translateX(-100%);transition:transform .18s;font-size:12.5px}
+body.panel #panel{transform:none}
+#toggle{position:fixed;left:12px;top:12px;z-index:60;background:var(--ink);color:#fff;border:0;
+  padding:9px 14px;font-family:var(--sans);font-size:12.5px;font-weight:650;cursor:pointer;border-radius:3px;transition:left .18s}
+body.panel #toggle{left:298px}
+#panel h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:#98A0A7;
+  margin:20px 0 9px;padding-bottom:5px;border-bottom:1px solid #E6E9EB}
+#panel h3:first-of-type{margin-top:4px}
+#panel .ttl{font-size:15px;font-weight:750;margin-bottom:2px}
+#panel .sub{font-size:11.5px;color:#858D95;line-height:1.5}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.fld label{color:#5C646C;font-weight:600}
+.fld input[type=number]{width:88px;padding:5px 8px;border:1px solid #D5DADE;border-radius:3px;
+  font-family:var(--mono);font-size:12px;text-align:right}
+.fld input[type=color]{width:42px;height:28px;padding:0;border:1px solid #D5DADE;border-radius:3px;background:#fff}
+.out{background:var(--gy-l);border:1px solid var(--line);padding:9px 11px;font-family:var(--mono);
+  font-size:12px;color:var(--gy);line-height:1.8}
+.out b{color:var(--or-d)}
+.btn{display:block;width:100%;padding:10px;margin-bottom:8px;border:1px solid #D5DADE;background:#fff;
+  border-radius:3px;font-family:var(--sans);font-size:12.5px;font-weight:650;cursor:pointer;color:#3A4148}
+.btn:hover{background:#F4F6F7}
+.btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media print{body{background:#fff;padding:0}#panel,#toggle{display:none!important}
+  #sheet{box-shadow:none;transform:none!important}
+  body.editing .ed{outline:0!important;background:0!important}}
+</style>
+
+<button id="toggle">편집 패널</button>
+
+<div id="panel">
+  <div class="ttl">시트 편집</div>
+  <div class="sub">삽도는 고정. 텍스트·수치·색상만 반영됩니다.</div>
+  <h3>TEXT</h3>
+  <button class="btn" id="editBtn">텍스트 직접 편집 : 꺼짐</button>
+  <h3>절곡 제원</h3>
+  <div class="fld"><label>공칭지름 d<sub>b</sub></label><input type="number" id="i-db" value="22" step="1"></div>
+  <div class="fld"><label>반지름 계수 (×d<sub>b</sub>)</label><input type="number" id="i-k" value="3" step="1"></div>
+  <div class="fld"><label>마디 높이 H</label><input type="number" id="i-h" value="1.5" step="0.1"></div>
+  <div class="out">R₁ = <b id="o-r1">66</b> mm<br>R<sub>roller</sub> = <b id="o-rr">64.5</b> mm</div>
+  <h3>COLOR</h3>
+  <div class="fld"><label>오렌지 (기준·오차)</label><input type="color" id="c-or" value="#e2701f"></div>
+  <div class="fld"><label>초록 (보정 결과)</label><input type="color" id="c-gr" value="#2e8b57"></div>
+  <div class="fld"><label>회색 (구조체)</label><input type="color" id="c-gy" value="#4b5259"></div>
+  <h3>EXPORT</h3>
+  <button class="btn" id="printBtn">PDF로 저장 (인쇄)</button>
+  <button class="btn" id="saveBtn">수정본 HTML 내려받기</button>
+</div>
+
+<div id="sheet">
+
+  <div class="head">
+    <h1 class="ed">철근 구부림 및 <em>절곡 오차 보정</em></h1>
+    <div class="flow"><span class="ed">설계 반지름</span> <span>→</span> <b class="ed">보정 롤러 반지름</b></div>
+  </div>
+
+  <div class="main">
+
+    <!-- ===== 2.1 : 상단 전폭 ===== -->
+    <div class="shead">
+      <span class="no ed">2.1</span>
+      <h2 class="ed">표준규격 준수</h2>
+      <span class="cap ed">구부림의 최소 내면 반지름</span>
+    </div>
+
+    <div class="band">
+      <div>
+        <div class="chips">
+          <span class="chip ed"><b>KCS</b> 14 20 11 철근공사</span>
+          <span class="chip ed"><b>EXCS</b> 14 20 11</span>
+        </div>
+        <div class="li"><i></i><span class="ed">철근의 가공 및 구부림 시 <b>최소 내면 반지름</b>은 위 규정을 준수함.</span></div>
+        <div class="li"><i></i><span class="ed">가공 중 균열이 발생하지 않도록 호칭명에 따른 규정된 벤딩 롤러의 반지름 <b>이상</b>으로 절곡 가공을 계획해야 함.</span></div>
+      </div>
+
+      <div>
+        <div class="bwrap">
+        <div class="bgrp">
+          <div class="gl"><b class="ed">주철근 표준갈고리</b><u class="ed">호칭명 · 최소 내면 반지름</u></div>
+          <div class="cards">
+          <div class="bc"><svg width="46" height="40" viewBox="0 0 64 42"><path d="M41 0 L41 5 A 17 17 0 0 0 58 22 L 64 22" fill="none" stroke="var(--bar)" stroke-width="7" stroke-linecap="butt"/><path d="M41 0 L41 5 A 17 17 0 0 0 58 22 L 64 22" fill="none" stroke="var(--or)" stroke-width=".7" stroke-dasharray="7 2 1.5 2" opacity=".75"/><circle cx="58" cy="5" r="1.6" fill="var(--mut2)"/></svg><div><div class="bn ed">D10 ~ D25</div><div class="bv ed">3 <i>d<sub>b</sub></i></div></div></div>
+          <div class="bc"><svg width="46" height="40" viewBox="0 0 64 42"><path d="M35 0 L35 5 A 23 23 0 0 0 58 28 L 64 28" fill="none" stroke="var(--bar)" stroke-width="7" stroke-linecap="butt"/><path d="M35 0 L35 5 A 23 23 0 0 0 58 28 L 64 28" fill="none" stroke="var(--or)" stroke-width=".7" stroke-dasharray="7 2 1.5 2" opacity=".75"/><circle cx="58" cy="5" r="1.6" fill="var(--mut2)"/></svg><div><div class="bn ed">D29 ~ D35</div><div class="bv ed">4 <i>d<sub>b</sub></i></div></div></div>
+          <div class="bc"><svg width="46" height="40" viewBox="0 0 64 42"><path d="M29 0 L29 5 A 29 29 0 0 0 58 34 L 64 34" fill="none" stroke="var(--bar)" stroke-width="7" stroke-linecap="butt"/><path d="M29 0 L29 5 A 29 29 0 0 0 58 34 L 64 34" fill="none" stroke="var(--or)" stroke-width=".7" stroke-dasharray="7 2 1.5 2" opacity=".75"/><circle cx="58" cy="5" r="1.6" fill="var(--mut2)"/></svg><div><div class="bn ed">D38 이상</div><div class="bv ed">5 <i>d<sub>b</sub></i></div></div></div>
+          </div>
+        </div>
+
+        <div class="bgrp">
+          <div class="gl"><b class="ed">스터럽 · 띠철근</b><u class="ed">d<sub>b</sub> = 공칭지름</u></div>
+          <div class="cards two">
+          <div class="bc"><svg width="46" height="40" viewBox="0 0 64 42"><path d="M47 0 L47 5 A 11 11 0 0 0 58 16 L 64 16" fill="none" stroke="var(--bar)" stroke-width="7" stroke-linecap="butt"/><path d="M47 0 L47 5 A 11 11 0 0 0 58 16 L 64 16" fill="none" stroke="var(--or)" stroke-width=".7" stroke-dasharray="7 2 1.5 2" opacity=".75"/><circle cx="58" cy="5" r="1.6" fill="var(--mut2)"/></svg><div><div class="bn ed">D16 이하</div><div class="bv ed">2 <i>d<sub>b</sub></i></div></div></div>
+          <div class="bc"><svg width="46" height="40" viewBox="0 0 64 42"><path d="M41 0 L41 5 A 17 17 0 0 0 58 22 L 64 22" fill="none" stroke="var(--bar)" stroke-width="7" stroke-linecap="butt"/><path d="M41 0 L41 5 A 17 17 0 0 0 58 22 L 64 22" fill="none" stroke="var(--or)" stroke-width=".7" stroke-dasharray="7 2 1.5 2" opacity=".75"/><circle cx="58" cy="5" r="1.6" fill="var(--mut2)"/></svg><div><div class="bn ed">D19 ~ D25</div><div class="bv ed">3 <i>d<sub>b</sub></i></div></div></div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- ===== 2.2 ===== -->
+    <div class="shead" style="margin-top:22px">
+      <span class="no ed">2.2</span>
+      <h2 class="ed">절곡 장비 제원 및 마디 높이 보정 규칙</h2>
+      <span class="cap ed">삽도 2.1 · SCALE N.T.S. · UNIT mm</span>
+    </div>
+
+    <div class="row2">
+
+      <!-- 삽도 -->
+      <div class="fig">
+        <svg viewBox="0 0 860 380" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="hR" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#CFD4D8" stroke-width=".9"/></pattern>
+            <marker id="mk" markerWidth="8" markerHeight="8" refX="7.5" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--gy)"/></marker>
+            <marker id="mks" markerWidth="8" markerHeight="8" refX=".5" refY="4" orient="auto"><path d="M8 0 L0 4 L8 8 Z" fill="var(--gy)"/></marker>
+          </defs>
+
+          <circle cx="290" cy="190" r="100" fill="#fff" stroke="var(--gy)" stroke-width="1.4"/>
+          <circle cx="290" cy="190" r="100" fill="url(#hR)" stroke="none"/>
+          <g stroke="var(--mut2)" stroke-width=".8" stroke-dasharray="10 3 2 3">
+            <line x1="176" y1="190" x2="404" y2="190"/><line x1="290" y1="76" x2="290" y2="304"/></g>
+
+          <path d="M130 26 L130 190 A 160 160 0 0 0 290 350 L 500 350 L 500 308 L 290 308 A 118 118 0 0 1 172 190 L 172 26 Z"
+                fill="var(--gy-l)" stroke="var(--gy)" stroke-width="1.5"/>
+          <path d="M151 26 L151 190 A 139 139 0 0 0 290 329 L 500 329" fill="none"
+                stroke="var(--or)" stroke-width=".8" stroke-dasharray="12 3 2 3" opacity=".7"/>
+
+          <g fill="var(--bar)" stroke="var(--bar-s)" stroke-width=".8">
+            <rect x="112" y="70" width="18" height="9"/><rect x="112" y="98" width="18" height="9"/>
+            <rect x="112" y="126" width="18" height="9"/><rect x="112" y="154" width="18" height="9"/>
+            <rect x="330" y="350" width="9" height="18"/><rect x="368" y="350" width="9" height="18"/>
+            <rect x="406" y="350" width="9" height="18"/><rect x="444" y="350" width="9" height="18"/></g>
+          <g stroke="var(--bar)" stroke-width="9" stroke-linecap="butt">
+            <line x1="142" y1="251" x2="126" y2="258"/>
+            <line x1="177" y1="303" x2="164" y2="316"/>
+            <line x1="229" y1="338" x2="222" y2="355"/></g>
+
+          <g fill="var(--bar)" stroke="var(--bar-s)" stroke-width=".8">
+            <rect x="172" y="42" width="18" height="9"/><rect x="172" y="70" width="18" height="9"/>
+            <rect x="172" y="98" width="18" height="9"/><rect x="172" y="126" width="18" height="9"/>
+            <rect x="172" y="154" width="18" height="9"/>
+            <rect x="330" y="290" width="9" height="18"/><rect x="368" y="290" width="9" height="18"/>
+            <rect x="406" y="290" width="9" height="18"/><rect x="444" y="290" width="9" height="18"/></g>
+          <g stroke="var(--bar)" stroke-width="9" stroke-linecap="butt">
+            <line x1="181" y1="235" x2="198" y2="228"/>
+            <line x1="207" y1="273" x2="219" y2="261"/>
+            <line x1="245" y1="299" x2="252" y2="282"/></g>
+
+          <path d="M172 190 A 118 118 0 0 0 290 308" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-dasharray="9 5"/>
+          <path d="M190 190 A 100 100 0 0 0 290 290" fill="none" stroke="var(--gr)" stroke-width="2.6"/>
+
+          <g stroke="var(--mut2)" stroke-width=".6">
+            <line x1="172" y1="42" x2="172" y2="8"/><line x1="190" y1="42" x2="190" y2="8"/></g>
+          <line x1="144" y1="18" x2="172" y2="18" stroke="var(--gy)" stroke-width="1" marker-end="url(#mk)"/>
+          <line x1="218" y1="18" x2="190" y2="18" stroke="var(--gy)" stroke-width="1" marker-end="url(#mk)"/>
+          <text x="230" y="23" font-size="13.5" fill="var(--ink)" font-weight="600">철근 마디 높이, <tspan font-family="var(--mono)" font-weight="700" fill="var(--or-d)">H</tspan></text>
+          <text x="230" y="41" font-size="11.5" fill="var(--mut)">내측 돌기 — 롤러에 먼저 닿는 면</text>
+
+          <line x1="172" y1="190" x2="290" y2="190" stroke="var(--gy)" stroke-width="1.1" marker-start="url(#mks)" marker-end="url(#mk)"/>
+          <rect x="212" y="170" width="40" height="17" fill="#fff" opacity=".92"/>
+          <text x="232" y="183" text-anchor="middle" font-family="var(--mono)" font-size="14" font-weight="700" fill="var(--or-d)">R₁</text>
+
+          <line x1="290" y1="190" x2="290" y2="90" stroke="var(--gy)" stroke-width="1.1" marker-start="url(#mks)" marker-end="url(#mk)"/>
+          <rect x="296" y="130" width="66" height="17" fill="#fff" opacity=".92"/>
+          <text x="298" y="143" font-family="var(--mono)" font-size="13" font-weight="700" fill="var(--gr-d)">R roller</text>
+
+          <path d="M361 119 L410 78 L452 78" fill="none" stroke="var(--gy)" stroke-width="1"/>
+          <circle cx="361" cy="119" r="2.6" fill="var(--gy)"/>
+          <text x="458" y="83" font-size="13" font-weight="600" fill="var(--ink)">고정 롤러</text>
+
+          <line x1="524" y1="60" x2="524" y2="352" stroke="var(--line)"/>
+
+          <text x="548" y="108" font-family="var(--mono)" font-size="9.5" letter-spacing=".16em" fill="var(--mut)">보정 롤러 반지름</text>
+          <rect x="548" y="120" width="292" height="62" fill="#fff" stroke="var(--ink)" stroke-width="1.5"/>
+          <text x="694" y="160" text-anchor="middle" font-family="var(--mono)" font-size="22" font-weight="700" fill="var(--ink)">R roller = R₁ − H</text>
+          <text x="548" y="204" font-family="var(--mono)" font-size="13" font-weight="700" fill="var(--gr-d)">
+            = <tspan id="s-r1">66</tspan> − <tspan id="s-h">1.5</tspan> = <tspan id="s-rr">64.5</tspan> mm</text>
+
+          <g font-size="12.5">
+            <text x="548" y="240" font-family="var(--mono)" font-size="13" font-weight="700" fill="var(--or-d)">H</text>
+            <text x="600" y="240" fill="var(--mut)">철근 마디 높이</text>
+            <text x="548" y="268" font-family="var(--mono)" font-size="13" font-weight="700" fill="var(--or-d)">R₁</text>
+            <text x="600" y="268" fill="var(--mut)">최소 내면 반지름 (마디 미고려)</text>
+            <text x="548" y="296" font-family="var(--mono)" font-size="13" font-weight="700" fill="var(--gr-d)">R roller</text>
+            <text x="620" y="296" fill="var(--mut)">절곡기 고정 롤러 반지름</text></g>
+
+          <g font-size="11.5">
+            <line x1="548" y1="326" x2="580" y2="326" stroke="var(--or)" stroke-width="2.2" stroke-dasharray="9 5"/>
+            <text x="592" y="330" fill="var(--mut)">R₁ 위치 (마디 미고려)</text>
+            <line x1="548" y1="350" x2="580" y2="350" stroke="var(--gr)" stroke-width="2.6"/>
+            <text x="592" y="354" fill="var(--mut)">롤러 접촉선 = 마디 끝</text></g>
+        </svg>
+      </div>
+
+      <!-- 세로 3단 -->
+      <div class="steps">
+        <div class="step">
+          <div class="rail"><em>01</em></div>
+          <div class="sc">
+            <div class="sh"><h4 class="ed">절곡 오차의 원인</h4><u>CAUSE</u></div>
+            <p class="sp ed">철근 절곡기의 <b>헤드 핀(롤러)은 매끄러운 원형</b>이나,<br>실제 철근의 표면에는 돌출된 <b>마디(Rib)</b>가 존재하여<br>절곡 시 <b>외측 치수가 부풀어 오르는 오차</b>가 발생한다.</p>
+          </div>
+        </div>
+
+        <div class="step b">
+          <div class="rail"><em>02</em></div>
+          <div class="sc">
+            <div class="sh"><h4 class="ed">오차 보정 계산식</h4><u>RULE</u></div>
+            <p class="sp ed">설계상 최소 내면 반지름 <em>R₁</em> 에서 호칭별<br>표준 마디 높이 <em>H</em> 를 차감한 반지름을 기준으로<br><b>절곡기 롤러 지름을 결정</b>하여 도면 치수를 보정한다.</p>
+            <div class="key"><span class="ed">R roller = R₁ − H</span><s class="ed">삽도 우측 참조</s></div>
+          </div>
+        </div>
+
+        <div class="step c">
+          <div class="rail"><em>03</em></div>
+          <div class="sc">
+            <div class="sh"><h4 class="ed">보정하지 않은 경우</h4><u>RISK</u></div>
+            <p class="sp ed">실제 절곡된 철근의 외측 치수가 설계치보다 커져<br><b>거푸집과 접촉</b>하거나 <b>최소 피복두께를 침범</b>하게 된다.</p>
+            <div class="wl ed">→ 시공상세도 작성 시 보정 롤러 반지름을<br>&nbsp;&nbsp; 도면 치수에 반영해야 함.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="ed">REBAR DETAILING STANDARD · BENDING</span>
+    <span class="ed">KCS 14 20 11 · EXCS 14 20 11 &nbsp;·&nbsp; SHEET 02 / 02</span>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), R=document.documentElement, B=document.body;
+const fmt=v=>String(Math.round(v*1000)/1000);
+const set=(id,v)=>{const e=$('#'+id); if(e) e.textContent=v;};
+
+function fit(){
+  const avail=innerWidth-(B.classList.contains('panel')?286:0);
+  $('#sheet').style.transform='scale('+Math.min(avail/1600,innerHeight/900)*.98+')';
+}
+addEventListener('resize',fit);
+$('#toggle').onclick=()=>{B.classList.toggle('panel');fit()};
+
+let editing=false;
+$('#editBtn').onclick=()=>{
+  editing=!editing; B.classList.toggle('editing',editing);
+  document.querySelectorAll('.ed').forEach(e=>e.contentEditable=editing);
+  $('#editBtn').textContent='텍스트 직접 편집 : '+(editing?'켜짐':'꺼짐');
+  $('#editBtn').classList.toggle('on',editing);
+};
+
+function bend(){
+  const db=+$('#i-db').value, k=+$('#i-k').value, h=+$('#i-h').value;
+  const r1=k*db, rr=r1-h;
+  set('o-r1',fmt(r1)); set('o-rr',fmt(rr));
+  set('s-r1',fmt(r1)); set('s-h',fmt(h)); set('s-rr',fmt(rr));
+}
+['i-db','i-k','i-h'].forEach(id=>$('#'+id).addEventListener('input',bend));
+
+const shade=(h,f)=>{const n=parseInt(h.slice(1),16);
+  const r=Math.round((n>>16)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);
+  return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('')};
+function colors(){
+  const o=$('#c-or').value,g=$('#c-gr').value,y=$('#c-gy').value;
+  R.style.setProperty('--or',o); R.style.setProperty('--or-d',shade(o,.78));
+  R.style.setProperty('--gr',g); R.style.setProperty('--gr-d',shade(g,.72));
+  R.style.setProperty('--gy',y);
+}
+['c-or','c-gr','c-gy'].forEach(id=>$('#'+id).addEventListener('input',colors));
+
+$('#printBtn').onclick=()=>print();
+$('#saveBtn').onclick=()=>{
+  document.querySelectorAll('.ed').forEach(e=>e.removeAttribute('contenteditable'));
+  const was=editing; B.classList.remove('editing','panel');
+  const html='<!DOCTYPE html>\n<html>'+document.documentElement.innerHTML+'</html>';
+  if(was){B.classList.add('editing');document.querySelectorAll('.ed').forEach(e=>e.contentEditable=true)}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='철근구부림_절곡오차보정.html'; a.click();
+};
+
+bend(); colors(); fit();
+</script>
