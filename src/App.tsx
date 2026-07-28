@@ -25,6 +25,7 @@ import {
   Code,
   Trash2,
   FolderArchive,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import JSZip from "jszip";
@@ -867,6 +868,22 @@ export default function App() {
     }
   };
 
+  const handleDownloadAsset = () => {
+    if (!previewContent || !selectedAssetData || selectedAssetData.isFolder)
+      return;
+    const blob = new Blob([previewContent], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = selectedAssetData.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const selectedAssetData = assets.find((a) => a.id === selectedAsset);
 
   const handleLogin = (
@@ -1480,6 +1497,16 @@ export default function App() {
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all font-bold text-[10px] tracking-wide uppercase"
                           >
                             {isMarkdownDark ? "Light View" : "Dark View"}
+                          </button>
+                        )}
+                        {!selectedAssetData?.isFolder && (
+                          <button
+                            onClick={handleDownloadAsset}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all font-bold text-[10px] tracking-widest uppercase"
+                            title="Download File"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Download
                           </button>
                         )}
                         <button
